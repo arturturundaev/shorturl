@@ -21,7 +21,10 @@ func (service *ShortUrlService) Save(url string) (*entity.ShortUrlEntity, error)
 	shortUrl := utils.GenerateShortUrl(url)
 
 	model, err := service.repository.FindByShortUrl(shortUrl)
-	if err == nil {
+	if err != nil {
+		return nil, err
+	}
+	if model != nil {
 		return model, nil
 	}
 

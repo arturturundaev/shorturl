@@ -16,7 +16,7 @@ func NewSaveHandler(service *service.ShortUrlService) *SaveHandler {
 
 func (hndlr *SaveHandler) Handle(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
-		http.Error(w, "Only POST requests are allowed!", http.StatusBadRequest)
+		http.Error(w, "Only POST requests are allowed!", http.StatusMethodNotAllowed)
 		return
 	}
 
