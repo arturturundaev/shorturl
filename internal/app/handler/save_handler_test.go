@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/arturturundaev/shorturl/internal/app/entity"
 	"github.com/arturturundaev/shorturl/internal/app/service"
+	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
 	"io"
 	"net/http"
@@ -48,23 +49,13 @@ func TestSaveHandler_Handle(t *testing.T) {
 		want        want
 	}{
 		{
-			name:    "Invalid METHOD type",
-			method:  http.MethodGet,
-			request: "/",
-			body:    "",
-			want: want{
-				statusCode: http.StatusMethodNotAllowed,
-				body:       "Only POST requests are allowed!\n",
-			},
-		},
-		{
 			name:    "Repository Error",
 			method:  http.MethodPost,
 			request: "/",
 			body:    "repositoryError",
 			want: want{
 				statusCode: http.StatusBadRequest,
-				body:       "Error on insert row\n",
+				body:       "Error on insert row",
 			},
 		},
 		{
@@ -84,7 +75,11 @@ func TestSaveHandler_Handle(t *testing.T) {
 			request := httptest.NewRequest(tt.method, tt.request, strings.NewReader(tt.body))
 			response := httptest.NewRecorder()
 
-			handler.Handle(response, request)
+			context, _ := gin.CreateTestContext(response)
+			context.AddParam("short", strings.TrimLeft(tt.request, "/"))
+			context.Request = request
+
+			handler.Handle(context)
 
 			result := response.Result()
 

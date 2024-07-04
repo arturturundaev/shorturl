@@ -2,8 +2,8 @@ package handler
 
 import (
 	"github.com/arturturundaev/shorturl/internal/app/service"
+	"github.com/gin-gonic/gin"
 	"net/http"
-	"strings"
 )
 
 type FindHandler struct {
@@ -14,20 +14,17 @@ func NewFindHandler(service *service.ShortUrlService) *FindHandler {
 	return &FindHandler{service: service}
 }
 
-func (hndlr *FindHandler) Handle(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodGet {
-		http.Error(w, "Only GET requests are allowed!", http.StatusMethodNotAllowed)
+func (hndlr *FindHandler) Handle(ctx *gin.Context) {
+
+	data, err := hndlr.service.FindByShortUrl(ctx.Param("short"))
+
+	if err != nil || data == nil {
+		ctx.String(http.StatusBadRequest, "%s", err.Error())
+		ctx.Abort()
 		return
 	}
 
-	data, err := hndlr.service.FindByShortUrl(strings.TrimLeft(r.RequestURI, "/"))
-
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-
-	http.Redirect(w, r, data.Url, http.StatusTemporaryRedirect)
+	ctx.Redirect(http.StatusTemporaryRedirect, data.Url)
 
 	return
 }

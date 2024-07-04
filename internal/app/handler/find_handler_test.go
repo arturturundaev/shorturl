@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/arturturundaev/shorturl/internal/app/entity"
 	"github.com/arturturundaev/shorturl/internal/app/service"
+	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
 	"io"
 	"net/http"
@@ -53,24 +54,13 @@ func TestFindHandler_Handle(t *testing.T) {
 		want        want
 	}{
 		{
-			name:    "Invalid METHOD type",
-			method:  http.MethodPost,
-			request: "/qwerty",
-			body:    "",
-			want: want{
-				statusCode: http.StatusMethodNotAllowed,
-				body:       "Only GET requests are allowed!\n",
-				location:   "",
-			},
-		},
-		{
 			name:    "Repository Error",
 			method:  http.MethodGet,
 			request: "/repositoryError",
 			body:    "",
 			want: want{
 				statusCode: http.StatusBadRequest,
-				body:       "Row not found by short url: repositoryError\n",
+				body:       "Row not found by short url: repositoryError",
 				location:   "",
 			},
 		},
@@ -90,19 +80,21 @@ func TestFindHandler_Handle(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			request := httptest.NewRequest(tt.method, tt.request, strings.NewReader(tt.body))
+
 			response := httptest.NewRecorder()
+			context, _ := gin.CreateTestContext(response)
+			context.AddParam("short", strings.TrimLeft(tt.request, "/"))
+			context.Request = request
 
-			handler.Handle(response, request)
+			handler.Handle(context)
 
-			result := response.Result()
+			assert.Equal(t, tt.want.statusCode, response.Code)
 
-			assert.Equal(t, tt.want.statusCode, result.StatusCode)
-
-			body, err := io.ReadAll(result.Body)
+			body, err := io.ReadAll(response.Body)
 
 			assert.NoError(t, err)
 			assert.Equal(t, tt.want.body, string(body))
-			assert.Equal(t, result.Header.Get("Location"), tt.want.location)
+			assert.Equal(t, response.Header().Get("Location"), tt.want.location)
 		})
 	}
 }

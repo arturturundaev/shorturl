@@ -2,6 +2,7 @@ package handler
 
 import (
 	"github.com/arturturundaev/shorturl/internal/app/service"
+	"github.com/gin-gonic/gin"
 	"io"
 	"net/http"
 )
@@ -14,31 +15,25 @@ func NewSaveHandler(service *service.ShortUrlService) *SaveHandler {
 	return &SaveHandler{service: service}
 }
 
-func (hndlr *SaveHandler) Handle(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		http.Error(w, "Only POST requests are allowed!", http.StatusMethodNotAllowed)
-		return
-	}
+func (hndlr *SaveHandler) Handle(ctx *gin.Context) {
 
-	b, err := io.ReadAll(r.Body)
+	b, err := io.ReadAll(ctx.Request.Body)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		ctx.String(http.StatusBadRequest, "%s", err.Error())
+		ctx.Abort()
 		return
 	}
 
 	data, err := hndlr.service.Save(string(b))
 
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		ctx.String(http.StatusBadRequest, "%s", err.Error())
+		ctx.Abort()
 		return
 	}
 
-	w.WriteHeader(http.StatusCreated)
-	if _, err = w.Write([]byte("http://" + r.Host + "/" + data.ShortUrl)); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-	}
-
-	w.Header().Set("Content-type", "text/plain")
+	ctx.Header("Content-type", "text/plain")
+	ctx.String(http.StatusCreated, "http://%s/%s", ctx.Request.Host, data.ShortUrl)
 
 	return
 }

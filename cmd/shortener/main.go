@@ -4,6 +4,7 @@ import (
 	"github.com/arturturundaev/shorturl/internal/app/handler"
 	"github.com/arturturundaev/shorturl/internal/app/repository/local_storage"
 	service2 "github.com/arturturundaev/shorturl/internal/app/service"
+	"github.com/gin-gonic/gin"
 	"net/http"
 )
 
@@ -16,12 +17,12 @@ func main() {
 	handlerFind := handler.NewFindHandler(service)
 	handlerSave := handler.NewSaveHandler(service)
 
-	mux := http.NewServeMux()
+	router := gin.Default()
 
-	mux.HandleFunc(`/`, handlerSave.Handle)
-	mux.HandleFunc(`/{id}`, handlerFind.Handle)
+	router.POST(`/`, handlerSave.Handle)
+	router.GET(`/:short`, handlerFind.Handle)
 
-	err := http.ListenAndServe(`:8080`, mux)
+	err := http.ListenAndServe(`:8080`, router)
 	if err != nil {
 		panic(err)
 	}
