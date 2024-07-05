@@ -21,10 +21,26 @@ type BaseShortURLType struct {
 	URL string
 }
 
-func NewConfig() *Config {
+func NewConfig(ServerAddress string, BaseURL string) *Config {
+	URL := "localhost"
+	port := "8080"
+	data := strings.Split(ServerAddress, ":")
+	if len(data) > 1 {
+		if data[0] != "" {
+			URL = data[0]
+		}
+		if data[1] != "" {
+			port = data[1]
+		}
+	}
+
+	if BaseURL == "" {
+		BaseURL = "http://localhost:8080"
+	}
+
 	return &Config{
-		AddressStart: AddressStartType{URL: "localhost", Port: "8080"},
-		BaseShort:    BaseShortURLType{URL: "http://localhost:8080"},
+		AddressStart: AddressStartType{URL: URL, Port: port},
+		BaseShort:    BaseShortURLType{URL: BaseURL},
 	}
 }
 

@@ -8,13 +8,13 @@ import (
 	config2 "github.com/arturturundaev/shorturl/internal/config"
 	"github.com/gin-gonic/gin"
 	"net/http"
+	"os"
 )
-
-var LocalStorage = make(map[string]string)
 
 func main() {
 
-	config := config2.NewConfig()
+	config := config2.NewConfig(os.Getenv("SERVER_ADDRESS"), os.Getenv("BASE_URL"))
+
 	flag.Var(&config.AddressStart, "a", "start url and port")
 	flag.Var(&config.BaseShort, "b", "url redirect")
 	flag.Parse()
