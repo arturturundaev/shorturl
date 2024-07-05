@@ -32,7 +32,7 @@ func TestSaveHandler_Handle(t *testing.T) {
 
 	mockRepository := new(MockSaveRepository)
 
-	handler := NewSaveHandler(service.NewShortUrlService(mockRepository))
+	handler := NewSaveHandler(service.NewShortUrlService(mockRepository), "http://example.com")
 
 	type want struct {
 		statusCode int
