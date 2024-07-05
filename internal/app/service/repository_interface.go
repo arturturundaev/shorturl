@@ -3,6 +3,6 @@ package service
 import "github.com/arturturundaev/shorturl/internal/app/entity"
 
 type RepositoryInterface interface {
-	FindByShortUrl(shortUrl string) (*entity.ShortUrlEntity, error)
-	Save(shortUrl string, url string) error
+	FindByShortURL(shortURL string) (*entity.ShortURLEntity, error)
+	Save(shortURL string, url string) error
 }

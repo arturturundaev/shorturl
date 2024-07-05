@@ -15,12 +15,12 @@ import (
 
 type MockSaveRepository struct{}
 
-func (repository *MockSaveRepository) FindByShortUrl(shortUrl string) (*entity.ShortUrlEntity, error) {
+func (repository *MockSaveRepository) FindByShortURL(shortURL string) (*entity.ShortURLEntity, error) {
 
 	return nil, nil
 }
 
-func (repository *MockSaveRepository) Save(shortUrl string, url string) error {
+func (repository *MockSaveRepository) Save(shortURL string, url string) error {
 
 	if url == "repositoryError" {
 		return fmt.Errorf("Error on insert row")
@@ -32,7 +32,7 @@ func TestSaveHandler_Handle(t *testing.T) {
 
 	mockRepository := new(MockSaveRepository)
 
-	handler := NewSaveHandler(service.NewShortUrlService(mockRepository), "http://example.com")
+	handler := NewSaveHandler(service.NewShortURLService(mockRepository), "http://example.com")
 
 	type want struct {
 		statusCode int
@@ -81,6 +81,8 @@ func TestSaveHandler_Handle(t *testing.T) {
 			handler.Handle(context)
 
 			result := response.Result()
+
+			defer result.Body.Close()
 
 			assert.Equal(t, tt.want.statusCode, result.StatusCode)
 

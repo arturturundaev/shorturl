@@ -8,12 +8,12 @@ import (
 )
 
 type SaveHandler struct {
-	service *service.ShortUrlService
-	baseUrl string
+	service *service.ShortURLService
+	baseURL string
 }
 
-func NewSaveHandler(service *service.ShortUrlService, baseUrl string) *SaveHandler {
-	return &SaveHandler{service: service, baseUrl: baseUrl}
+func NewSaveHandler(service *service.ShortURLService, baseURL string) *SaveHandler {
+	return &SaveHandler{service: service, baseURL: baseURL}
 }
 
 func (hndlr *SaveHandler) Handle(ctx *gin.Context) {
@@ -34,5 +34,5 @@ func (hndlr *SaveHandler) Handle(ctx *gin.Context) {
 	}
 
 	ctx.Header("Content-type", "text/plain")
-	ctx.String(http.StatusCreated, "%s/%s", hndlr.baseUrl, data.ShortUrl)
+	ctx.String(http.StatusCreated, "%s/%s", hndlr.baseURL, data.ShortURL)
 }

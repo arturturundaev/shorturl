@@ -9,28 +9,28 @@ import (
 
 type Config struct {
 	AddressStart AddressStartType
-	BaseShort    BaseShortUrlType
+	BaseShort    BaseShortURLType
 }
 
 type AddressStartType struct {
-	Url  string
+	URL  string
 	Port string
 }
 
-type BaseShortUrlType struct {
-	Url string
+type BaseShortURLType struct {
+	URL string
 }
 
 func NewConfig() *Config {
 	return &Config{
-		AddressStart: AddressStartType{Url: "localhost", Port: "8080"},
-		BaseShort:    BaseShortUrlType{Url: "http://localhost:8080"},
+		AddressStart: AddressStartType{URL: "localhost", Port: "8080"},
+		BaseShort:    BaseShortURLType{URL: "http://localhost:8080"},
 	}
 }
 
 func (d *AddressStartType) String() string {
 	arr := make([]string, 0)
-	arr = append(arr, d.Url, d.Port)
+	arr = append(arr, d.URL, d.Port)
 
 	return fmt.Sprint(strings.Join(arr, ":"))
 }
@@ -60,18 +60,18 @@ func (d *AddressStartType) Set(flagValue string) error {
 		return fmt.Errorf("PORT incorrected")
 	}
 
-	d.Url = ip
+	d.URL = ip
 	d.Port = data[1]
 
 	return nil
 }
 
-func (d *BaseShortUrlType) String() string {
-	return d.Url
+func (d *BaseShortURLType) String() string {
+	return d.URL
 }
 
-func (d *BaseShortUrlType) Set(flagValue string) error {
-	d.Url = flagValue
+func (d *BaseShortURLType) Set(flagValue string) error {
+	d.URL = flagValue
 
 	return nil
 }

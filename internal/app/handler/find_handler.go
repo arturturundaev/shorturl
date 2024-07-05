@@ -7,16 +7,16 @@ import (
 )
 
 type FindHandler struct {
-	service *service.ShortUrlService
+	service *service.ShortURLService
 }
 
-func NewFindHandler(service *service.ShortUrlService) *FindHandler {
+func NewFindHandler(service *service.ShortURLService) *FindHandler {
 	return &FindHandler{service: service}
 }
 
 func (hndlr *FindHandler) Handle(ctx *gin.Context) {
 
-	data, err := hndlr.service.FindByShortUrl(ctx.Param("short"))
+	data, err := hndlr.service.FindByShortURL(ctx.Param("short"))
 
 	if err != nil || data == nil {
 		ctx.String(http.StatusBadRequest, "%s", err.Error())
@@ -24,5 +24,5 @@ func (hndlr *FindHandler) Handle(ctx *gin.Context) {
 		return
 	}
 
-	ctx.Redirect(http.StatusTemporaryRedirect, data.Url)
+	ctx.Redirect(http.StatusTemporaryRedirect, data.URL)
 }

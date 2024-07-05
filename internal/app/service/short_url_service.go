@@ -5,32 +5,32 @@ import (
 	"github.com/arturturundaev/shorturl/internal/app/utils"
 )
 
-type ShortUrlService struct {
+type ShortURLService struct {
 	repository RepositoryInterface
 }
 
-func NewShortUrlService(repository RepositoryInterface) *ShortUrlService {
-	return &ShortUrlService{repository: repository}
+func NewShortURLService(repository RepositoryInterface) *ShortURLService {
+	return &ShortURLService{repository: repository}
 }
 
-func (service *ShortUrlService) FindByShortUrl(shortUrl string) (*entity.ShortUrlEntity, error) {
-	return service.repository.FindByShortUrl(shortUrl)
+func (service *ShortURLService) FindByShortURL(shortURL string) (*entity.ShortURLEntity, error) {
+	return service.repository.FindByShortURL(shortURL)
 }
 
-func (service *ShortUrlService) Save(url string) (*entity.ShortUrlEntity, error) {
-	shortUrl := utils.GenerateShortUrl(url)
+func (service *ShortURLService) Save(url string) (*entity.ShortURLEntity, error) {
+	shortURL := utils.GenerateShortURL(url)
 
-	model, _ := service.repository.FindByShortUrl(shortUrl)
+	model, _ := service.repository.FindByShortURL(shortURL)
 
 	if model != nil {
 		return model, nil
 	}
 
-	err := service.repository.Save(shortUrl, url)
+	err := service.repository.Save(shortURL, url)
 
 	if err != nil {
 		return nil, err
 	}
 
-	return &entity.ShortUrlEntity{ShortUrl: shortUrl, Url: url}, nil
+	return &entity.ShortURLEntity{ShortURL: shortURL, URL: url}, nil
 }

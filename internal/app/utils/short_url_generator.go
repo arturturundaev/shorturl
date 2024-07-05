@@ -5,7 +5,7 @@ import (
 	"encoding/base64"
 )
 
-func GenerateShortUrl(url string) string {
+func GenerateShortURL(url string) string {
 	hash := sha1.New()
 	hash.Write([]byte(url))
 	return base64.URLEncoding.EncodeToString(hash.Sum(nil))[:8]

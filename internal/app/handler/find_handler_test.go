@@ -15,20 +15,20 @@ import (
 
 type MockFindRepository struct{}
 
-func (repository *MockFindRepository) FindByShortUrl(shortUrl string) (*entity.ShortUrlEntity, error) {
+func (repository *MockFindRepository) FindByShortURL(shortURL string) (*entity.ShortURLEntity, error) {
 
-	if shortUrl == "repositoryError" {
-		return nil, fmt.Errorf("Row not found by short url: %s", shortUrl)
+	if shortURL == "repositoryError" {
+		return nil, fmt.Errorf("Row not found by short url: %s", shortURL)
 	}
 
-	if shortUrl == "find" {
-		return &entity.ShortUrlEntity{Url: "findFull", ShortUrl: "find"}, nil
+	if shortURL == "find" {
+		return &entity.ShortURLEntity{URL: "findFull", ShortURL: "find"}, nil
 	}
 
 	return nil, nil
 }
 
-func (repository *MockFindRepository) Save(shortUrl string, url string) error {
+func (repository *MockFindRepository) Save(shortURL string, url string) error {
 
 	return nil
 }
@@ -37,7 +37,7 @@ func TestFindHandler_Handle(t *testing.T) {
 
 	mockRepository := new(MockFindRepository)
 
-	handler := NewFindHandler(service.NewShortUrlService(mockRepository))
+	handler := NewFindHandler(service.NewShortURLService(mockRepository))
 
 	type want struct {
 		statusCode int
