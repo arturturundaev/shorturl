@@ -37,7 +37,6 @@ func TestSaveHandler_Handle(t *testing.T) {
 	type want struct {
 		statusCode int
 		body       string
-		location   string
 	}
 
 	tests := []struct {

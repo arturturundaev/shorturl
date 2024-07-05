@@ -35,6 +35,4 @@ func (hndlr *SaveHandler) Handle(ctx *gin.Context) {
 
 	ctx.Header("Content-type", "text/plain")
 	ctx.String(http.StatusCreated, "%s/%s", hndlr.baseUrl, data.ShortUrl)
-
-	return
 }

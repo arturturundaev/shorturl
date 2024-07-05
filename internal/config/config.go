@@ -67,7 +67,7 @@ func (d *AddressStartType) Set(flagValue string) error {
 }
 
 func (d *BaseShortUrlType) String() string {
-	return fmt.Sprintf("%s", d.Url)
+	return d.Url
 }
 
 func (d *BaseShortUrlType) Set(flagValue string) error {

@@ -25,6 +25,4 @@ func (hndlr *FindHandler) Handle(ctx *gin.Context) {
 	}
 
 	ctx.Redirect(http.StatusTemporaryRedirect, data.Url)
-
-	return
 }
