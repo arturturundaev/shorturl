@@ -33,6 +33,4 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-
-	http.Server.Shutdown()
 }
