@@ -20,9 +20,9 @@ func main() {
 	flag.Parse()
 
 	repository := localstorage.NewLocalStorageRepository()
-	shortUrlService := service.NewShortURLService(repository)
-	handlerFind := handler.NewFindHandler(shortUrlService)
-	handlerSave := handler.NewSaveHandler(shortUrlService, serverConfig.BaseShort.URL)
+	shortURLService := service.NewShortURLService(repository)
+	handlerFind := handler.NewFindHandler(shortURLService)
+	handlerSave := handler.NewSaveHandler(shortURLService, serverConfig.BaseShort.URL)
 
 	router := gin.Default()
 
