@@ -4,7 +4,9 @@ import (
 	"bytes"
 	"flag"
 	"fmt"
-	"github.com/arturturundaev/shorturl/internal/app/handler"
+	"github.com/arturturundaev/shorturl/internal/app/handler/find"
+	"github.com/arturturundaev/shorturl/internal/app/handler/save"
+	"github.com/arturturundaev/shorturl/internal/app/handler/shorten"
 	"github.com/arturturundaev/shorturl/internal/app/repository/localstorage"
 	"github.com/arturturundaev/shorturl/internal/app/service"
 	"github.com/arturturundaev/shorturl/internal/config"
@@ -28,8 +30,9 @@ func main() {
 
 	repository := localstorage.NewLocalStorageRepository()
 	shortURLService := service.NewShortURLService(repository)
-	handlerFind := handler.NewFindHandler(shortURLService)
-	handlerSave := handler.NewSaveHandler(shortURLService, serverConfig.BaseShort.URL)
+	handlerFind := find.NewFindHandler(shortURLService)
+	handlerSave := save.NewSaveHandler(shortURLService, serverConfig.BaseShort.URL)
+	handlerSave2 := shorten.NewShortenHandler(shortURLService, serverConfig.BaseShort.URL)
 
 	router := gin.Default()
 
@@ -37,6 +40,7 @@ func main() {
 
 	router.POST(`/`, handlerSave.Handle)
 	router.GET(`/:short`, handlerFind.Handle)
+	router.POST(`/api/shorten`, handlerSave2.Handle)
 
 	fmt.Println(serverConfig.AddressStart.String())
 	err := http.ListenAndServe(serverConfig.AddressStart.String(), router)
