@@ -10,6 +10,7 @@ import (
 	"github.com/arturturundaev/shorturl/internal/app/repository/localstorage"
 	"github.com/arturturundaev/shorturl/internal/app/service"
 	"github.com/arturturundaev/shorturl/internal/config"
+	"github.com/gin-contrib/gzip"
 	ginzap "github.com/gin-contrib/zap"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
@@ -19,6 +20,10 @@ import (
 	"os"
 	"time"
 )
+
+const SAVE_FULL_URL = `/`
+const GET_FULL_URL = `/:short`
+const SAVE_FULL_URL_2 = `/api/shorten`
 
 func main() {
 
@@ -38,9 +43,11 @@ func main() {
 
 	addLogger(router)
 
-	router.POST(`/`, handlerSave.Handle)
-	router.GET(`/:short`, handlerFind.Handle)
-	router.POST(`/api/shorten`, handlerSave2.Handle)
+	router.Use(gzip.Gzip(gzip.DefaultCompression, gzip.WithDecompressFn(gzip.DefaultDecompressHandle)))
+
+	router.POST(SAVE_FULL_URL, handlerSave.Handle)
+	router.GET(GET_FULL_URL, handlerFind.Handle)
+	router.POST(SAVE_FULL_URL_2, handlerSave2.Handle)
 
 	fmt.Println(serverConfig.AddressStart.String())
 	err := http.ListenAndServe(serverConfig.AddressStart.String(), router)
