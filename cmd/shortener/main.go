@@ -21,9 +21,9 @@ import (
 	"time"
 )
 
-const SaveFullUrl = `/`
-const GetFullUrl = `/:short`
-const SaveFullUrl2 = `/api/shorten`
+const SaveFullURL = `/`
+const GetFullURL = `/:short`
+const SaveFullURL2 = `/api/shorten`
 
 func main() {
 
@@ -40,7 +40,7 @@ func main() {
 
 	repositoryRead, err2 := filestorage.NewFileStorageRepositoryRead("db.txt")
 	if err2 != nil {
-		panic(err)
+		panic(err2)
 	}
 
 	shortURLService := service.NewShortURLService(repositoryRead, repositoryWrite)
@@ -54,14 +54,14 @@ func main() {
 
 	router.Use(gzip.Gzip(gzip.DefaultCompression, gzip.WithDecompressFn(gzip.DefaultDecompressHandle)))
 
-	router.POST(SaveFullUrl, handlerSave.Handle)
-	router.GET(GetFullUrl, handlerFind.Handle)
-	router.POST(SaveFullUrl2, handlerSave2.Handle)
+	router.POST(SaveFullURL, handlerSave.Handle)
+	router.GET(GetFullURL, handlerFind.Handle)
+	router.POST(SaveFullURL2, handlerSave2.Handle)
 
 	fmt.Println(">>>>>>> " + serverConfig.AddressStart.String() + " <<<<<<<<<")
 	err3 := http.ListenAndServe(serverConfig.AddressStart.String(), router)
 	if err3 != nil {
-		panic(err)
+		panic(err3)
 	}
 }
 
