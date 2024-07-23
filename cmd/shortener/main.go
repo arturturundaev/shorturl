@@ -7,7 +7,7 @@ import (
 	"github.com/arturturundaev/shorturl/internal/app/handler/find"
 	"github.com/arturturundaev/shorturl/internal/app/handler/save"
 	"github.com/arturturundaev/shorturl/internal/app/handler/shorten"
-	"github.com/arturturundaev/shorturl/internal/app/repository/localstorage"
+	"github.com/arturturundaev/shorturl/internal/app/repository/filestorage"
 	"github.com/arturturundaev/shorturl/internal/app/service"
 	"github.com/arturturundaev/shorturl/internal/config"
 	"github.com/gin-contrib/gzip"
@@ -33,8 +33,17 @@ func main() {
 	flag.Var(&serverConfig.BaseShort, "b", "url redirect")
 	flag.Parse()
 
-	repository := localstorage.NewLocalStorageRepository()
-	shortURLService := service.NewShortURLService(repository)
+	repositoryWrite, err := filestorage.NewFileStorageRepositoryWrite("db.txt")
+	if err != nil {
+		panic(err)
+	}
+
+	repositoryRead, err2 := filestorage.NewFileStorageRepositoryRead("db.txt")
+	if err2 != nil {
+		panic(err)
+	}
+
+	shortURLService := service.NewShortURLService(repositoryRead, repositoryWrite)
 	handlerFind := find.NewFindHandler(shortURLService)
 	handlerSave := save.NewSaveHandler(shortURLService, serverConfig.BaseShort.URL)
 	handlerSave2 := shorten.NewShortenHandler(shortURLService, serverConfig.BaseShort.URL)
@@ -50,8 +59,8 @@ func main() {
 	router.POST(SAVE_FULL_URL_2, handlerSave2.Handle)
 
 	fmt.Println(serverConfig.AddressStart.String())
-	err := http.ListenAndServe(serverConfig.AddressStart.String(), router)
-	if err != nil {
+	err3 := http.ListenAndServe(serverConfig.AddressStart.String(), router)
+	if err3 != nil {
 		panic(err)
 	}
 }

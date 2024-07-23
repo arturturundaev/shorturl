@@ -43,10 +43,6 @@ func (h *ShortenHandler) Handle(ctx *gin.Context) {
 
 	response := ShortenResponse{URL: fmt.Sprintf("%s/%s", h.baseURL, data.ShortURL)}
 
-	for i := 0; i < 20; i++ {
-		response.URL += response.URL
-	}
-
 	ctx.Writer.Header().Set("Accept-Encoding", "gzip")
 	ctx.Writer.Header().Set("Content-Encoding", "gzip")
 	ctx.Writer.Header().Set("Content-Type", "application/json")
