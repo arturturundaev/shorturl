@@ -21,9 +21,9 @@ import (
 	"time"
 )
 
-const SAVE_FULL_URL = `/`
-const GET_FULL_URL = `/:short`
-const SAVE_FULL_URL_2 = `/api/shorten`
+const SaveFullUrl = `/`
+const GetFullUrl = `/:short`
+const SaveFullUrl2 = `/api/shorten`
 
 func main() {
 
@@ -54,11 +54,11 @@ func main() {
 
 	router.Use(gzip.Gzip(gzip.DefaultCompression, gzip.WithDecompressFn(gzip.DefaultDecompressHandle)))
 
-	router.POST(SAVE_FULL_URL, handlerSave.Handle)
-	router.GET(GET_FULL_URL, handlerFind.Handle)
-	router.POST(SAVE_FULL_URL_2, handlerSave2.Handle)
+	router.POST(SaveFullUrl, handlerSave.Handle)
+	router.GET(GetFullUrl, handlerFind.Handle)
+	router.POST(SaveFullUrl2, handlerSave2.Handle)
 
-	fmt.Println(serverConfig.AddressStart.String())
+	fmt.Println(">>>>>>> " + serverConfig.AddressStart.String() + " <<<<<<<<<")
 	err3 := http.ListenAndServe(serverConfig.AddressStart.String(), router)
 	if err3 != nil {
 		panic(err)

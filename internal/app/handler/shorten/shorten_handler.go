@@ -8,16 +8,16 @@ import (
 	"net/http"
 )
 
-type SaveUrlInterface interface {
+type SaveURLInterface interface {
 	Save(url string) (*entity.ShortURLEntity, error)
 }
 
 type ShortenHandler struct {
-	service SaveUrlInterface
+	service SaveURLInterface
 	baseURL string
 }
 
-func NewShortenHandler(service SaveUrlInterface, baseURL string) *ShortenHandler {
+func NewShortenHandler(service SaveURLInterface, baseURL string) *ShortenHandler {
 	return &ShortenHandler{service: service, baseURL: baseURL}
 }
 
@@ -46,6 +46,6 @@ func (h *ShortenHandler) Handle(ctx *gin.Context) {
 	ctx.Writer.Header().Set("Accept-Encoding", "gzip")
 	ctx.Writer.Header().Set("Content-Encoding", "gzip")
 	ctx.Writer.Header().Set("Content-Type", "application/json")
-	bt, err := json.Marshal(response)
+	bt, _ := json.Marshal(response)
 	ctx.Data(http.StatusOK, "gzip", bt)
 }
