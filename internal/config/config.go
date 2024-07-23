@@ -10,6 +10,11 @@ import (
 type Config struct {
 	AddressStart AddressStartType
 	BaseShort    BaseShortURLType
+	FileStorage  FileStorageType
+}
+
+type FileStorageType struct {
+	Path string
 }
 
 type AddressStartType struct {
@@ -21,7 +26,7 @@ type BaseShortURLType struct {
 	URL string
 }
 
-func NewConfig(ServerAddress, BaseURL string) *Config {
+func NewConfig(ServerAddress, BaseURL, FileStorage string) *Config {
 	URL := "localhost"
 	port := "8080"
 	data := strings.Split(ServerAddress, ":")
@@ -38,9 +43,14 @@ func NewConfig(ServerAddress, BaseURL string) *Config {
 		BaseURL = "http://localhost:8080"
 	}
 
+	if FileStorage == "" {
+		FileStorage = "db.txt"
+	}
+
 	return &Config{
 		AddressStart: AddressStartType{URL: URL, Port: port},
 		BaseShort:    BaseShortURLType{URL: BaseURL},
+		FileStorage:  FileStorageType{Path: FileStorage},
 	}
 }
 
@@ -88,6 +98,16 @@ func (d *BaseShortURLType) String() string {
 
 func (d *BaseShortURLType) Set(flagValue string) error {
 	d.URL = flagValue
+
+	return nil
+}
+
+func (d *FileStorageType) String() string {
+	return d.Path
+}
+
+func (d *FileStorageType) Set(flagValue string) error {
+	d.Path = flagValue
 
 	return nil
 }

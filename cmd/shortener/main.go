@@ -27,18 +27,19 @@ const SaveFullURL2 = `/api/shorten`
 
 func main() {
 
-	serverConfig := config.NewConfig(os.Getenv("SERVER_ADDRESS"), os.Getenv("BASE_URL"))
+	serverConfig := config.NewConfig(os.Getenv("SERVER_ADDRESS"), os.Getenv("BASE_URL"), os.Getenv("FILE_STORAGE_PATH"))
 
 	flag.Var(&serverConfig.AddressStart, "a", "start url and port")
 	flag.Var(&serverConfig.BaseShort, "b", "url redirect")
+	flag.Var(&serverConfig.FileStorage, "f", "file storage path")
 	flag.Parse()
 
-	repositoryWrite, err := filestorage.NewFileStorageRepositoryWrite("db.txt")
+	repositoryWrite, err := filestorage.NewFileStorageRepositoryWrite(serverConfig.FileStorage.Path)
 	if err != nil {
 		panic(err)
 	}
 
-	repositoryRead, err2 := filestorage.NewFileStorageRepositoryRead("db.txt")
+	repositoryRead, err2 := filestorage.NewFileStorageRepositoryRead(serverConfig.FileStorage.Path)
 	if err2 != nil {
 		panic(err2)
 	}
