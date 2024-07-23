@@ -80,7 +80,7 @@ func TestShortenHandler_Handle(t *testing.T) {
 			name: "Success",
 			body: "{\"url\": \"https://practicum.yandex.ru\"}",
 			want: want{
-				statusCode: http.StatusOK,
+				statusCode: http.StatusCreated,
 				body:       "{\"result\":\"http://example.com/7CwAhsKq\"}",
 			},
 		},

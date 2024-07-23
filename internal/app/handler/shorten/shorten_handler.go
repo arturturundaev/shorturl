@@ -47,5 +47,5 @@ func (h *ShortenHandler) Handle(ctx *gin.Context) {
 	ctx.Writer.Header().Set("Content-Encoding", "gzip")
 	ctx.Writer.Header().Set("Content-Type", "application/json")
 	bt, _ := json.Marshal(response)
-	ctx.Data(http.StatusOK, "gzip", bt)
+	ctx.Data(http.StatusCreated, "gzip", bt)
 }
