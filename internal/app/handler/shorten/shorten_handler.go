@@ -22,10 +22,10 @@ func NewShortenHandler(service SaveURLInterface, baseURL string) *ShortenHandler
 }
 
 func (h *ShortenHandler) Handle(ctx *gin.Context) {
-	dto, err := NewShortenRequest(ctx)
+	dto, errGenerateShortUrl := NewShortenRequest(ctx)
 
-	if err != nil {
-		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	if errGenerateShortUrl != nil {
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": errGenerateShortUrl.Error()})
 		return
 	}
 
@@ -34,18 +34,23 @@ func (h *ShortenHandler) Handle(ctx *gin.Context) {
 		return
 	}
 
-	data, err2 := h.service.Save(dto.URL)
+	data, errRepository := h.service.Save(dto.URL)
 
-	if err2 != nil {
-		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err2.Error()})
+	if errRepository != nil {
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": errRepository.Error()})
 		return
 	}
 
 	response := ShortenResponse{URL: fmt.Sprintf("%s/%s", h.baseURL, data.ShortURL)}
+	bt, errMarshal := json.Marshal(response)
+
+	if errMarshal != nil {
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": errMarshal.Error()})
+		return
+	}
 
 	ctx.Writer.Header().Set("Accept-Encoding", "gzip")
 	ctx.Writer.Header().Set("Content-Encoding", "gzip")
 	ctx.Writer.Header().Set("Content-Type", "application/json")
-	bt, _ := json.Marshal(response)
 	ctx.Data(http.StatusCreated, "gzip", bt)
 }

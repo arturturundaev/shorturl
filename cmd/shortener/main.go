@@ -16,6 +16,7 @@ import (
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	"io"
+	"log"
 	"net/http"
 	"os"
 	"time"
@@ -26,6 +27,11 @@ const GetFullURL = `/:short`
 const SaveFullURL2 = `/api/shorten`
 
 func main() {
+	defer func() {
+		if err := recover(); err != nil {
+			log.Println("panic occurred:", err)
+		}
+	}()
 
 	serverConfig := config.NewConfig(os.Getenv("SERVER_ADDRESS"), os.Getenv("BASE_URL"), os.Getenv("FILE_STORAGE_PATH"))
 
@@ -34,24 +40,29 @@ func main() {
 	flag.Var(&serverConfig.FileStorage, "f", "file storage path")
 	flag.Parse()
 
-	repositoryWrite, err := filestorage.NewFileStorageRepositoryWrite(serverConfig.FileStorage.Path)
+	router := gin.Default()
+
+	logger, err := addLogger(router)
+
 	if err != nil {
-		panic(err)
+		fmt.Print(err.Error())
+		os.Exit(5)
 	}
 
-	repositoryRead, err2 := filestorage.NewFileStorageRepositoryRead(serverConfig.FileStorage.Path)
-	if err2 != nil {
-		panic(err2)
+	repositoryWrite, errStorageWrite := filestorage.NewFileStorageRepositoryWrite(serverConfig.FileStorage.Path)
+	if errStorageWrite != nil {
+		logger.Fatal(errStorageWrite.Error())
+	}
+
+	repositoryRead, errStorageRead := filestorage.NewFileStorageRepositoryRead(serverConfig.FileStorage.Path)
+	if errStorageRead != nil {
+		logger.Fatal(errStorageRead.Error())
 	}
 
 	shortURLService := service.NewShortURLService(repositoryRead, repositoryWrite)
 	handlerFind := find.NewFindHandler(shortURLService)
 	handlerSave := save.NewSaveHandler(shortURLService, serverConfig.BaseShort.URL)
 	handlerSave2 := shorten.NewShortenHandler(shortURLService, serverConfig.BaseShort.URL)
-
-	router := gin.Default()
-
-	addLogger(router)
 
 	router.Use(gzip.Gzip(gzip.DefaultCompression, gzip.WithDecompressFn(gzip.DefaultDecompressHandle)))
 
@@ -60,14 +71,18 @@ func main() {
 	router.POST(SaveFullURL2, handlerSave2.Handle)
 
 	fmt.Println(">>>>>>> " + serverConfig.AddressStart.String() + " <<<<<<<<<")
-	err3 := http.ListenAndServe(serverConfig.AddressStart.String(), router)
-	if err3 != nil {
-		panic(err3)
+	errServer := http.ListenAndServe(serverConfig.AddressStart.String(), router)
+	if errServer != nil {
+		logger.Fatal(errServer.Error())
 	}
 }
 
-func addLogger(r *gin.Engine) {
-	logger, _ := zap.NewProduction()
+func addLogger(r *gin.Engine) (*zap.Logger, error) {
+	logger, err := zap.NewProduction()
+
+	if err != nil {
+		return nil, err
+	}
 
 	r.Use(ginzap.Ginzap(logger, time.RFC3339, true))
 	r.Use(ginzap.RecoveryWithZap(logger, true))
@@ -92,4 +107,6 @@ func addLogger(r *gin.Engine) {
 			return fields
 		}),
 	}))
+
+	return logger, nil
 }
