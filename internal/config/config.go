@@ -44,7 +44,7 @@ func NewConfig(ServerAddress, BaseURL, FileStorage string) *Config {
 	}
 
 	if FileStorage == "" {
-		FileStorage = "db.txt"
+		FileStorage = "/tmp/db.txt"
 	}
 
 	return &Config{
