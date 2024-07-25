@@ -22,10 +22,10 @@ func NewShortenHandler(service SaveURLInterface, baseURL string) *ShortenHandler
 }
 
 func (h *ShortenHandler) Handle(ctx *gin.Context) {
-	dto, errGenerateShortUrl := NewShortenRequest(ctx)
+	dto, errGenerateShortURL := NewShortenRequest(ctx)
 
-	if errGenerateShortUrl != nil {
-		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": errGenerateShortUrl.Error()})
+	if errGenerateShortURL != nil {
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": errGenerateShortURL.Error()})
 		return
 	}
 

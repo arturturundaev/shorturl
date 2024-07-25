@@ -59,7 +59,7 @@ func (repo *FileStorageReadRepository) FindByShortURL(shortURL string) (*entity.
 		return nil, err
 	}
 
-	return nil, fmt.Errorf("smth was wrong")
+	return nil, nil
 }
 
 func (repo *FileStorageWriteRepository) Save(shortURL string, URL string) error {
