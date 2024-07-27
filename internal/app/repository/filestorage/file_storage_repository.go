@@ -63,7 +63,7 @@ func (repo *FileStorageReadRepository) FindByShortURL(shortURL string) (*entity.
 }
 
 func (repo *FileStorageWriteRepository) Save(shortURL string, URL string) error {
-	_, err := repo.file.WriteString(fmt.Sprintf(`{"short_url":"%s","original_url":"%s"}\n`, shortURL, URL))
+	_, err := repo.file.WriteString(fmt.Sprintf(`{"short_url":"%s","original_url":"%s"}`+"\n", shortURL, URL))
 
 	if err != nil {
 		return err
