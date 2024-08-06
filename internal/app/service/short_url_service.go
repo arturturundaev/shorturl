@@ -6,27 +6,32 @@ import (
 )
 
 type ShortURLService struct {
-	repository RepositoryInterface
+	repositoryRead  RepositoryReadInterface
+	repositoryWrite RepositoryWriteInterface
 }
 
-func NewShortURLService(repository RepositoryInterface) *ShortURLService {
-	return &ShortURLService{repository: repository}
+func NewShortURLService(repositoryRead RepositoryReadInterface, repositoryWrite RepositoryWriteInterface) *ShortURLService {
+	return &ShortURLService{repositoryRead: repositoryRead, repositoryWrite: repositoryWrite}
 }
 
 func (service *ShortURLService) FindByShortURL(shortURL string) (*entity.ShortURLEntity, error) {
-	return service.repository.FindByShortURL(shortURL)
+	return service.repositoryRead.FindByShortURL(shortURL)
 }
 
 func (service *ShortURLService) Save(url string) (*entity.ShortURLEntity, error) {
 	shortURL := utils.GenerateShortURL(url)
 
-	model, _ := service.repository.FindByShortURL(shortURL)
+	model, errRepository := service.repositoryRead.FindByShortURL(shortURL)
+
+	if errRepository != nil {
+		return nil, errRepository
+	}
 
 	if model != nil {
 		return model, nil
 	}
 
-	err := service.repository.Save(shortURL, url)
+	err := service.repositoryWrite.Save(shortURL, url)
 
 	if err != nil {
 		return nil, err

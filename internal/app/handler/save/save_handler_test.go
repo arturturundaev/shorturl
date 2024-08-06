@@ -1,4 +1,4 @@
-package handler
+package save
 
 import (
 	"fmt"
@@ -13,14 +13,15 @@ import (
 	"testing"
 )
 
-type MockSaveRepository struct{}
+type MockReadRepository struct{}
+type MockWriteRepository struct{}
 
-func (repository *MockSaveRepository) FindByShortURL(shortURL string) (*entity.ShortURLEntity, error) {
+func (repository *MockReadRepository) FindByShortURL(shortURL string) (*entity.ShortURLEntity, error) {
 
 	return nil, nil
 }
 
-func (repository *MockSaveRepository) Save(shortURL string, url string) error {
+func (repository *MockWriteRepository) Save(shortURL string, url string) error {
 
 	if url == "repositoryError" {
 		return fmt.Errorf("Error on insert row")
@@ -30,9 +31,10 @@ func (repository *MockSaveRepository) Save(shortURL string, url string) error {
 
 func TestSaveHandler_Handle(t *testing.T) {
 
-	mockRepository := new(MockSaveRepository)
+	mockReadRepository := new(MockReadRepository)
+	mockWriteRepository := new(MockWriteRepository)
 
-	handler := NewSaveHandler(service.NewShortURLService(mockRepository), "http://example.com")
+	handler := NewSaveHandler(service.NewShortURLService(mockReadRepository, mockWriteRepository), "http://example.com")
 
 	type want struct {
 		statusCode int

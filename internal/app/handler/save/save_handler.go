@@ -1,4 +1,4 @@
-package handler
+package save
 
 import (
 	"github.com/arturturundaev/shorturl/internal/app/service"

@@ -1,4 +1,4 @@
-package handler
+package find
 
 import (
 	"github.com/arturturundaev/shorturl/internal/app/service"
