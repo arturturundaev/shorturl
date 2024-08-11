@@ -2,12 +2,15 @@ package main
 
 import (
 	"bytes"
+	"context"
 	"flag"
 	"fmt"
 	"github.com/arturturundaev/shorturl/internal/app/handler/find"
+	"github.com/arturturundaev/shorturl/internal/app/handler/ping"
 	"github.com/arturturundaev/shorturl/internal/app/handler/save"
 	"github.com/arturturundaev/shorturl/internal/app/handler/shorten"
 	"github.com/arturturundaev/shorturl/internal/app/repository/filestorage"
+	"github.com/arturturundaev/shorturl/internal/app/repository/postgres"
 	"github.com/arturturundaev/shorturl/internal/app/service"
 	"github.com/arturturundaev/shorturl/internal/config"
 	"github.com/gin-contrib/gzip"
@@ -25,6 +28,7 @@ import (
 const SaveFullURL = `/`
 const GetFullURL = `/:short`
 const SaveFullURL2 = `/api/shorten`
+const Ping = `/ping`
 
 func main() {
 	defer func() {
@@ -33,11 +37,16 @@ func main() {
 		}
 	}()
 
-	serverConfig := config.NewConfig(os.Getenv("SERVER_ADDRESS"), os.Getenv("BASE_URL"), os.Getenv("FILE_STORAGE_PATH"))
+	serverConfig := config.NewConfig(
+		os.Getenv("SERVER_ADDRESS"),
+		os.Getenv("BASE_URL"),
+		os.Getenv("FILE_STORAGE_PATH"),
+		os.Getenv("DATABASE_DSN"))
 
 	flag.Var(&serverConfig.AddressStart, "a", "start url and port")
 	flag.Var(&serverConfig.BaseShort, "b", "url redirect")
 	flag.Var(&serverConfig.FileStorage, "f", "file storage path")
+	flag.Var(&serverConfig.DatabaseURL, "d", "database storage path")
 	flag.Parse()
 
 	router := gin.Default()
@@ -51,21 +60,30 @@ func main() {
 
 	repositoryWrite, errStorageWrite := filestorage.NewFileStorageRepositoryWrite(serverConfig.FileStorage.Path)
 	if errStorageWrite != nil {
-		logger.Fatal(errStorageWrite.Error())
+		logger.Error(errStorageWrite.Error())
 	}
 
 	repositoryRead, errStorageRead := filestorage.NewFileStorageRepositoryRead(serverConfig.FileStorage.Path)
 	if errStorageRead != nil {
-		logger.Fatal(errStorageRead.Error())
+		logger.Error(errStorageRead.Error())
+	}
+
+	pingRepository, errPingRepo := postgres.NewPostgresRepository(context.Background(), serverConfig.DatabaseURL.URL)
+	if errPingRepo != nil {
+		logger.Error(errPingRepo.Error())
 	}
 
 	shortURLService := service.NewShortURLService(repositoryRead, repositoryWrite)
+	pingService := service.NewPingService(pingRepository)
+
 	handlerFind := find.NewFindHandler(shortURLService)
 	handlerSave := save.NewSaveHandler(shortURLService, serverConfig.BaseShort.URL)
 	handlerSave2 := shorten.NewShortenHandler(shortURLService, serverConfig.BaseShort.URL)
+	handlerPing := ping.NewPingHandler(pingService)
 
 	router.Use(gzip.Gzip(gzip.DefaultCompression, gzip.WithDecompressFn(gzip.DefaultDecompressHandle)))
 
+	router.GET(Ping, handlerPing.Handle)
 	router.POST(SaveFullURL, handlerSave.Handle)
 	router.GET(GetFullURL, handlerFind.Handle)
 	router.POST(SaveFullURL2, handlerSave2.Handle)

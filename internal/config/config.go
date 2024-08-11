@@ -11,6 +11,7 @@ type Config struct {
 	AddressStart AddressStartType
 	BaseShort    BaseShortURLType
 	FileStorage  FileStorageType
+	DatabaseURL  DatabaseURLType
 }
 
 type FileStorageType struct {
@@ -26,7 +27,11 @@ type BaseShortURLType struct {
 	URL string
 }
 
-func NewConfig(ServerAddress, BaseURL, FileStorage string) *Config {
+type DatabaseURLType struct {
+	URL string
+}
+
+func NewConfig(ServerAddress, BaseURL, FileStorage, databaseURL string) *Config {
 	URL := "localhost"
 	port := "8080"
 	data := strings.Split(ServerAddress, ":")
@@ -47,10 +52,15 @@ func NewConfig(ServerAddress, BaseURL, FileStorage string) *Config {
 		FileStorage = "/tmp/db.txt"
 	}
 
+	if databaseURL == "" {
+		databaseURL = "postgres://postgres:pgpwd4habr@localhost:5432/shorturl"
+	}
+
 	return &Config{
 		AddressStart: AddressStartType{URL: URL, Port: port},
 		BaseShort:    BaseShortURLType{URL: BaseURL},
 		FileStorage:  FileStorageType{Path: FileStorage},
+		DatabaseURL:  DatabaseURLType{URL: databaseURL},
 	}
 }
 
@@ -108,6 +118,16 @@ func (d *FileStorageType) String() string {
 
 func (d *FileStorageType) Set(flagValue string) error {
 	d.Path = flagValue
+
+	return nil
+}
+
+func (d *DatabaseURLType) String() string {
+	return d.URL
+}
+
+func (d *DatabaseURLType) Set(flagValue string) error {
+	d.URL = flagValue
 
 	return nil
 }
