@@ -2,20 +2,23 @@ package main
 
 import (
 	"bytes"
-	"context"
 	"flag"
 	"fmt"
 	"github.com/arturturundaev/shorturl/internal/app/handler/find"
 	"github.com/arturturundaev/shorturl/internal/app/handler/ping"
 	"github.com/arturturundaev/shorturl/internal/app/handler/save"
 	"github.com/arturturundaev/shorturl/internal/app/handler/shorten"
-	"github.com/arturturundaev/shorturl/internal/app/repository/filestorage"
-	"github.com/arturturundaev/shorturl/internal/app/repository/postgres"
+	pg "github.com/arturturundaev/shorturl/internal/app/repository/postgres"
 	"github.com/arturturundaev/shorturl/internal/app/service"
 	"github.com/arturturundaev/shorturl/internal/config"
 	"github.com/gin-contrib/gzip"
 	ginzap "github.com/gin-contrib/zap"
 	"github.com/gin-gonic/gin"
+	"github.com/golang-migrate/migrate/v4"
+	_ "github.com/golang-migrate/migrate/v4/database/pgx/v5"
+	"github.com/golang-migrate/migrate/v4/database/postgres"
+	_ "github.com/golang-migrate/migrate/v4/source/file"
+	"github.com/jmoiron/sqlx"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	"io"
@@ -58,7 +61,7 @@ func main() {
 		os.Exit(5)
 	}
 
-	repositoryWrite, errStorageWrite := filestorage.NewFileStorageRepositoryWrite(serverConfig.FileStorage.Path)
+	/*repositoryWrite, errStorageWrite := filestorage.NewFileStorageRepositoryWrite(serverConfig.FileStorage.Path)
 	if errStorageWrite != nil {
 		logger.Error(errStorageWrite.Error())
 	}
@@ -66,15 +69,17 @@ func main() {
 	repositoryRead, errStorageRead := filestorage.NewFileStorageRepositoryRead(serverConfig.FileStorage.Path)
 	if errStorageRead != nil {
 		logger.Error(errStorageRead.Error())
-	}
+	}*/
 
-	pingRepository, errPingRepo := postgres.NewPostgresRepository(context.Background(), serverConfig.DatabaseURL.URL)
+	postgresRepository, errPingRepo := pg.NewPostgresRepository(serverConfig.DatabaseURL.URL)
 	if errPingRepo != nil {
 		logger.Error(errPingRepo.Error())
 	}
 
-	shortURLService := service.NewShortURLService(repositoryRead, repositoryWrite)
-	pingService := service.NewPingService(pingRepository)
+	initMigrations("file:////home/a_turundaev/projects/yandex/shorturl/internal/app/repository/postgres/migration", postgresRepository.DB)
+
+	shortURLService := service.NewShortURLService(postgresRepository, postgresRepository)
+	pingService := service.NewPingService(postgresRepository)
 
 	handlerFind := find.NewFindHandler(shortURLService)
 	handlerSave := save.NewSaveHandler(shortURLService, serverConfig.BaseShort.URL)
@@ -127,4 +132,20 @@ func addLogger(r *gin.Engine) (*zap.Logger, error) {
 	}))
 
 	return logger, nil
+}
+
+func initMigrations(migrationPath string, DB *sqlx.DB) {
+	driver, err := postgres.WithInstance(DB.DB, &postgres.Config{})
+	m, err := migrate.NewWithDatabaseInstance(
+		migrationPath,
+		"postgres", driver)
+
+	if err != nil {
+		log.Fatal(err)
+	} else {
+		errMigrate := m.Up()
+		if errMigrate != nil && errMigrate.Error() != "no change" {
+			log.Fatal(errMigrate)
+		}
+	}
 }

@@ -16,7 +16,7 @@ func NewPingHandler(service *service.PingService) *PingHandler {
 }
 
 func (h *PingHandler) Handle(ctx *gin.Context) {
-	err := h.service.Ping(ctx)
+	err := h.service.Ping()
 
 	if err != nil {
 		fmt.Printf(err.Error())

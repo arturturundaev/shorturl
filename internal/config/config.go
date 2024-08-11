@@ -53,7 +53,7 @@ func NewConfig(ServerAddress, BaseURL, FileStorage, databaseURL string) *Config 
 	}
 
 	if databaseURL == "" {
-		databaseURL = "postgres://postgres:pgpwd4habr@localhost:5432/shorturl"
+		databaseURL = "postgres://postgres:pgpwd4habr@localhost:5432/shorturl?sslmode=disable"
 	}
 
 	return &Config{
