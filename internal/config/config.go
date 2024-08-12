@@ -1,5 +1,6 @@
 package config
 
+//  -a=http://localhost:8081/api/shorten -b=http://localhost:8081/api/shorten
 import (
 	"fmt"
 	"net/netip"
@@ -12,7 +13,12 @@ type Config struct {
 	BaseShort    BaseShortURLType
 	FileStorage  FileStorageType
 	DatabaseURL  DatabaseURLType
+	StorageType  string
 }
+
+const StorageTypeMemory = "Memory"
+const StorageTypeFile = "File"
+const StorageTypeDB = "DB"
 
 type FileStorageType struct {
 	Path string
@@ -32,6 +38,7 @@ type DatabaseURLType struct {
 }
 
 func NewConfig(ServerAddress, BaseURL, FileStorage, databaseURL string) *Config {
+	var storageType = StorageTypeMemory
 	URL := "localhost"
 	port := "8080"
 	data := strings.Split(ServerAddress, ":")
@@ -50,10 +57,14 @@ func NewConfig(ServerAddress, BaseURL, FileStorage, databaseURL string) *Config 
 
 	if FileStorage == "" {
 		FileStorage = "/tmp/db.txt"
+	} else {
+		storageType = StorageTypeFile
 	}
 
 	if databaseURL == "" {
 		databaseURL = "postgres://postgres:pgpwd4habr@localhost:5432/shorturl?sslmode=disable"
+	} else {
+		storageType = StorageTypeDB
 	}
 
 	return &Config{
@@ -61,6 +72,7 @@ func NewConfig(ServerAddress, BaseURL, FileStorage, databaseURL string) *Config 
 		BaseShort:    BaseShortURLType{URL: BaseURL},
 		FileStorage:  FileStorageType{Path: FileStorage},
 		DatabaseURL:  DatabaseURLType{URL: databaseURL},
+		StorageType:  storageType,
 	}
 }
 

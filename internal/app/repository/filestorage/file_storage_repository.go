@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/arturturundaev/shorturl/internal/app/entity"
+	"github.com/jmoiron/sqlx"
 	"io"
 	"os"
 	"strings"
@@ -12,6 +13,14 @@ import (
 
 type FileStorageReadRepository struct {
 	file *os.File
+}
+
+func (repo *FileStorageReadRepository) GetDB() *sqlx.DB {
+	return nil
+}
+
+func (repo *FileStorageReadRepository) Ping() error {
+	return nil
 }
 
 type FileStorageWriteRepository struct {

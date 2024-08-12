@@ -56,3 +56,7 @@ func (repo *PostgresRepository) Save(shortURL string, URL string) error {
 
 	return nil
 }
+
+func (repo *PostgresRepository) GetDB() *sqlx.DB {
+	return repo.DB
+}

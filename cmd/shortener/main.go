@@ -8,6 +8,8 @@ import (
 	"github.com/arturturundaev/shorturl/internal/app/handler/ping"
 	"github.com/arturturundaev/shorturl/internal/app/handler/save"
 	"github.com/arturturundaev/shorturl/internal/app/handler/shorten"
+	"github.com/arturturundaev/shorturl/internal/app/repository/filestorage"
+	"github.com/arturturundaev/shorturl/internal/app/repository/localstorage"
 	pg "github.com/arturturundaev/shorturl/internal/app/repository/postgres"
 	"github.com/arturturundaev/shorturl/internal/app/service"
 	"github.com/arturturundaev/shorturl/internal/config"
@@ -61,25 +63,14 @@ func main() {
 		os.Exit(5)
 	}
 
-	/*repositoryWrite, errStorageWrite := filestorage.NewFileStorageRepositoryWrite(serverConfig.FileStorage.Path)
-	if errStorageWrite != nil {
-		logger.Error(errStorageWrite.Error())
+	repositoryRead, repositoryWrite := getRepository(serverConfig, logger)
+	if serverConfig.StorageType == config.StorageTypeDB {
+		initMigrations("file:////home/a_turundaev/projects/yandex/shorturl/internal/app/repository/postgres/migration", repositoryRead.GetDB())
 	}
 
-	repositoryRead, errStorageRead := filestorage.NewFileStorageRepositoryRead(serverConfig.FileStorage.Path)
-	if errStorageRead != nil {
-		logger.Error(errStorageRead.Error())
-	}*/
+	shortURLService := service.NewShortURLService(repositoryRead, repositoryWrite)
 
-	postgresRepository, errPingRepo := pg.NewPostgresRepository(serverConfig.DatabaseURL.URL)
-	if errPingRepo != nil {
-		logger.Error(errPingRepo.Error())
-	}
-
-	initMigrations("file:////home/a_turundaev/projects/yandex/shorturl/internal/app/repository/postgres/migration", postgresRepository.DB)
-
-	shortURLService := service.NewShortURLService(postgresRepository, postgresRepository)
-	pingService := service.NewPingService(postgresRepository)
+	pingService := service.NewPingService(repositoryRead)
 
 	handlerFind := find.NewFindHandler(shortURLService)
 	handlerSave := save.NewSaveHandler(shortURLService, serverConfig.BaseShort.URL)
@@ -148,4 +139,38 @@ func initMigrations(migrationPath string, DB *sqlx.DB) {
 			log.Fatal(errMigrate)
 		}
 	}
+}
+
+func getRepository(serverConfig *config.Config, logger *zap.Logger) (service.RepositoryReadInterface, service.RepositoryWriteInterface) {
+
+	if serverConfig.StorageType == config.StorageTypeDB {
+		repository, errPingRepo := pg.NewPostgresRepository(serverConfig.DatabaseURL.URL)
+		if errPingRepo != nil {
+			logger.Error(errPingRepo.Error())
+		}
+
+		return repository, repository
+	}
+
+	if serverConfig.StorageType == config.StorageTypeFile {
+		repositoryWrite, errStorageWrite := filestorage.NewFileStorageRepositoryWrite(serverConfig.FileStorage.Path)
+		if errStorageWrite != nil {
+			logger.Error(errStorageWrite.Error())
+		}
+
+		repositoryRead, errStorageRead := filestorage.NewFileStorageRepositoryRead(serverConfig.FileStorage.Path)
+		if errStorageRead != nil {
+			logger.Error(errStorageRead.Error())
+		}
+
+		return repositoryRead, repositoryWrite
+	}
+
+	if serverConfig.StorageType == config.StorageTypeMemory {
+		repositoryWrite := localstorage.NewLocalStorageRepository()
+
+		return repositoryWrite, repositoryWrite
+	}
+
+	return nil, nil
 }

@@ -1,10 +1,10 @@
 package service
 
 type PingService struct {
-	repository PingRepository
+	repository RepositoryReadInterface
 }
 
-func NewPingService(repository PingRepository) *PingService {
+func NewPingService(repository RepositoryReadInterface) *PingService {
 	return &PingService{repository: repository}
 }
 

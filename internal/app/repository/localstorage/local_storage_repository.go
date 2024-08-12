@@ -1,8 +1,8 @@
 package localstorage
 
 import (
-	"fmt"
 	"github.com/arturturundaev/shorturl/internal/app/entity"
+	"github.com/jmoiron/sqlx"
 )
 
 type LocalStorageRepository struct {
@@ -20,11 +20,20 @@ func (repo *LocalStorageRepository) FindByShortURL(shortURL string) (*entity.Sho
 		return &(entity.ShortURLEntity{ShortURL: shortURL, URL: url}), nil
 	}
 
-	return nil, fmt.Errorf("row not found by short url: %s", shortURL)
+	return nil, nil
 }
 
 func (repo *LocalStorageRepository) Save(shortURL string, URL string) error {
 	repo.Rows[shortURL] = URL
 
+	return nil
+}
+
+func (repo *LocalStorageRepository) Ping() error {
+
+	return nil
+}
+
+func (repo *LocalStorageRepository) GetDB() *sqlx.DB {
 	return nil
 }
