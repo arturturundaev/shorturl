@@ -2,8 +2,10 @@ package config
 
 //  -a=http://localhost:8081/api/shorten -b=http://localhost:8081/api/shorten
 import (
+	"cmp"
 	"fmt"
 	"net/netip"
+	"os"
 	"strconv"
 	"strings"
 )
@@ -39,33 +41,23 @@ type DatabaseURLType struct {
 
 func NewConfig(ServerAddress, BaseURL, FileStorage, databaseURL string) *Config {
 	var storageType = StorageTypeMemory
-	URL := "localhost"
-	port := "8080"
-	data := strings.Split(ServerAddress, ":")
-	if len(data) > 1 {
-		if data[0] != "" {
-			URL = data[0]
-		}
-		if data[1] != "" {
-			port = data[1]
-		}
-	}
 
-	if BaseURL == "" {
-		BaseURL = "http://localhost:8080"
-	}
-
-	if FileStorage == "" {
-		FileStorage = "/tmp/db.txt"
-	} else {
+	if FileStorage != "" {
 		storageType = StorageTypeFile
 	}
 
-	if databaseURL == "" {
-		databaseURL = "postgres://postgres:pgpwd4habr@localhost:5432/shorturl?sslmode=disable"
-	} else {
+	if databaseURL != "" {
 		storageType = StorageTypeDB
 	}
+
+	var URL, port string
+	data := strings.Split(cmp.Or(ServerAddress, os.Getenv("SERVER_ADDRESS"), "localhost:8080"), ":")
+	URL = data[0]
+	port = data[1]
+
+	BaseURL = cmp.Or(BaseURL, os.Getenv("BASE_URL"), "http://localhost:8080")
+	FileStorage = cmp.Or(FileStorage, os.Getenv("FILE_STORAGE_PATH"), "/tmp/db.txt")
+	databaseURL = cmp.Or(databaseURL, os.Getenv("DATABASE_DSN"), "postgres://postgres:postgres@localhost:5432/shorturl?sslmode=disable")
 
 	return &Config{
 		AddressStart: AddressStartType{URL: URL, Port: port},
@@ -80,7 +72,11 @@ func (d *AddressStartType) String() string {
 	arr := make([]string, 0)
 	arr = append(arr, d.URL, d.Port)
 
-	return fmt.Sprint(strings.Join(arr, ":"))
+	if arr[0] != "" && arr[1] != "" {
+		return fmt.Sprint(strings.Join(arr, ":"))
+	}
+
+	return ""
 }
 
 func (d *AddressStartType) Set(flagValue string) error {

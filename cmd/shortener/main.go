@@ -27,6 +27,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"path/filepath"
 	"time"
 )
 
@@ -42,17 +43,23 @@ func main() {
 		}
 	}()
 
-	serverConfig := config.NewConfig(
-		os.Getenv("SERVER_ADDRESS"),
-		os.Getenv("BASE_URL"),
-		os.Getenv("FILE_STORAGE_PATH"),
-		os.Getenv("DATABASE_DSN"))
+	var addressStart config.AddressStartType
+	var baseShort config.BaseShortURLType
+	var fileStorage config.FileStorageType
+	var databaseURL config.DatabaseURLType
 
-	flag.Var(&serverConfig.AddressStart, "a", "start url and port")
-	flag.Var(&serverConfig.BaseShort, "b", "url redirect")
-	flag.Var(&serverConfig.FileStorage, "f", "file storage path")
-	flag.Var(&serverConfig.DatabaseURL, "d", "database storage path")
+	flag.Var(&addressStart, "a", "start url and port")
+	flag.Var(&baseShort, "b", "url redirect")
+	flag.Var(&fileStorage, "f", "file storage path")
+	flag.Var(&databaseURL, "d", "database storage path")
 	flag.Parse()
+
+	serverConfig := config.NewConfig(
+		addressStart.String(),
+		baseShort.String(),
+		fileStorage.String(),
+		databaseURL.String(),
+	)
 
 	router := gin.Default()
 
@@ -65,7 +72,11 @@ func main() {
 
 	repositoryRead, repositoryWrite := getRepository(serverConfig, logger)
 	if serverConfig.StorageType == config.StorageTypeDB {
-		initMigrations("file:////home/a_turundaev/projects/yandex/shorturl/internal/app/repository/postgres/migration", repositoryRead.GetDB())
+		absPath, err := filepath.Abs(".")
+		if err != nil {
+			panic("Ooops")
+		}
+		initMigrations("file:////"+absPath+"/internal/app/repository/postgres/migration", repositoryRead.GetDB())
 	}
 
 	shortURLService := service.NewShortURLService(repositoryRead, repositoryWrite)
