@@ -40,6 +40,8 @@ type DatabaseURLType struct {
 }
 
 func NewConfig(ServerAddress, BaseURL, FileStorage, databaseURL string) *Config {
+	fmt.Println("ServerAddress: " + ServerAddress + " ; BaseURL:" + BaseURL + " ; FileStorage:" + FileStorage + " ; databaseURL:" + databaseURL)
+
 	var storageType = StorageTypeMemory
 
 	if FileStorage != "" {

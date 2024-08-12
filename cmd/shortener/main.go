@@ -47,7 +47,9 @@ func main() {
 	var baseShort config.BaseShortURLType
 	var fileStorage config.FileStorageType
 	var databaseURL config.DatabaseURLType
-
+	flag.VisitAll(func(f *flag.Flag) {
+		fmt.Printf("%s: %s\n", f.Name, f.Value)
+	})
 	flag.Var(&addressStart, "a", "start url and port")
 	flag.Var(&baseShort, "b", "url redirect")
 	flag.Var(&fileStorage, "f", "file storage path")
@@ -61,6 +63,9 @@ func main() {
 		databaseURL.String(),
 	)
 
+	fmt.Println("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+	fmt.Printf("%+v\n", serverConfig)
+	fmt.Println("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
 	router := gin.Default()
 
 	logger, err := addLogger(router)
