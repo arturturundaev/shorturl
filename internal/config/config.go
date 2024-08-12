@@ -42,30 +42,31 @@ type DatabaseURLType struct {
 func NewConfig(ServerAddress, BaseURL, FileStorage, databaseURL string) *Config {
 	fmt.Println("ServerAddress: " + ServerAddress + " ; BaseURL:" + BaseURL + " ; FileStorage:" + FileStorage + " ; databaseURL:" + databaseURL)
 	fmt.Println("BASE_URL: " + os.Getenv("BASE_URL") + " ; FILE_STORAGE_PATH:" + os.Getenv("FILE_STORAGE_PATH") + " ; DATABASE_DSN:" + os.Getenv("DATABASE_DSN"))
-	var storageType = StorageTypeMemory
-
-	if FileStorage != "" {
-		storageType = StorageTypeFile
-	}
-
-	if databaseURL != "" {
-		storageType = StorageTypeDB
-	}
 
 	var URL, port string
 	data := strings.Split(cmp.Or(ServerAddress, os.Getenv("SERVER_ADDRESS"), "localhost:8080"), ":")
 	URL = data[0]
 	port = data[1]
 
-	BaseURL = cmp.Or(BaseURL, os.Getenv("BASE_URL"), "http://localhost:8080")
-	FileStorage = cmp.Or(FileStorage, os.Getenv("FILE_STORAGE_PATH"), "/tmp/db.txt")
-	databaseURL = cmp.Or(databaseURL, os.Getenv("DATABASE_DSN"), "postgres://postgres:postgres@localhost:5432/shorturl?sslmode=disable")
+	BaseURLFinal := cmp.Or(BaseURL, os.Getenv("BASE_URL"), "http://localhost:8080")
+	FileStorageFinal := cmp.Or(FileStorage, os.Getenv("FILE_STORAGE_PATH"), "/tmp/db.txt")
+	databaseURLFinal := cmp.Or(databaseURL, os.Getenv("DATABASE_DSN"), "postgres://postgres:postgres@localhost:5432/shorturl?sslmode=disable")
+
+	var storageType = StorageTypeMemory
+
+	if FileStorage != "" || os.Getenv("FILE_STORAGE_PATH") != "" {
+		storageType = StorageTypeFile
+	}
+
+	if databaseURL != "" || os.Getenv("DATABASE_DSN") != "" {
+		storageType = StorageTypeDB
+	}
 
 	return &Config{
 		AddressStart: AddressStartType{URL: URL, Port: port},
-		BaseShort:    BaseShortURLType{URL: BaseURL},
-		FileStorage:  FileStorageType{Path: FileStorage},
-		DatabaseURL:  DatabaseURLType{URL: databaseURL},
+		BaseShort:    BaseShortURLType{URL: BaseURLFinal},
+		FileStorage:  FileStorageType{Path: FileStorageFinal},
+		DatabaseURL:  DatabaseURLType{URL: databaseURLFinal},
 		StorageType:  storageType,
 	}
 }
