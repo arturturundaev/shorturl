@@ -5,6 +5,7 @@ import (
 	"github.com/arturturundaev/shorturl/internal/app/entity"
 	"github.com/arturturundaev/shorturl/internal/app/service"
 	"github.com/gin-gonic/gin"
+	"github.com/jmoiron/sqlx"
 	"github.com/stretchr/testify/assert"
 	"io"
 	"net/http"
@@ -14,6 +15,15 @@ import (
 )
 
 type MockReadRepository struct{}
+
+func (repository *MockReadRepository) Ping() error {
+	return nil
+}
+
+func (repository *MockReadRepository) GetDB() *sqlx.DB {
+	return nil
+}
+
 type MockWriteRepository struct{}
 
 func (repository *MockReadRepository) FindByShortURL(shortURL string) (*entity.ShortURLEntity, error) {
