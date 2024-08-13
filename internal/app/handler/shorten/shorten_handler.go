@@ -38,7 +38,7 @@ func (h *ShortenHandler) Handle(ctx *gin.Context) {
 
 	data, errRepository := h.service.Save(dto.URL)
 
-	if errRepository != nil && !errors.Is(errRepository, service.EntityExistsError) {
+	if errRepository != nil && !errors.Is(errRepository, service.ErrEntityExists) {
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": errRepository.Error()})
 		return
 	}
@@ -47,7 +47,7 @@ func (h *ShortenHandler) Handle(ctx *gin.Context) {
 
 	status := http.StatusCreated
 
-	if errors.Is(errRepository, service.EntityExistsError) {
+	if errors.Is(errRepository, service.ErrEntityExists) {
 		status = http.StatusConflict
 	}
 

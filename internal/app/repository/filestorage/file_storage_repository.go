@@ -33,7 +33,7 @@ type FileStorageWriteRepository struct {
 
 func (repo *FileStorageWriteRepository) Batch(ents *[]entity.ShortURLEntity) error {
 	for _, ent := range *ents {
-		_, err := repo.file.WriteString(fmt.Sprintf(`{"short_url":"%s","original_url":"%s", "correlation_id":"%s"}`+"\n", ent.ShortURL, ent.URL, ent.CorrelationId))
+		_, err := repo.file.WriteString(fmt.Sprintf(`{"short_url":"%s","original_url":"%s", "correlation_id":"%s"}`+"\n", ent.ShortURL, ent.URL, ent.CorrelationID))
 
 		if err != nil {
 			return err

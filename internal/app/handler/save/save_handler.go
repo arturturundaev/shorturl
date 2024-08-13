@@ -28,7 +28,7 @@ func (hndlr *SaveHandler) Handle(ctx *gin.Context) {
 
 	data, err := hndlr.service.Save(string(b))
 
-	if errors.Is(err, service.EntityExistsError) {
+	if errors.Is(err, service.ErrEntityExists) {
 		ctx.Header("Content-type", "text/plain")
 		ctx.String(http.StatusConflict, "%s/%s", hndlr.baseURL, data.ShortURL)
 		return

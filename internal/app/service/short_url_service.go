@@ -13,7 +13,7 @@ type ShortURLService struct {
 	repositoryWrite RepositoryWriteInterface
 }
 
-var EntityExistsError = errors.New("Entity exists")
+var ErrEntityExists = errors.New("entity exists")
 
 func NewShortURLService(repositoryRead RepositoryReadInterface, repositoryWrite RepositoryWriteInterface) *ShortURLService {
 	return &ShortURLService{repositoryRead: repositoryRead, repositoryWrite: repositoryWrite}
@@ -33,7 +33,7 @@ func (service *ShortURLService) Save(url string) (*entity.ShortURLEntity, error)
 	}
 
 	if model != nil {
-		return model, EntityExistsError
+		return model, ErrEntityExists
 	}
 
 	err := service.repositoryWrite.Save(shortURL, url)
@@ -56,7 +56,7 @@ func (service *ShortURLService) Batch(request *[]batch.ButchRequest) (*[]entity.
 	}
 
 	for i, item := range *request {
-		models = append(models, entity.ShortURLEntity{URL: item.OriginalUrl, CorrelationId: item.CorrelationId, ShortURL: utils.GenerateShortURL(item.OriginalUrl)})
+		models = append(models, entity.ShortURLEntity{URL: item.OriginalURL, CorrelationID: item.CorrelationID, ShortURL: utils.GenerateShortURL(item.OriginalURL)})
 
 		if len(models) == postgres.ButchSize || len(*request) == i+1 {
 			err = service.repositoryWrite.Batch(&models)

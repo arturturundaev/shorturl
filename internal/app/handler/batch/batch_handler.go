@@ -36,7 +36,7 @@ func (h *ButchHandler) Handle(ctx *gin.Context) {
 	}
 
 	for _, model := range *models {
-		response = append(response, ButchResponse{CorrelationId: model.CorrelationId, ShortURL: fmt.Sprintf("%s/%s", h.baseURL, model.ShortURL)})
+		response = append(response, ButchResponse{CorrelationID: model.CorrelationID, ShortURL: fmt.Sprintf("%s/%s", h.baseURL, model.ShortURL)})
 	}
 
 	bt, errMarshal := json.Marshal(response)

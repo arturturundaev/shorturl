@@ -148,6 +148,9 @@ func addLogger(r *gin.Engine) (*zap.Logger, error) {
 
 func initMigrations(migrationPath string, DB *sqlx.DB) {
 	driver, err := postgres.WithInstance(DB.DB, &postgres.Config{})
+	if err != nil {
+		log.Fatal(err)
+	}
 	m, err := migrate.NewWithDatabaseInstance(
 		migrationPath,
 		"postgres", driver)

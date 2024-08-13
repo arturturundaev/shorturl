@@ -12,12 +12,12 @@ type LocalStorageRepository struct {
 type LocalStorageRow struct {
 	ShortURL      string
 	URL           string
-	CorrelationId string
+	CorrelationID string
 }
 
 func (repo *LocalStorageRepository) Batch(ents *[]entity.ShortURLEntity) error {
 	for _, ent := range *ents {
-		repo.Rows[ent.ShortURL] = LocalStorageRow{ShortURL: ent.ShortURL, URL: ent.URL, CorrelationId: ent.CorrelationId}
+		repo.Rows[ent.ShortURL] = LocalStorageRow{ShortURL: ent.ShortURL, URL: ent.URL, CorrelationID: ent.CorrelationID}
 	}
 
 	return nil
@@ -31,7 +31,7 @@ func NewLocalStorageRepository() *LocalStorageRepository {
 
 func (repo *LocalStorageRepository) FindByShortURL(shortURL string) (*entity.ShortURLEntity, error) {
 	if row, exists := repo.Rows[shortURL]; exists {
-		return &(entity.ShortURLEntity{ShortURL: row.ShortURL, URL: row.URL, CorrelationId: row.CorrelationId}), nil
+		return &(entity.ShortURLEntity{ShortURL: row.ShortURL, URL: row.URL, CorrelationID: row.CorrelationID}), nil
 	}
 
 	return nil, nil

@@ -3,8 +3,8 @@ package batch
 import "github.com/gin-gonic/gin"
 
 type ButchRequest struct {
-	CorrelationId string `json:"correlation_id"`
-	OriginalUrl   string `json:"original_url"`
+	CorrelationID string `json:"correlation_id"`
+	OriginalURL   string `json:"original_url"`
 }
 
 func NewButchRequest(context *gin.Context) (*[]ButchRequest, error) {

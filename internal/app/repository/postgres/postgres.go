@@ -79,7 +79,7 @@ func (repo *PostgresRepository) Batch(entities *[]entity.ShortURLEntity) error {
 			"$"+fmt.Sprintf("%d,", i+2)+
 			"$"+fmt.Sprintf("%d,", i+3)+
 			"$"+fmt.Sprintf("%d", i+4)+")")
-		params = append(params, uuid.New().String(), enty.URL, enty.ShortURL, enty.CorrelationId)
+		params = append(params, uuid.New().String(), enty.URL, enty.ShortURL, enty.CorrelationID)
 		i += 4
 	}
 
