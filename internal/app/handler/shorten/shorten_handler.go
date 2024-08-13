@@ -1,7 +1,6 @@
 package shorten
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/arturturundaev/shorturl/internal/app/entity"
@@ -31,6 +30,7 @@ func (h *ShortenHandler) Handle(ctx *gin.Context) {
 		return
 	}
 
+	fmt.Println("JSON ????????????" + dto.URL + "??????????")
 	if dto.URL == "" {
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "Empty URL"})
 		return
@@ -44,20 +44,12 @@ func (h *ShortenHandler) Handle(ctx *gin.Context) {
 	}
 
 	response := ShortenResponse{URL: fmt.Sprintf("%s/%s", h.baseURL, data.ShortURL)}
-	bt, errMarshal := json.Marshal(response)
-
-	if errMarshal != nil {
-		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": errMarshal.Error()})
-		return
-	}
 
 	status := http.StatusCreated
 
 	if errors.Is(errRepository, service.EntityExistsError) {
 		status = http.StatusConflict
 	}
-	ctx.Writer.Header().Set("Accept-Encoding", "gzip")
-	ctx.Writer.Header().Set("Content-Encoding", "gzip")
-	ctx.Writer.Header().Set("Content-Type", "application/json")
-	ctx.Data(status, "gzip", bt)
+
+	ctx.JSON(status, response)
 }
