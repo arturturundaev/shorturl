@@ -26,6 +26,26 @@ func (repository *MockReadRepository) GetDB() *sqlx.DB {
 
 type MockWriteRepository struct{}
 
+func (repository *MockWriteRepository) Batch(i *[]entity.ShortURLEntity) error {
+	return nil
+}
+
+func (repository *MockWriteRepository) GetDB() *sqlx.DB {
+	return nil
+}
+
+func (repository *MockWriteRepository) BeginTransaction() error {
+	return nil
+}
+
+func (repository *MockWriteRepository) RollbackTransaction() error {
+	return nil
+}
+
+func (repository *MockWriteRepository) CommitTransaction() error {
+	return nil
+}
+
 func (repository *MockReadRepository) FindByShortURL(shortURL string) (*entity.ShortURLEntity, error) {
 
 	if shortURL == "repositoryError" {
