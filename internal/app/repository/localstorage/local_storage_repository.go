@@ -6,25 +6,39 @@ import (
 )
 
 type LocalStorageRepository struct {
-	Rows map[string]string
+	Rows map[string]LocalStorageRow
+}
+
+type LocalStorageRow struct {
+	ShortURL      string
+	URL           string
+	CorrelationId string
+}
+
+func (repo *LocalStorageRepository) Batch(ents *[]entity.ShortURLEntity) error {
+	for _, ent := range *ents {
+		repo.Rows[ent.ShortURL] = LocalStorageRow{ShortURL: ent.ShortURL, URL: ent.URL, CorrelationId: ent.CorrelationId}
+	}
+
+	return nil
 }
 
 func NewLocalStorageRepository() *LocalStorageRepository {
 	return &LocalStorageRepository{
-		Rows: make(map[string]string),
+		Rows: make(map[string]LocalStorageRow),
 	}
 }
 
 func (repo *LocalStorageRepository) FindByShortURL(shortURL string) (*entity.ShortURLEntity, error) {
-	if url, exists := repo.Rows[shortURL]; exists {
-		return &(entity.ShortURLEntity{ShortURL: shortURL, URL: url}), nil
+	if row, exists := repo.Rows[shortURL]; exists {
+		return &(entity.ShortURLEntity{ShortURL: row.ShortURL, URL: row.URL, CorrelationId: row.CorrelationId}), nil
 	}
 
 	return nil, nil
 }
 
 func (repo *LocalStorageRepository) Save(shortURL string, URL string) error {
-	repo.Rows[shortURL] = URL
+	repo.Rows[shortURL] = LocalStorageRow{ShortURL: shortURL, URL: URL}
 
 	return nil
 }
@@ -35,5 +49,17 @@ func (repo *LocalStorageRepository) Ping() error {
 }
 
 func (repo *LocalStorageRepository) GetDB() *sqlx.DB {
+	return nil
+}
+
+func (repo *LocalStorageRepository) BeginTransaction() error {
+	return nil
+}
+
+func (repo *LocalStorageRepository) RollbackTransaction() error {
+	return nil
+}
+
+func (repo *LocalStorageRepository) CommitTransaction() error {
 	return nil
 }

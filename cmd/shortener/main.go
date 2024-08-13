@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"flag"
 	"fmt"
+	"github.com/arturturundaev/shorturl/internal/app/handler/batch"
 	"github.com/arturturundaev/shorturl/internal/app/handler/find"
 	"github.com/arturturundaev/shorturl/internal/app/handler/ping"
 	"github.com/arturturundaev/shorturl/internal/app/handler/save"
@@ -31,9 +32,11 @@ import (
 	"time"
 )
 
+// -d=postgres://postgres:postgres@localhost:5432/shorturl?sslmode=disable
 const SaveFullURL = `/`
 const GetFullURL = `/:short`
 const SaveFullURL2 = `/api/shorten`
+const SaveBatch = `/api/shorten/batch`
 const Ping = `/ping`
 
 func main() {
@@ -92,6 +95,7 @@ func main() {
 	handlerSave := save.NewSaveHandler(shortURLService, serverConfig.BaseShort.URL)
 	handlerSave2 := shorten.NewShortenHandler(shortURLService, serverConfig.BaseShort.URL)
 	handlerPing := ping.NewPingHandler(pingService)
+	handlerButch := batch.NewButchHandler(shortURLService, serverConfig.BaseShort.URL)
 
 	router.Use(gzip.Gzip(gzip.DefaultCompression, gzip.WithDecompressFn(gzip.DefaultDecompressHandle)))
 
@@ -99,6 +103,7 @@ func main() {
 	router.POST(SaveFullURL, handlerSave.Handle)
 	router.GET(GetFullURL, handlerFind.Handle)
 	router.POST(SaveFullURL2, handlerSave2.Handle)
+	router.POST(SaveBatch, handlerButch.Handle)
 
 	fmt.Println(">>>>>>> " + serverConfig.AddressStart.String() + " <<<<<<<<<")
 	errServer := http.ListenAndServe(serverConfig.AddressStart.String(), router)

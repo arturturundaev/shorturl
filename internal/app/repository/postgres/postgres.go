@@ -1,16 +1,20 @@
 package postgres
 
 import (
+	"database/sql"
 	"fmt"
 	"github.com/arturturundaev/shorturl/internal/app/entity"
 	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx"
+	"strings"
 )
 
 const TableName = "url"
+const ButchSize = 100
 
 type PostgresRepository struct {
 	DB *sqlx.DB
+	tx *sql.Tx
 }
 
 func NewPostgresRepository(databaseURL string) (*PostgresRepository, error) {
@@ -59,4 +63,42 @@ func (repo *PostgresRepository) Save(shortURL string, URL string) error {
 
 func (repo *PostgresRepository) GetDB() *sqlx.DB {
 	return repo.DB
+}
+
+func (repo *PostgresRepository) Batch(entities *[]entity.ShortURLEntity) error {
+	if len(*entities) == 0 {
+		return nil
+	}
+	i := 0
+	var values []string
+	var params []interface{}
+	for _, enty := range *entities {
+		//$" + fmt.Sprintf("%d", paramIndex)
+		values = append(values, "("+
+			"$"+fmt.Sprintf("%d,", i+1)+
+			"$"+fmt.Sprintf("%d,", i+2)+
+			"$"+fmt.Sprintf("%d,", i+3)+
+			"$"+fmt.Sprintf("%d", i+4)+")")
+		params = append(params, uuid.New().String(), enty.URL, enty.ShortURL, enty.CorrelationId)
+		i += 4
+	}
+
+	valuesStr := strings.Join(values, ",")
+	_, err := repo.DB.Exec(fmt.Sprintf(`INSERT into %s values %s`, TableName, valuesStr), params...)
+
+	return err
+}
+
+func (repo *PostgresRepository) BeginTransaction() error {
+	tx, err := repo.DB.Begin()
+
+	repo.tx = tx
+
+	return err
+}
+func (repo *PostgresRepository) RollbackTransaction() error {
+	return repo.tx.Rollback()
+}
+func (repo *PostgresRepository) CommitTransaction() error {
+	return repo.tx.Commit()
 }

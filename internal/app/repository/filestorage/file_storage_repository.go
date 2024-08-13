@@ -19,12 +19,28 @@ func (repo *FileStorageReadRepository) GetDB() *sqlx.DB {
 	return nil
 }
 
+func (repo *FileStorageWriteRepository) GetDB() *sqlx.DB {
+	return nil
+}
+
 func (repo *FileStorageReadRepository) Ping() error {
 	return nil
 }
 
 type FileStorageWriteRepository struct {
 	file *os.File
+}
+
+func (repo *FileStorageWriteRepository) Batch(ents *[]entity.ShortURLEntity) error {
+	for _, ent := range *ents {
+		_, err := repo.file.WriteString(fmt.Sprintf(`{"short_url":"%s","original_url":"%s", "correlation_id":"%s"}`+"\n", ent.ShortURL, ent.URL, ent.CorrelationId))
+
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 func NewFileStorageRepositoryWrite(path string) (*FileStorageWriteRepository, error) {
@@ -78,5 +94,17 @@ func (repo *FileStorageWriteRepository) Save(shortURL string, URL string) error 
 		return err
 	}
 
+	return nil
+}
+
+func (repo *FileStorageWriteRepository) BeginTransaction() error {
+	return nil
+}
+
+func (repo *FileStorageWriteRepository) RollbackTransaction() error {
+	return nil
+}
+
+func (repo *FileStorageWriteRepository) CommitTransaction() error {
 	return nil
 }

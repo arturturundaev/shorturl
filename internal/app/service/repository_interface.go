@@ -13,4 +13,9 @@ type RepositoryReadInterface interface {
 
 type RepositoryWriteInterface interface {
 	Save(shortURL string, url string) error
+	Batch(*[]entity.ShortURLEntity) error
+	GetDB() *sqlx.DB
+	BeginTransaction() error
+	RollbackTransaction() error
+	CommitTransaction() error
 }
