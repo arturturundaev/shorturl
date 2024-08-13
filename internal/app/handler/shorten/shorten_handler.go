@@ -2,8 +2,10 @@ package shorten
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/arturturundaev/shorturl/internal/app/entity"
+	"github.com/arturturundaev/shorturl/internal/app/service"
 	"github.com/gin-gonic/gin"
 	"net/http"
 )
@@ -36,7 +38,7 @@ func (h *ShortenHandler) Handle(ctx *gin.Context) {
 
 	data, errRepository := h.service.Save(dto.URL)
 
-	if errRepository != nil {
+	if errRepository != nil && !errors.Is(errRepository, service.EntityExistsError) {
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": errRepository.Error()})
 		return
 	}
@@ -49,8 +51,13 @@ func (h *ShortenHandler) Handle(ctx *gin.Context) {
 		return
 	}
 
+	status := http.StatusCreated
+
+	if errors.Is(errRepository, service.EntityExistsError) {
+		status = http.StatusConflict
+	}
 	ctx.Writer.Header().Set("Accept-Encoding", "gzip")
 	ctx.Writer.Header().Set("Content-Encoding", "gzip")
 	ctx.Writer.Header().Set("Content-Type", "application/json")
-	ctx.Data(http.StatusCreated, "gzip", bt)
+	ctx.Data(status, "gzip", bt)
 }

@@ -1,6 +1,7 @@
 package service
 
 import (
+	"errors"
 	"github.com/arturturundaev/shorturl/internal/app/entity"
 	"github.com/arturturundaev/shorturl/internal/app/handler/batch"
 	"github.com/arturturundaev/shorturl/internal/app/repository/postgres"
@@ -11,6 +12,8 @@ type ShortURLService struct {
 	repositoryRead  RepositoryReadInterface
 	repositoryWrite RepositoryWriteInterface
 }
+
+var EntityExistsError = errors.New("Entity exists")
 
 func NewShortURLService(repositoryRead RepositoryReadInterface, repositoryWrite RepositoryWriteInterface) *ShortURLService {
 	return &ShortURLService{repositoryRead: repositoryRead, repositoryWrite: repositoryWrite}
@@ -30,7 +33,7 @@ func (service *ShortURLService) Save(url string) (*entity.ShortURLEntity, error)
 	}
 
 	if model != nil {
-		return model, nil
+		return model, EntityExistsError
 	}
 
 	err := service.repositoryWrite.Save(shortURL, url)
