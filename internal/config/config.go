@@ -40,9 +40,6 @@ type DatabaseURLType struct {
 }
 
 func NewConfig(ServerAddress, BaseURL, FileStorage, databaseURL string) *Config {
-	fmt.Println("ServerAddress: " + ServerAddress + " ; BaseURL:" + BaseURL + " ; FileStorage:" + FileStorage + " ; databaseURL:" + databaseURL)
-	fmt.Println("BASE_URL: " + os.Getenv("BASE_URL") + " ; FILE_STORAGE_PATH:" + os.Getenv("FILE_STORAGE_PATH") + " ; DATABASE_DSN:" + os.Getenv("DATABASE_DSN"))
-
 	var URL, port string
 	data := strings.Split(cmp.Or(ServerAddress, os.Getenv("SERVER_ADDRESS"), "localhost:8080"), ":")
 	URL = data[0]

@@ -1,7 +1,10 @@
 package localstorage
 
 import (
+	"context"
 	"github.com/arturturundaev/shorturl/internal/app/entity"
+	"github.com/arturturundaev/shorturl/internal/app/handler/batch"
+	"github.com/arturturundaev/shorturl/internal/app/utils"
 	"github.com/jmoiron/sqlx"
 )
 
@@ -15,12 +18,16 @@ type LocalStorageRow struct {
 	CorrelationID string
 }
 
-func (repo *LocalStorageRepository) Batch(ents *[]entity.ShortURLEntity) error {
-	for _, ent := range *ents {
-		repo.Rows[ent.ShortURL] = LocalStorageRow{ShortURL: ent.ShortURL, URL: ent.URL, CorrelationID: ent.CorrelationID}
+func (repo *LocalStorageRepository) Batch(ents []batch.ButchRequest) ([]entity.ShortURLEntity, error) {
+	var shortURL string
+	var models []entity.ShortURLEntity
+	for _, ent := range ents {
+		shortURL = utils.GenerateShortURL(ent.OriginalURL)
+		repo.Rows[shortURL] = LocalStorageRow{ShortURL: shortURL, URL: ent.OriginalURL, CorrelationID: ent.CorrelationID}
+		models = append(models, entity.ShortURLEntity{ShortURL: shortURL, URL: ent.OriginalURL, CorrelationID: ent.CorrelationID})
 	}
 
-	return nil
+	return models, nil
 }
 
 func NewLocalStorageRepository() *LocalStorageRepository {
@@ -43,23 +50,11 @@ func (repo *LocalStorageRepository) Save(shortURL string, URL string) error {
 	return nil
 }
 
-func (repo *LocalStorageRepository) Ping() error {
+func (repo *LocalStorageRepository) Ping(ctx context.Context) error {
 
 	return nil
 }
 
 func (repo *LocalStorageRepository) GetDB() *sqlx.DB {
-	return nil
-}
-
-func (repo *LocalStorageRepository) BeginTransaction() error {
-	return nil
-}
-
-func (repo *LocalStorageRepository) RollbackTransaction() error {
-	return nil
-}
-
-func (repo *LocalStorageRepository) CommitTransaction() error {
 	return nil
 }

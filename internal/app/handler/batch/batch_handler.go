@@ -8,16 +8,16 @@ import (
 	"net/http"
 )
 
-type ButchURLServiceInterface interface {
-	Batch(request *[]ButchRequest) (*[]entity.ShortURLEntity, error)
+type ServiceURLButcher interface {
+	Batch(request []ButchRequest) ([]entity.ShortURLEntity, error)
 }
 
 type ButchHandler struct {
-	service ButchURLServiceInterface
+	service ServiceURLButcher
 	baseURL string
 }
 
-func NewButchHandler(service ButchURLServiceInterface, baseURL string) *ButchHandler {
+func NewButchHandler(service ServiceURLButcher, baseURL string) *ButchHandler {
 	return &ButchHandler{service: service, baseURL: baseURL}
 }
 
@@ -35,7 +35,7 @@ func (h *ButchHandler) Handle(ctx *gin.Context) {
 		return
 	}
 
-	for _, model := range *models {
+	for _, model := range models {
 		response = append(response, ButchResponse{CorrelationID: model.CorrelationID, ShortURL: fmt.Sprintf("%s/%s", h.baseURL, model.ShortURL)})
 	}
 

@@ -9,16 +9,16 @@ import (
 	"net/http"
 )
 
-type SaveURLInterface interface {
+type URLSaver interface {
 	Save(url string) (*entity.ShortURLEntity, error)
 }
 
 type ShortenHandler struct {
-	service SaveURLInterface
+	service URLSaver
 	baseURL string
 }
 
-func NewShortenHandler(service SaveURLInterface, baseURL string) *ShortenHandler {
+func NewShortenHandler(service URLSaver, baseURL string) *ShortenHandler {
 	return &ShortenHandler{service: service, baseURL: baseURL}
 }
 
@@ -30,7 +30,6 @@ func (h *ShortenHandler) Handle(ctx *gin.Context) {
 		return
 	}
 
-	fmt.Println("JSON ????????????" + dto.URL + "??????????")
 	if dto.URL == "" {
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "Empty URL"})
 		return

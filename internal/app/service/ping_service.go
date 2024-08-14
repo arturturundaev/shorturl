@@ -1,13 +1,15 @@
 package service
 
+import "context"
+
 type PingService struct {
-	repository RepositoryReadInterface
+	repository RepositoryReader
 }
 
-func NewPingService(repository RepositoryReadInterface) *PingService {
+func NewPingService(repository RepositoryReader) *PingService {
 	return &PingService{repository: repository}
 }
 
-func (s *PingService) Ping() error {
-	return s.repository.Ping()
+func (s *PingService) Ping(ctx context.Context) error {
+	return s.repository.Ping(ctx)
 }

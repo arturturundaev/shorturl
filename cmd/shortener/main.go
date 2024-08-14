@@ -50,9 +50,7 @@ func main() {
 	var baseShort config.BaseShortURLType
 	var fileStorage config.FileStorageType
 	var databaseURL config.DatabaseURLType
-	flag.VisitAll(func(f *flag.Flag) {
-		fmt.Printf("%s: %s\n", f.Name, f.Value)
-	})
+
 	flag.Var(&addressStart, "a", "start url and port")
 	flag.Var(&baseShort, "b", "url redirect")
 	flag.Var(&fileStorage, "f", "file storage path")
@@ -66,9 +64,6 @@ func main() {
 		databaseURL.String(),
 	)
 
-	fmt.Println("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-	fmt.Printf("%+v\n", serverConfig)
-	fmt.Println("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
 	router := gin.Default()
 
 	logger, err := addLogger(router)
@@ -79,12 +74,22 @@ func main() {
 	}
 
 	repositoryRead, repositoryWrite := getRepository(serverConfig, logger)
+
+	if repositoryRead == nil {
+		logger.Error("ошибка инициализации репозитория на чтение. Тип репозитория: " + config.StorageTypeDB)
+	}
+
+	if repositoryWrite == nil {
+		logger.Error("ошибка инициализации репозитория на запись. Тип репозитория: " + config.StorageTypeDB)
+	}
+
 	if serverConfig.StorageType == config.StorageTypeDB {
-		absPath, err := filepath.Abs(".")
-		if err != nil {
-			panic("Ooops")
+		absPath, errPathMigration := filepath.Abs(".")
+		if errPathMigration != nil {
+			logger.Error("ошибка определения директории для миграций!")
+		} else {
+			initMigrations("file:////"+absPath+"/internal/app/repository/postgres/migration", repositoryRead.GetDB())
 		}
-		initMigrations("file:////"+absPath+"/internal/app/repository/postgres/migration", repositoryRead.GetDB())
 	}
 
 	shortURLService := service.NewShortURLService(repositoryRead, repositoryWrite)
@@ -105,7 +110,6 @@ func main() {
 	router.POST(SaveFullURL2, handlerSave2.Handle)
 	router.POST(SaveBatch, handlerButch.Handle)
 
-	fmt.Println(">>>>>>> " + serverConfig.AddressStart.String() + " <<<<<<<<<")
 	errServer := http.ListenAndServe(serverConfig.AddressStart.String(), router)
 	if errServer != nil {
 		logger.Fatal(errServer.Error())
@@ -165,7 +169,7 @@ func initMigrations(migrationPath string, DB *sqlx.DB) {
 	}
 }
 
-func getRepository(serverConfig *config.Config, logger *zap.Logger) (service.RepositoryReadInterface, service.RepositoryWriteInterface) {
+func getRepository(serverConfig *config.Config, logger *zap.Logger) (service.RepositoryReader, service.RepositoryWriter) {
 
 	if serverConfig.StorageType == config.StorageTypeDB {
 		repository, errPingRepo := pg.NewPostgresRepository(serverConfig.DatabaseURL.URL)

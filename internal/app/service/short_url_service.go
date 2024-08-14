@@ -4,18 +4,17 @@ import (
 	"errors"
 	"github.com/arturturundaev/shorturl/internal/app/entity"
 	"github.com/arturturundaev/shorturl/internal/app/handler/batch"
-	"github.com/arturturundaev/shorturl/internal/app/repository/postgres"
 	"github.com/arturturundaev/shorturl/internal/app/utils"
 )
 
 type ShortURLService struct {
-	repositoryRead  RepositoryReadInterface
-	repositoryWrite RepositoryWriteInterface
+	repositoryRead  RepositoryReader
+	repositoryWrite RepositoryWriter
 }
 
 var ErrEntityExists = errors.New("entity exists")
 
-func NewShortURLService(repositoryRead RepositoryReadInterface, repositoryWrite RepositoryWriteInterface) *ShortURLService {
+func NewShortURLService(repositoryRead RepositoryReader, repositoryWrite RepositoryWriter) *ShortURLService {
 	return &ShortURLService{repositoryRead: repositoryRead, repositoryWrite: repositoryWrite}
 }
 
@@ -45,36 +44,6 @@ func (service *ShortURLService) Save(url string) (*entity.ShortURLEntity, error)
 	return &entity.ShortURLEntity{ShortURL: shortURL, URL: url}, nil
 }
 
-func (service *ShortURLService) Batch(request *[]batch.ButchRequest) (*[]entity.ShortURLEntity, error) {
-	var models []entity.ShortURLEntity
-	var allModels []entity.ShortURLEntity
-
-	err := service.repositoryWrite.BeginTransaction()
-
-	if err != nil {
-		return nil, err
-	}
-
-	for i, item := range *request {
-		models = append(models, entity.ShortURLEntity{URL: item.OriginalURL, CorrelationID: item.CorrelationID, ShortURL: utils.GenerateShortURL(item.OriginalURL)})
-
-		if len(models) == postgres.ButchSize || len(*request) == i+1 {
-			err = service.repositoryWrite.Batch(&models)
-			if err != nil {
-				err2 := service.repositoryWrite.RollbackTransaction()
-				if err2 != nil {
-					return nil, err2
-				}
-				return nil, err
-			}
-			err = service.repositoryWrite.CommitTransaction()
-			if err != nil {
-				return nil, err
-			}
-			allModels = append(allModels, models...)
-			models = nil
-		}
-	}
-
-	return &allModels, nil
+func (service *ShortURLService) Batch(request []batch.ButchRequest) ([]entity.ShortURLEntity, error) {
+	return service.repositoryWrite.Batch(request)
 }

@@ -1,8 +1,10 @@
 package save
 
 import (
+	"context"
 	"fmt"
 	"github.com/arturturundaev/shorturl/internal/app/entity"
+	"github.com/arturturundaev/shorturl/internal/app/handler/batch"
 	"github.com/arturturundaev/shorturl/internal/app/service"
 	"github.com/gin-gonic/gin"
 	"github.com/jmoiron/sqlx"
@@ -16,7 +18,7 @@ import (
 
 type MockReadRepository struct{}
 
-func (repository *MockReadRepository) Ping() error {
+func (repository *MockReadRepository) Ping(ctx context.Context) error {
 	return nil
 }
 
@@ -26,23 +28,11 @@ func (repository *MockReadRepository) GetDB() *sqlx.DB {
 
 type MockWriteRepository struct{}
 
-func (repository *MockWriteRepository) Batch(i *[]entity.ShortURLEntity) error {
-	return nil
+func (repository *MockWriteRepository) Batch(request []batch.ButchRequest) ([]entity.ShortURLEntity, error) {
+	return nil, nil
 }
 
 func (repository *MockWriteRepository) GetDB() *sqlx.DB {
-	return nil
-}
-
-func (repository *MockWriteRepository) BeginTransaction() error {
-	return nil
-}
-
-func (repository *MockWriteRepository) RollbackTransaction() error {
-	return nil
-}
-
-func (repository *MockWriteRepository) CommitTransaction() error {
 	return nil
 }
 

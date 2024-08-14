@@ -2,9 +2,12 @@ package filestorage
 
 import (
 	"bufio"
+	"context"
 	"encoding/json"
 	"fmt"
 	"github.com/arturturundaev/shorturl/internal/app/entity"
+	"github.com/arturturundaev/shorturl/internal/app/handler/batch"
+	"github.com/arturturundaev/shorturl/internal/app/utils"
 	"github.com/jmoiron/sqlx"
 	"io"
 	"os"
@@ -23,7 +26,7 @@ func (repo *FileStorageWriteRepository) GetDB() *sqlx.DB {
 	return nil
 }
 
-func (repo *FileStorageReadRepository) Ping() error {
+func (repo *FileStorageReadRepository) Ping(ctx context.Context) error {
 	return nil
 }
 
@@ -31,16 +34,19 @@ type FileStorageWriteRepository struct {
 	file *os.File
 }
 
-func (repo *FileStorageWriteRepository) Batch(ents *[]entity.ShortURLEntity) error {
-	for _, ent := range *ents {
-		_, err := repo.file.WriteString(fmt.Sprintf(`{"short_url":"%s","original_url":"%s", "correlation_id":"%s"}`+"\n", ent.ShortURL, ent.URL, ent.CorrelationID))
-
+func (repo *FileStorageWriteRepository) Batch(ents []batch.ButchRequest) ([]entity.ShortURLEntity, error) {
+	var models []entity.ShortURLEntity
+	var shortURL string
+	for _, ent := range ents {
+		shortURL = utils.GenerateShortURL(ent.OriginalURL)
+		_, err := repo.file.WriteString(fmt.Sprintf(`{"short_url":"%s","original_url":"%s", "correlation_id":"%s"}`+"\n", shortURL, ent.OriginalURL, ent.CorrelationID))
 		if err != nil {
-			return err
+			return nil, err
 		}
+		models = append(models, entity.ShortURLEntity{ShortURL: shortURL, URL: ent.OriginalURL, CorrelationID: ent.CorrelationID})
 	}
 
-	return nil
+	return models, nil
 }
 
 func NewFileStorageRepositoryWrite(path string) (*FileStorageWriteRepository, error) {
@@ -94,17 +100,5 @@ func (repo *FileStorageWriteRepository) Save(shortURL string, URL string) error 
 		return err
 	}
 
-	return nil
-}
-
-func (repo *FileStorageWriteRepository) BeginTransaction() error {
-	return nil
-}
-
-func (repo *FileStorageWriteRepository) RollbackTransaction() error {
-	return nil
-}
-
-func (repo *FileStorageWriteRepository) CommitTransaction() error {
 	return nil
 }

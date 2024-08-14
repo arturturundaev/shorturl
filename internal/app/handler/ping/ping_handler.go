@@ -1,9 +1,11 @@
 package ping
 
 import (
+	"context"
 	"github.com/arturturundaev/shorturl/internal/app/service"
 	"github.com/gin-gonic/gin"
 	"net/http"
+	"time"
 )
 
 type PingHandler struct {
@@ -15,7 +17,12 @@ func NewPingHandler(service *service.PingService) *PingHandler {
 }
 
 func (h *PingHandler) Handle(ctx *gin.Context) {
-	err := h.service.Ping()
+
+	contxt, cancel := context.WithCancel(ctx)
+	defer cancel()
+	time.AfterFunc(1500*time.Millisecond, cancel)
+
+	err := h.service.Ping(contxt)
 
 	if err != nil {
 		ctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})

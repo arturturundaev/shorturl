@@ -1,5 +1,5 @@
 package service
 
-type PingRepository interface {
+type RepositoryPinger interface {
 	Ping() error
 }
