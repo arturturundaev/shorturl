@@ -9,7 +9,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx"
 	"strings"
-	"time"
 )
 
 const TableName = "url"
@@ -72,8 +71,6 @@ func (repo *PostgresRepository) GetDB() *sqlx.DB {
 }
 
 func (repo *PostgresRepository) Batch(request []batch.ButchRequest) ([]entity.ShortURLEntity, error) {
-	time.Sleep(5 * time.Second)
-
 	var models []entity.ShortURLEntity
 	var allModels []entity.ShortURLEntity
 
@@ -112,13 +109,14 @@ func (repo *PostgresRepository) Batch(request []batch.ButchRequest) ([]entity.Sh
 				}
 				return nil, err
 			}
-			err = tx.Commit()
-			if err != nil {
-				return nil, err
-			}
 			allModels = append(allModels, models...)
 			models = nil
 		}
+	}
+
+	err = tx.Commit()
+	if err != nil {
+		return nil, err
 	}
 
 	return allModels, nil
