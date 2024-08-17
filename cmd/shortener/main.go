@@ -4,27 +4,40 @@ import (
 	"bytes"
 	"flag"
 	"fmt"
+	"github.com/arturturundaev/shorturl/internal/app/handler/batch"
 	"github.com/arturturundaev/shorturl/internal/app/handler/find"
+	"github.com/arturturundaev/shorturl/internal/app/handler/ping"
 	"github.com/arturturundaev/shorturl/internal/app/handler/save"
 	"github.com/arturturundaev/shorturl/internal/app/handler/shorten"
 	"github.com/arturturundaev/shorturl/internal/app/repository/filestorage"
+	"github.com/arturturundaev/shorturl/internal/app/repository/localstorage"
+	pg "github.com/arturturundaev/shorturl/internal/app/repository/postgres"
 	"github.com/arturturundaev/shorturl/internal/app/service"
 	"github.com/arturturundaev/shorturl/internal/config"
 	"github.com/gin-contrib/gzip"
 	ginzap "github.com/gin-contrib/zap"
 	"github.com/gin-gonic/gin"
+	"github.com/golang-migrate/migrate/v4"
+	_ "github.com/golang-migrate/migrate/v4/database/pgx/v5"
+	"github.com/golang-migrate/migrate/v4/database/postgres"
+	_ "github.com/golang-migrate/migrate/v4/source/file"
+	"github.com/jmoiron/sqlx"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	"io"
 	"log"
 	"net/http"
 	"os"
+	"path/filepath"
 	"time"
 )
 
+// -d=postgres://postgres:postgres@localhost:5432/shorturl?sslmode=disable
 const SaveFullURL = `/`
 const GetFullURL = `/:short`
 const SaveFullURL2 = `/api/shorten`
+const SaveBatch = `/api/shorten/batch`
+const Ping = `/ping`
 
 func main() {
 	defer func() {
@@ -33,12 +46,23 @@ func main() {
 		}
 	}()
 
-	serverConfig := config.NewConfig(os.Getenv("SERVER_ADDRESS"), os.Getenv("BASE_URL"), os.Getenv("FILE_STORAGE_PATH"))
+	var addressStart config.AddressStartType
+	var baseShort config.BaseShortURLType
+	var fileStorage config.FileStorageType
+	var databaseURL config.DatabaseURLType
 
-	flag.Var(&serverConfig.AddressStart, "a", "start url and port")
-	flag.Var(&serverConfig.BaseShort, "b", "url redirect")
-	flag.Var(&serverConfig.FileStorage, "f", "file storage path")
+	flag.Var(&addressStart, "a", "start url and port")
+	flag.Var(&baseShort, "b", "url redirect")
+	flag.Var(&fileStorage, "f", "file storage path")
+	flag.Var(&databaseURL, "d", "database storage path")
 	flag.Parse()
+
+	serverConfig := config.NewConfig(
+		addressStart.String(),
+		baseShort.String(),
+		fileStorage.String(),
+		databaseURL.String(),
+	)
 
 	router := gin.Default()
 
@@ -49,28 +73,43 @@ func main() {
 		os.Exit(5)
 	}
 
-	repositoryWrite, errStorageWrite := filestorage.NewFileStorageRepositoryWrite(serverConfig.FileStorage.Path)
-	if errStorageWrite != nil {
-		logger.Fatal(errStorageWrite.Error())
+	repositoryRead, repositoryWrite := getRepository(serverConfig, logger)
+
+	if repositoryRead == nil {
+		logger.Error("ошибка инициализации репозитория на чтение. Тип репозитория: " + config.StorageTypeDB)
 	}
 
-	repositoryRead, errStorageRead := filestorage.NewFileStorageRepositoryRead(serverConfig.FileStorage.Path)
-	if errStorageRead != nil {
-		logger.Fatal(errStorageRead.Error())
+	if repositoryWrite == nil {
+		logger.Error("ошибка инициализации репозитория на запись. Тип репозитория: " + config.StorageTypeDB)
+	}
+
+	if serverConfig.StorageType == config.StorageTypeDB {
+		absPath, errPathMigration := filepath.Abs(".")
+		if errPathMigration != nil {
+			logger.Error("ошибка определения директории для миграций!")
+		} else {
+			initMigrations("file:////"+absPath+"/internal/app/repository/postgres/migration", repositoryRead.GetDB())
+		}
 	}
 
 	shortURLService := service.NewShortURLService(repositoryRead, repositoryWrite)
+
+	pingService := service.NewPingService(repositoryRead)
+
 	handlerFind := find.NewFindHandler(shortURLService)
 	handlerSave := save.NewSaveHandler(shortURLService, serverConfig.BaseShort.URL)
 	handlerSave2 := shorten.NewShortenHandler(shortURLService, serverConfig.BaseShort.URL)
+	handlerPing := ping.NewPingHandler(pingService)
+	handlerButch := batch.NewButchHandler(shortURLService, serverConfig.BaseShort.URL)
 
 	router.Use(gzip.Gzip(gzip.DefaultCompression, gzip.WithDecompressFn(gzip.DefaultDecompressHandle)))
 
+	router.GET(Ping, handlerPing.Handle)
 	router.POST(SaveFullURL, handlerSave.Handle)
 	router.GET(GetFullURL, handlerFind.Handle)
 	router.POST(SaveFullURL2, handlerSave2.Handle)
+	router.POST(SaveBatch, handlerButch.Handle)
 
-	fmt.Println(">>>>>>> " + serverConfig.AddressStart.String() + " <<<<<<<<<")
 	errServer := http.ListenAndServe(serverConfig.AddressStart.String(), router)
 	if errServer != nil {
 		logger.Fatal(errServer.Error())
@@ -109,4 +148,57 @@ func addLogger(r *gin.Engine) (*zap.Logger, error) {
 	}))
 
 	return logger, nil
+}
+
+func initMigrations(migrationPath string, DB *sqlx.DB) {
+	driver, err := postgres.WithInstance(DB.DB, &postgres.Config{})
+	if err != nil {
+		log.Fatal(err)
+	}
+	m, err := migrate.NewWithDatabaseInstance(
+		migrationPath,
+		"postgres", driver)
+
+	if err != nil {
+		log.Fatal(err)
+	} else {
+		errMigrate := m.Up()
+		if errMigrate != nil && errMigrate.Error() != "no change" {
+			log.Fatal(errMigrate)
+		}
+	}
+}
+
+func getRepository(serverConfig *config.Config, logger *zap.Logger) (service.RepositoryReader, service.RepositoryWriter) {
+
+	if serverConfig.StorageType == config.StorageTypeDB {
+		repository, errPingRepo := pg.NewPostgresRepository(serverConfig.DatabaseURL.URL)
+		if errPingRepo != nil {
+			logger.Error(errPingRepo.Error())
+		}
+
+		return repository, repository
+	}
+
+	if serverConfig.StorageType == config.StorageTypeFile {
+		repositoryWrite, errStorageWrite := filestorage.NewFileStorageRepositoryWrite(serverConfig.FileStorage.Path)
+		if errStorageWrite != nil {
+			logger.Error(errStorageWrite.Error())
+		}
+
+		repositoryRead, errStorageRead := filestorage.NewFileStorageRepositoryRead(serverConfig.FileStorage.Path)
+		if errStorageRead != nil {
+			logger.Error(errStorageRead.Error())
+		}
+
+		return repositoryRead, repositoryWrite
+	}
+
+	if serverConfig.StorageType == config.StorageTypeMemory {
+		repositoryWrite := localstorage.NewLocalStorageRepository()
+
+		return repositoryWrite, repositoryWrite
+	}
+
+	return nil, nil
 }

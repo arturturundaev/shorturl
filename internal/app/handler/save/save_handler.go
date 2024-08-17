@@ -1,6 +1,7 @@
 package save
 
 import (
+	"errors"
 	"github.com/arturturundaev/shorturl/internal/app/service"
 	"github.com/gin-gonic/gin"
 	"io"
@@ -26,6 +27,12 @@ func (hndlr *SaveHandler) Handle(ctx *gin.Context) {
 	}
 
 	data, err := hndlr.service.Save(string(b))
+
+	if errors.Is(err, service.ErrEntityExists) {
+		ctx.Header("Content-type", "text/plain")
+		ctx.String(http.StatusConflict, "%s/%s", hndlr.baseURL, data.ShortURL)
+		return
+	}
 
 	if err != nil {
 		ctx.String(http.StatusBadRequest, "%s", err.Error())

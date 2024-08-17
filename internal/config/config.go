@@ -1,8 +1,11 @@
 package config
 
+//  -a=http://localhost:8081/api/shorten -b=http://localhost:8081/api/shorten
 import (
+	"cmp"
 	"fmt"
 	"net/netip"
+	"os"
 	"strconv"
 	"strings"
 )
@@ -11,7 +14,13 @@ type Config struct {
 	AddressStart AddressStartType
 	BaseShort    BaseShortURLType
 	FileStorage  FileStorageType
+	DatabaseURL  DatabaseURLType
+	StorageType  string
 }
+
+const StorageTypeMemory = "Memory"
+const StorageTypeFile = "File"
+const StorageTypeDB = "DB"
 
 type FileStorageType struct {
 	Path string
@@ -26,31 +35,36 @@ type BaseShortURLType struct {
 	URL string
 }
 
-func NewConfig(ServerAddress, BaseURL, FileStorage string) *Config {
-	URL := "localhost"
-	port := "8080"
-	data := strings.Split(ServerAddress, ":")
-	if len(data) > 1 {
-		if data[0] != "" {
-			URL = data[0]
-		}
-		if data[1] != "" {
-			port = data[1]
-		}
+type DatabaseURLType struct {
+	URL string
+}
+
+func NewConfig(ServerAddress, BaseURL, FileStorage, databaseURL string) *Config {
+	var URL, port string
+	data := strings.Split(cmp.Or(ServerAddress, os.Getenv("SERVER_ADDRESS"), "localhost:8080"), ":")
+	URL = data[0]
+	port = data[1]
+
+	BaseURLFinal := cmp.Or(BaseURL, os.Getenv("BASE_URL"), "http://localhost:8080")
+	FileStorageFinal := cmp.Or(FileStorage, os.Getenv("FILE_STORAGE_PATH"), "/tmp/db.txt")
+	databaseURLFinal := cmp.Or(databaseURL, os.Getenv("DATABASE_DSN"), "postgres://postgres:postgres@localhost:5432/shorturl?sslmode=disable")
+
+	var storageType = StorageTypeMemory
+
+	if FileStorage != "" || os.Getenv("FILE_STORAGE_PATH") != "" {
+		storageType = StorageTypeFile
 	}
 
-	if BaseURL == "" {
-		BaseURL = "http://localhost:8080"
-	}
-
-	if FileStorage == "" {
-		FileStorage = "/tmp/db.txt"
+	if databaseURL != "" || os.Getenv("DATABASE_DSN") != "" {
+		storageType = StorageTypeDB
 	}
 
 	return &Config{
 		AddressStart: AddressStartType{URL: URL, Port: port},
-		BaseShort:    BaseShortURLType{URL: BaseURL},
-		FileStorage:  FileStorageType{Path: FileStorage},
+		BaseShort:    BaseShortURLType{URL: BaseURLFinal},
+		FileStorage:  FileStorageType{Path: FileStorageFinal},
+		DatabaseURL:  DatabaseURLType{URL: databaseURLFinal},
+		StorageType:  storageType,
 	}
 }
 
@@ -58,7 +72,11 @@ func (d *AddressStartType) String() string {
 	arr := make([]string, 0)
 	arr = append(arr, d.URL, d.Port)
 
-	return fmt.Sprint(strings.Join(arr, ":"))
+	if arr[0] != "" && arr[1] != "" {
+		return fmt.Sprint(strings.Join(arr, ":"))
+	}
+
+	return ""
 }
 
 func (d *AddressStartType) Set(flagValue string) error {
@@ -108,6 +126,16 @@ func (d *FileStorageType) String() string {
 
 func (d *FileStorageType) Set(flagValue string) error {
 	d.Path = flagValue
+
+	return nil
+}
+
+func (d *DatabaseURLType) String() string {
+	return d.URL
+}
+
+func (d *DatabaseURLType) Set(flagValue string) error {
+	d.URL = flagValue
 
 	return nil
 }

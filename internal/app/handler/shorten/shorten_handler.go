@@ -1,23 +1,24 @@
 package shorten
 
 import (
-	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/arturturundaev/shorturl/internal/app/entity"
+	"github.com/arturturundaev/shorturl/internal/app/service"
 	"github.com/gin-gonic/gin"
 	"net/http"
 )
 
-type SaveURLInterface interface {
+type URLSaver interface {
 	Save(url string) (*entity.ShortURLEntity, error)
 }
 
 type ShortenHandler struct {
-	service SaveURLInterface
+	service URLSaver
 	baseURL string
 }
 
-func NewShortenHandler(service SaveURLInterface, baseURL string) *ShortenHandler {
+func NewShortenHandler(service URLSaver, baseURL string) *ShortenHandler {
 	return &ShortenHandler{service: service, baseURL: baseURL}
 }
 
@@ -36,21 +37,18 @@ func (h *ShortenHandler) Handle(ctx *gin.Context) {
 
 	data, errRepository := h.service.Save(dto.URL)
 
-	if errRepository != nil {
+	if errRepository != nil && !errors.Is(errRepository, service.ErrEntityExists) {
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": errRepository.Error()})
 		return
 	}
 
 	response := ShortenResponse{URL: fmt.Sprintf("%s/%s", h.baseURL, data.ShortURL)}
-	bt, errMarshal := json.Marshal(response)
 
-	if errMarshal != nil {
-		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": errMarshal.Error()})
-		return
+	status := http.StatusCreated
+
+	if errors.Is(errRepository, service.ErrEntityExists) {
+		status = http.StatusConflict
 	}
 
-	ctx.Writer.Header().Set("Accept-Encoding", "gzip")
-	ctx.Writer.Header().Set("Content-Encoding", "gzip")
-	ctx.Writer.Header().Set("Content-Type", "application/json")
-	ctx.Data(http.StatusCreated, "gzip", bt)
+	ctx.JSON(status, response)
 }

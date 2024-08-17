@@ -1,16 +1,20 @@
 package service
 
 import (
+	"errors"
 	"github.com/arturturundaev/shorturl/internal/app/entity"
+	"github.com/arturturundaev/shorturl/internal/app/handler/batch"
 	"github.com/arturturundaev/shorturl/internal/app/utils"
 )
 
 type ShortURLService struct {
-	repositoryRead  RepositoryReadInterface
-	repositoryWrite RepositoryWriteInterface
+	repositoryRead  RepositoryReader
+	repositoryWrite RepositoryWriter
 }
 
-func NewShortURLService(repositoryRead RepositoryReadInterface, repositoryWrite RepositoryWriteInterface) *ShortURLService {
+var ErrEntityExists = errors.New("entity exists")
+
+func NewShortURLService(repositoryRead RepositoryReader, repositoryWrite RepositoryWriter) *ShortURLService {
 	return &ShortURLService{repositoryRead: repositoryRead, repositoryWrite: repositoryWrite}
 }
 
@@ -28,7 +32,7 @@ func (service *ShortURLService) Save(url string) (*entity.ShortURLEntity, error)
 	}
 
 	if model != nil {
-		return model, nil
+		return model, ErrEntityExists
 	}
 
 	err := service.repositoryWrite.Save(shortURL, url)
@@ -38,4 +42,8 @@ func (service *ShortURLService) Save(url string) (*entity.ShortURLEntity, error)
 	}
 
 	return &entity.ShortURLEntity{ShortURL: shortURL, URL: url}, nil
+}
+
+func (service *ShortURLService) Batch(request []batch.ButchRequest) ([]entity.ShortURLEntity, error) {
+	return service.repositoryWrite.Batch(request)
 }

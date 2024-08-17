@@ -1,10 +1,13 @@
 package save
 
 import (
+	"context"
 	"fmt"
 	"github.com/arturturundaev/shorturl/internal/app/entity"
+	"github.com/arturturundaev/shorturl/internal/app/handler/batch"
 	"github.com/arturturundaev/shorturl/internal/app/service"
 	"github.com/gin-gonic/gin"
+	"github.com/jmoiron/sqlx"
 	"github.com/stretchr/testify/assert"
 	"io"
 	"net/http"
@@ -14,7 +17,24 @@ import (
 )
 
 type MockReadRepository struct{}
+
+func (repository *MockReadRepository) Ping(ctx context.Context) error {
+	return nil
+}
+
+func (repository *MockReadRepository) GetDB() *sqlx.DB {
+	return nil
+}
+
 type MockWriteRepository struct{}
+
+func (repository *MockWriteRepository) Batch(request []batch.ButchRequest) ([]entity.ShortURLEntity, error) {
+	return nil, nil
+}
+
+func (repository *MockWriteRepository) GetDB() *sqlx.DB {
+	return nil
+}
 
 func (repository *MockReadRepository) FindByShortURL(shortURL string) (*entity.ShortURLEntity, error) {
 
