@@ -54,10 +54,10 @@ func (repo *PostgresRepository) FindByShortURL(shortURL string) (*entity.ShortUR
 	return &ent[0], nil
 }
 
-func (repo *PostgresRepository) Save(shortURL string, URL string) error {
+func (repo *PostgresRepository) Save(shortURL, URL, addedUserId string) error {
 
 	id := uuid.New().String()
-	_, err := repo.DB.Exec(fmt.Sprintf(`INSERT into %s values ($1, $2, $3)`, TableName), id, URL, shortURL)
+	_, err := repo.DB.Exec(fmt.Sprintf(`INSERT into %s (id, url_full, url_short, added_user_id) values ($1, $2, $3, $4)`, TableName), id, URL, shortURL, addedUserId)
 
 	if err != nil {
 		return err
@@ -120,4 +120,18 @@ func (repo *PostgresRepository) Batch(request []batch.ButchRequest) ([]entity.Sh
 	}
 
 	return allModels, nil
+}
+
+func (repo *PostgresRepository) GetUrlsByUserId(userId string) ([]entity.ShortURLEntity, error) {
+	ent := []entity.ShortURLEntity{}
+
+	err := repo.DB.Select(&ent,
+		fmt.Sprintf("select url_full as original_url, url_short from %s where added_user_id = $1", TableName),
+		userId)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return ent, nil
 }

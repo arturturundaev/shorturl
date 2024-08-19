@@ -26,7 +26,7 @@ func (hndlr *SaveHandler) Handle(ctx *gin.Context) {
 		return
 	}
 
-	data, err := hndlr.service.Save(string(b))
+	data, err := hndlr.service.Save(ctx, string(b))
 
 	if errors.Is(err, service.ErrEntityExists) {
 		ctx.Header("Content-type", "text/plain")

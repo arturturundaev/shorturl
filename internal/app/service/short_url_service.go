@@ -2,9 +2,12 @@ package service
 
 import (
 	"errors"
+	"fmt"
 	"github.com/arturturundaev/shorturl/internal/app/entity"
 	"github.com/arturturundaev/shorturl/internal/app/handler/batch"
+	"github.com/arturturundaev/shorturl/internal/app/middleware"
 	"github.com/arturturundaev/shorturl/internal/app/utils"
+	"github.com/gin-gonic/gin"
 )
 
 type ShortURLService struct {
@@ -22,7 +25,13 @@ func (service *ShortURLService) FindByShortURL(shortURL string) (*entity.ShortUR
 	return service.repositoryRead.FindByShortURL(shortURL)
 }
 
-func (service *ShortURLService) Save(url string) (*entity.ShortURLEntity, error) {
+func (service *ShortURLService) Save(ctx *gin.Context, url string) (*entity.ShortURLEntity, error) {
+	addedUserId, exists := ctx.Get(middleware.USER_ID_PROPERTY)
+
+	if !exists {
+		return nil, fmt.Errorf("user id is required")
+	}
+
 	shortURL := utils.GenerateShortURL(url)
 
 	model, errRepository := service.repositoryRead.FindByShortURL(shortURL)
@@ -35,7 +44,7 @@ func (service *ShortURLService) Save(url string) (*entity.ShortURLEntity, error)
 		return model, ErrEntityExists
 	}
 
-	err := service.repositoryWrite.Save(shortURL, url)
+	err := service.repositoryWrite.Save(shortURL, url, addedUserId.(string))
 
 	if err != nil {
 		return nil, err
@@ -46,4 +55,8 @@ func (service *ShortURLService) Save(url string) (*entity.ShortURLEntity, error)
 
 func (service *ShortURLService) Batch(request []batch.ButchRequest) ([]entity.ShortURLEntity, error) {
 	return service.repositoryWrite.Batch(request)
+}
+
+func (service *ShortURLService) GetUrlsByUserId(userId string) ([]entity.ShortURLEntity, error) {
+	return service.repositoryRead.GetUrlsByUserId(userId)
 }

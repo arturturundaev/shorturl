@@ -18,6 +18,12 @@ type FileStorageReadRepository struct {
 	file *os.File
 }
 
+func (repo *FileStorageReadRepository) GetUrlsByUserId(userId string) ([]entity.ShortURLEntity, error) {
+	var models []entity.ShortURLEntity
+
+	return models, nil
+}
+
 func (repo *FileStorageReadRepository) GetDB() *sqlx.DB {
 	return nil
 }
@@ -93,8 +99,8 @@ func (repo *FileStorageReadRepository) FindByShortURL(shortURL string) (*entity.
 	return nil, nil
 }
 
-func (repo *FileStorageWriteRepository) Save(shortURL string, URL string) error {
-	_, err := repo.file.WriteString(fmt.Sprintf(`{"short_url":"%s","original_url":"%s"}`+"\n", shortURL, URL))
+func (repo *FileStorageWriteRepository) Save(shortURL, URL, addedUserId string) error {
+	_, err := repo.file.WriteString(fmt.Sprintf(`{"short_url":"%s","original_url":"%s", "added_user_id":"%s"}`+"\n", shortURL, URL, addedUserId))
 
 	if err != nil {
 		return err

@@ -10,7 +10,7 @@ import (
 )
 
 type URLSaver interface {
-	Save(url string) (*entity.ShortURLEntity, error)
+	Save(ctx *gin.Context, url string) (*entity.ShortURLEntity, error)
 }
 
 type ShortenHandler struct {
@@ -35,7 +35,7 @@ func (h *ShortenHandler) Handle(ctx *gin.Context) {
 		return
 	}
 
-	data, errRepository := h.service.Save(dto.URL)
+	data, errRepository := h.service.Save(ctx, dto.URL)
 
 	if errRepository != nil && !errors.Is(errRepository, service.ErrEntityExists) {
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": errRepository.Error()})
