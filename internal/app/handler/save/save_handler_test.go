@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/arturturundaev/shorturl/internal/app/entity"
 	"github.com/arturturundaev/shorturl/internal/app/handler/batch"
+	"github.com/arturturundaev/shorturl/internal/app/middleware"
 	"github.com/arturturundaev/shorturl/internal/app/service"
 	"github.com/gin-gonic/gin"
 	"github.com/jmoiron/sqlx"
@@ -102,7 +103,7 @@ func TestSaveHandler_Handle(t *testing.T) {
 			response := httptest.NewRecorder()
 
 			context, _ := gin.CreateTestContext(response)
-			context.AddParam("short", strings.TrimLeft(tt.request, "/"))
+			context.Set(middleware.UserIDProperty, "1")
 			context.Request = request
 
 			handler.Handle(context)
