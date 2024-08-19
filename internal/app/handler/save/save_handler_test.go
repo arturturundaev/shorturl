@@ -18,6 +18,11 @@ import (
 
 type MockReadRepository struct{}
 
+func (repository *MockReadRepository) GetUrlsByUserID(userID string) ([]entity.ShortURLEntity, error) {
+	//TODO implement me
+	panic("implement me")
+}
+
 func (repository *MockReadRepository) Ping(ctx context.Context) error {
 	return nil
 }
@@ -41,7 +46,7 @@ func (repository *MockReadRepository) FindByShortURL(shortURL string) (*entity.S
 	return nil, nil
 }
 
-func (repository *MockWriteRepository) Save(shortURL string, url string) error {
+func (repository *MockWriteRepository) Save(shortURL string, url string, addedUserID string) error {
 
 	if url == "repositoryError" {
 		return fmt.Errorf("Error on insert row")

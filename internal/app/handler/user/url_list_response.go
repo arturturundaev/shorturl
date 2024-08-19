@@ -2,11 +2,11 @@ package user
 
 import "fmt"
 
-type UrlListItemResponse struct {
+type URLListItemResponse struct {
 	ShortURL  string `json:"short_url"`
 	OriginURL string `json:"original_url"`
 }
 
-func NewUrlResponse(baseURL, shortURL, originURL string) UrlListItemResponse {
-	return UrlListItemResponse{OriginURL: originURL, ShortURL: fmt.Sprintf("%s/%s", baseURL, shortURL)}
+func NewURLResponse(baseURL, shortURL, originURL string) URLListItemResponse {
+	return URLListItemResponse{OriginURL: originURL, ShortURL: fmt.Sprintf("%s/%s", baseURL, shortURL)}
 }

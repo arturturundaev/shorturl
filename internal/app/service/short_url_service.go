@@ -26,7 +26,7 @@ func (service *ShortURLService) FindByShortURL(shortURL string) (*entity.ShortUR
 }
 
 func (service *ShortURLService) Save(ctx *gin.Context, url string) (*entity.ShortURLEntity, error) {
-	addedUserId, exists := ctx.Get(middleware.USER_ID_PROPERTY)
+	addedUserID, exists := ctx.Get(middleware.UserIDProperty)
 
 	if !exists {
 		return nil, fmt.Errorf("user id is required")
@@ -44,7 +44,7 @@ func (service *ShortURLService) Save(ctx *gin.Context, url string) (*entity.Shor
 		return model, ErrEntityExists
 	}
 
-	err := service.repositoryWrite.Save(shortURL, url, addedUserId.(string))
+	err := service.repositoryWrite.Save(shortURL, url, addedUserID.(string))
 
 	if err != nil {
 		return nil, err
@@ -57,6 +57,6 @@ func (service *ShortURLService) Batch(request []batch.ButchRequest) ([]entity.Sh
 	return service.repositoryWrite.Batch(request)
 }
 
-func (service *ShortURLService) GetUrlsByUserId(userId string) ([]entity.ShortURLEntity, error) {
-	return service.repositoryRead.GetUrlsByUserId(userId)
+func (service *ShortURLService) GetUrlsByUserID(userID string) ([]entity.ShortURLEntity, error) {
+	return service.repositoryRead.GetUrlsByUserID(userID)
 }

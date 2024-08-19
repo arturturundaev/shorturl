@@ -19,9 +19,9 @@ type Claims struct {
 	UserID string
 }
 
-const TOKEN_EXP = 3 * time.Hour
-const SECRET_KEY = "0N#6Ke|+OR:(`G;"
-const USER_ID_PROPERTY = "UserId"
+const TokenExp = 3 * time.Hour
+const SecretKey = "0N#6Ke|+OR:(`G;"
+const UserIDProperty = "UserId"
 
 func NewJWTValidator(domain string) *JWTValidator {
 	return &JWTValidator{domain: domain}
@@ -49,10 +49,10 @@ func (JWTValidator *JWTValidator) Handle(ctx *gin.Context) {
 	claims := &Claims{}
 	// парсим из строки токена tokenString в структуру claims
 	jwt.ParseWithClaims(token, claims, func(t *jwt.Token) (interface{}, error) {
-		return []byte(SECRET_KEY), nil
+		return []byte(SecretKey), nil
 	})
 
-	ctx.Set(USER_ID_PROPERTY, claims.UserID)
+	ctx.Set(UserIDProperty, claims.UserID)
 	ctx.Header("Authorization", token)
 
 	ctx.SetCookie("Authorization", token, 100000, "*", JWTValidator.domain, false, true)
@@ -66,40 +66,40 @@ func (JWTValidator *JWTValidator) ValidateJWT(ctx *gin.Context, tokenString stri
 			if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {
 				return nil, fmt.Errorf("unexpected signing method: %v", t.Header["alg"])
 			}
-			return []byte(SECRET_KEY), nil
+			return []byte(SecretKey), nil
 		})
 	if err != nil {
 		return err
 	}
 
 	if !token.Valid {
-		return fmt.Errorf("Token is not valid")
+		return fmt.Errorf("token is not valid")
 	}
 
-	ctx.Set(USER_ID_PROPERTY, claims.UserID)
+	ctx.Set(UserIDProperty, claims.UserID)
 
 	return nil
 }
 
 func (JWTValidator *JWTValidator) BuildJWTString(ctx *gin.Context) (string, error) {
-	userId := JWTValidator.getNewUserId()
+	userID := JWTValidator.getNewUserID()
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, Claims{
 		RegisteredClaims: jwt.RegisteredClaims{
-			ExpiresAt: jwt.NewNumericDate(time.Now().Add(TOKEN_EXP)),
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(TokenExp)),
 		},
-		UserID: userId,
+		UserID: userID,
 	})
 
-	tokenString, err := token.SignedString([]byte(SECRET_KEY))
+	tokenString, err := token.SignedString([]byte(SecretKey))
 	if err != nil {
 		return "", err
 	}
 
-	ctx.Set(USER_ID_PROPERTY, userId)
+	ctx.Set(UserIDProperty, userID)
 
 	return tokenString, nil
 }
 
-func (JWTValidator *JWTValidator) getNewUserId() string {
+func (JWTValidator *JWTValidator) getNewUserID() string {
 	return uuid.New().String()
 }

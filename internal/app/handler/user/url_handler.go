@@ -8,7 +8,7 @@ import (
 )
 
 type URLServiceFinder interface {
-	GetUrlsByUserId(userId string) ([]entity.ShortURLEntity, error)
+	GetUrlsByUserID(userID string) ([]entity.ShortURLEntity, error)
 }
 
 type URLFindByUserHandler struct {
@@ -21,9 +21,9 @@ func NewURLFindByUserHandler(service URLServiceFinder, baseURL string) *URLFindB
 }
 
 func (handler *URLFindByUserHandler) Handle(ctx *gin.Context) {
-	addedUserId, _ := ctx.Get(middleware.USER_ID_PROPERTY)
+	addedUserID, _ := ctx.Get(middleware.UserIDProperty)
 
-	data, err := handler.service.GetUrlsByUserId(addedUserId.(string))
+	data, err := handler.service.GetUrlsByUserID(addedUserID.(string))
 
 	if err != nil {
 		ctx.String(http.StatusBadRequest, "%s", err.Error())
@@ -36,10 +36,10 @@ func (handler *URLFindByUserHandler) Handle(ctx *gin.Context) {
 		return
 	}
 
-	var response []UrlListItemResponse
+	var response []URLListItemResponse
 
 	for _, url := range data {
-		response = append(response, NewUrlResponse(handler.baseURL, url.ShortURL, url.URL))
+		response = append(response, NewURLResponse(handler.baseURL, url.ShortURL, url.URL))
 	}
 	ctx.JSON(http.StatusOK, response)
 }
