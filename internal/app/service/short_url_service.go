@@ -66,7 +66,6 @@ func (service *ShortURLService) GetUrlsByUserID(userID string) ([]entity.ShortUR
 }
 
 func (service *ShortURLService) Delete(URLList []string, addedUserId string) {
-	service.logger.Info("Пытаемся удалить url: " + strings.Join(URLList, ",") + " addedUserId: " + addedUserId)
 	var chunk []string
 	var chunks [][]string
 	i := 0

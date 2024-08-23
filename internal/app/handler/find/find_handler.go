@@ -27,6 +27,7 @@ func (hndlr *FindHandler) Handle(ctx *gin.Context) {
 	if data.IsDeleted == true {
 		ctx.Status(http.StatusGone)
 		ctx.Abort()
+		return
 	}
 
 	ctx.Redirect(http.StatusTemporaryRedirect, data.URL)
