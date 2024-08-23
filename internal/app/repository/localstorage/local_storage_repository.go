@@ -64,3 +64,7 @@ func (repo *LocalStorageRepository) Ping(ctx context.Context) error {
 func (repo *LocalStorageRepository) GetDB() *sqlx.DB {
 	return nil
 }
+
+func (repo *LocalStorageRepository) Delete(shortURLs []string, addedUserID string) error {
+	return nil
+}

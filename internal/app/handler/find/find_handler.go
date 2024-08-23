@@ -24,5 +24,10 @@ func (hndlr *FindHandler) Handle(ctx *gin.Context) {
 		return
 	}
 
+	if data.IsDeleted == true {
+		ctx.Status(http.StatusGone)
+		ctx.Abort()
+	}
+
 	ctx.Redirect(http.StatusTemporaryRedirect, data.URL)
 }

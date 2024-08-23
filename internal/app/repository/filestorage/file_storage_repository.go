@@ -18,6 +18,11 @@ type FileStorageReadRepository struct {
 	file *os.File
 }
 
+func (repo *FileStorageReadRepository) Find(shortURLs []string, addedUserID string) ([]entity.ShortURLEntity, error) {
+	//TODO implement me
+	panic("implement me")
+}
+
 func (repo *FileStorageReadRepository) GetUrlsByUserID(userID string) ([]entity.ShortURLEntity, error) {
 	var models []entity.ShortURLEntity
 
@@ -106,5 +111,9 @@ func (repo *FileStorageWriteRepository) Save(shortURL, URL, addedUserID string) 
 		return err
 	}
 
+	return nil
+}
+
+func (repo *FileStorageWriteRepository) Delete(shortURLs []string, addedUserID string) error {
 	return nil
 }

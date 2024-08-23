@@ -5,6 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"github.com/arturturundaev/shorturl/internal/app/handler/batch"
+	delete2 "github.com/arturturundaev/shorturl/internal/app/handler/delete"
 	"github.com/arturturundaev/shorturl/internal/app/handler/find"
 	"github.com/arturturundaev/shorturl/internal/app/handler/ping"
 	"github.com/arturturundaev/shorturl/internal/app/handler/save"
@@ -41,6 +42,7 @@ const SaveFullURL2 = `/api/shorten`
 const SaveBatch = `/api/shorten/batch`
 const Ping = `/ping`
 const URLByUser = `/api/user/urls`
+const DeleteByUrls = `/api/user/urls`
 
 func main() {
 	defer func() {
@@ -107,6 +109,7 @@ func main() {
 	handlerPing := ping.NewPingHandler(pingService)
 	handlerButch := batch.NewButchHandler(shortURLService, serverConfig.BaseShort.URL)
 	handlerFindByUser := user.NewURLFindByUserHandler(shortURLService, serverConfig.BaseShort.URL)
+	handlerDelete := delete2.NewDeleteHandler(shortURLService)
 
 	router.Use(gzip.Gzip(gzip.DefaultCompression, gzip.WithDecompressFn(gzip.DefaultDecompressHandle)))
 
@@ -116,6 +119,7 @@ func main() {
 	router.POST(SaveFullURL2, jwtValidate.Handle, handlerSave2.Handle)
 	router.POST(SaveBatch, handlerButch.Handle)
 	router.GET(URLByUser, jwtValidate.Handle, handlerFindByUser.Handle)
+	router.DELETE(DeleteByUrls, jwtValidate.Handle, handlerDelete.Handle)
 
 	errServer := http.ListenAndServe(serverConfig.AddressStart.String(), router)
 	if errServer != nil {
