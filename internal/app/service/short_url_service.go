@@ -65,7 +65,7 @@ func (service *ShortURLService) GetUrlsByUserID(userID string) ([]entity.ShortUR
 	return service.repositoryRead.GetUrlsByUserID(userID)
 }
 
-func (service *ShortURLService) Delete(URLList []string, addedUserId string) {
+func (service *ShortURLService) Delete(URLList []string, addedUserID string) {
 	var chunk []string
 	var chunks [][]string
 	i := 0
@@ -89,8 +89,8 @@ func (service *ShortURLService) Delete(URLList []string, addedUserId string) {
 	}
 
 	inCh := service.sendToPrepare(chunks)
-	ch1 := service.prepareGoodURL(inCh, addedUserId)
-	ch2 := service.prepareGoodURL(inCh, addedUserId)
+	ch1 := service.prepareGoodURL(inCh, addedUserID)
+	ch2 := service.prepareGoodURL(inCh, addedUserID)
 	for n := range service.fanIn(ch1, ch2) {
 		deletedURLs = append(deletedURLs, n...)
 	}
@@ -111,15 +111,15 @@ func (service *ShortURLService) sendToPrepare(chunks [][]string) chan []string {
 }
 
 // Возвращаем только те URL, которые действо можно удалить
-func (service *ShortURLService) prepareGoodURL(inCh chan []string, addedUserId string) chan []string {
+func (service *ShortURLService) prepareGoodURL(inCh chan []string, addedUserID string) chan []string {
 	outCh := make(chan []string)
 
 	go func() {
 		defer close(outCh)
 		for shortURLs := range inCh {
-			err := service.repositoryWrite.Delete(shortURLs, addedUserId)
+			err := service.repositoryWrite.Delete(shortURLs, addedUserID)
 			if err != nil {
-				service.logger.Error("ошибка получения записей", zap.String("urls", strings.Join(shortURLs, ",")), zap.String("addedUserId", addedUserId), zap.Error(err))
+				service.logger.Error("ошибка получения записей", zap.String("urls", strings.Join(shortURLs, ",")), zap.String("addedUserID", addedUserID), zap.Error(err))
 				return
 			}
 

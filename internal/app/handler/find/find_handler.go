@@ -24,7 +24,7 @@ func (hndlr *FindHandler) Handle(ctx *gin.Context) {
 		return
 	}
 
-	if data.IsDeleted == true {
+	if data.IsDeleted {
 		ctx.Status(http.StatusGone)
 		ctx.Abort()
 		return
