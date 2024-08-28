@@ -18,7 +18,6 @@ func NewSaveHandler(service *service.ShortURLService, baseURL string) *SaveHandl
 }
 
 func (hndlr *SaveHandler) Handle(ctx *gin.Context) {
-
 	b, err := io.ReadAll(ctx.Request.Body)
 	if err != nil {
 		ctx.String(http.StatusBadRequest, "%s", err.Error())
@@ -26,7 +25,7 @@ func (hndlr *SaveHandler) Handle(ctx *gin.Context) {
 		return
 	}
 
-	data, err := hndlr.service.Save(string(b))
+	data, err := hndlr.service.Save(ctx, string(b))
 
 	if errors.Is(err, service.ErrEntityExists) {
 		ctx.Header("Content-type", "text/plain")

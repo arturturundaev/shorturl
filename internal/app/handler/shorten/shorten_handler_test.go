@@ -14,7 +14,7 @@ import (
 
 type ServiceMock struct{}
 
-func (service *ServiceMock) Save(url string) (*entity.ShortURLEntity, error) {
+func (service *ServiceMock) Save(ctx *gin.Context, url string) (*entity.ShortURLEntity, error) {
 	if url == "https://practicum.yandex.ru" {
 		return &entity.ShortURLEntity{ShortURL: "7CwAhsKq", URL: "https://practicum.yandex.ru"}, nil
 	}

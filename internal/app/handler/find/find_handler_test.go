@@ -18,6 +18,11 @@ import (
 
 type MockReadRepository struct{}
 
+func (repository *MockReadRepository) GetUrlsByUserID(userID string) ([]entity.ShortURLEntity, error) {
+	//TODO implement me
+	panic("implement me")
+}
+
 func (repository *MockReadRepository) Ping(ctx context.Context) error {
 	return nil
 }
@@ -27,6 +32,11 @@ func (repository *MockReadRepository) GetDB() *sqlx.DB {
 }
 
 type MockWriteRepository struct{}
+
+func (repository *MockWriteRepository) Delete(shortURLs []string, addedUserID string) error {
+	//TODO implement me
+	panic("implement me")
+}
 
 func (repository *MockWriteRepository) Batch(request []batch.ButchRequest) ([]entity.ShortURLEntity, error) {
 	return nil, nil
@@ -49,7 +59,7 @@ func (repository *MockReadRepository) FindByShortURL(shortURL string) (*entity.S
 	return nil, nil
 }
 
-func (repository *MockWriteRepository) Save(shortURL string, url string) error {
+func (repository *MockWriteRepository) Save(shortURL string, url string, addedUserID string) error {
 
 	return nil
 }

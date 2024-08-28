@@ -1,0 +1,1 @@
+ALTER TABLE url ADD COLUMN IF NOT EXISTS added_user_id UUID;

@@ -5,10 +5,13 @@ import (
 	"flag"
 	"fmt"
 	"github.com/arturturundaev/shorturl/internal/app/handler/batch"
+	delete2 "github.com/arturturundaev/shorturl/internal/app/handler/delete"
 	"github.com/arturturundaev/shorturl/internal/app/handler/find"
 	"github.com/arturturundaev/shorturl/internal/app/handler/ping"
 	"github.com/arturturundaev/shorturl/internal/app/handler/save"
 	"github.com/arturturundaev/shorturl/internal/app/handler/shorten"
+	"github.com/arturturundaev/shorturl/internal/app/handler/user"
+	"github.com/arturturundaev/shorturl/internal/app/middleware"
 	"github.com/arturturundaev/shorturl/internal/app/repository/filestorage"
 	"github.com/arturturundaev/shorturl/internal/app/repository/localstorage"
 	pg "github.com/arturturundaev/shorturl/internal/app/repository/postgres"
@@ -38,6 +41,8 @@ const GetFullURL = `/:short`
 const SaveFullURL2 = `/api/shorten`
 const SaveBatch = `/api/shorten/batch`
 const Ping = `/ping`
+const URLByUser = `/api/user/urls`
+const DeleteByUrls = `/api/user/urls`
 
 func main() {
 	defer func() {
@@ -92,6 +97,8 @@ func main() {
 		}
 	}
 
+	jwtValidate := middleware.NewJWTValidator(serverConfig.AddressStart.URL)
+
 	shortURLService := service.NewShortURLService(repositoryRead, repositoryWrite)
 
 	pingService := service.NewPingService(repositoryRead)
@@ -101,14 +108,18 @@ func main() {
 	handlerSave2 := shorten.NewShortenHandler(shortURLService, serverConfig.BaseShort.URL)
 	handlerPing := ping.NewPingHandler(pingService)
 	handlerButch := batch.NewButchHandler(shortURLService, serverConfig.BaseShort.URL)
+	handlerFindByUser := user.NewURLFindByUserHandler(shortURLService, serverConfig.BaseShort.URL)
+	handlerDelete := delete2.NewDeleteHandler(shortURLService)
 
 	router.Use(gzip.Gzip(gzip.DefaultCompression, gzip.WithDecompressFn(gzip.DefaultDecompressHandle)))
 
 	router.GET(Ping, handlerPing.Handle)
-	router.POST(SaveFullURL, handlerSave.Handle)
+	router.POST(SaveFullURL, jwtValidate.Handle, handlerSave.Handle)
 	router.GET(GetFullURL, handlerFind.Handle)
-	router.POST(SaveFullURL2, handlerSave2.Handle)
+	router.POST(SaveFullURL2, jwtValidate.Handle, handlerSave2.Handle)
 	router.POST(SaveBatch, handlerButch.Handle)
+	router.GET(URLByUser, jwtValidate.Handle, handlerFindByUser.Handle)
+	router.DELETE(DeleteByUrls, jwtValidate.Handle, handlerDelete.Handle)
 
 	errServer := http.ListenAndServe(serverConfig.AddressStart.String(), router)
 	if errServer != nil {

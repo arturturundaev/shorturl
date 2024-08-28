@@ -40,7 +40,7 @@ func (repo *PostgresRepository) FindByShortURL(shortURL string) (*entity.ShortUR
 
 	ent := []entity.ShortURLEntity{}
 	err := repo.DB.Select(&ent,
-		fmt.Sprintf("select url_full as original_url, url_short from %s where url_short = $1", TableName),
+		fmt.Sprintf("select url_full as original_url, url_short, is_deleted from %s where url_short = $1", TableName),
 		shortURL)
 
 	if err != nil {
@@ -54,10 +54,10 @@ func (repo *PostgresRepository) FindByShortURL(shortURL string) (*entity.ShortUR
 	return &ent[0], nil
 }
 
-func (repo *PostgresRepository) Save(shortURL string, URL string) error {
+func (repo *PostgresRepository) Save(shortURL, URL, addedUserID string) error {
 
 	id := uuid.New().String()
-	_, err := repo.DB.Exec(fmt.Sprintf(`INSERT into %s values ($1, $2, $3)`, TableName), id, URL, shortURL)
+	_, err := repo.DB.Exec(fmt.Sprintf(`INSERT into %s (id, url_full, url_short, added_user_id) values ($1, $2, $3, $4)`, TableName), id, URL, shortURL, addedUserID)
 
 	if err != nil {
 		return err
@@ -120,4 +120,38 @@ func (repo *PostgresRepository) Batch(request []batch.ButchRequest) ([]entity.Sh
 	}
 
 	return allModels, nil
+}
+
+func (repo *PostgresRepository) GetUrlsByUserID(userID string) ([]entity.ShortURLEntity, error) {
+	ent := []entity.ShortURLEntity{}
+
+	err := repo.DB.Select(&ent,
+		fmt.Sprintf("select url_full as original_url, url_short from %s where added_user_id = $1", TableName),
+		userID)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return ent, nil
+}
+
+func (repo *PostgresRepository) Delete(shortURLs []string, addedUserID string) error {
+	var inArray []string
+	var params []interface{}
+
+	params = append(params, addedUserID)
+	i := 2
+	for _, shortURL := range shortURLs {
+		inArray = append(inArray, "$"+fmt.Sprintf("%d", i))
+		params = append(params, shortURL)
+		i++
+	}
+	_, err := repo.DB.Exec(fmt.Sprintf(`update %s SET is_deleted = true WHERE added_user_id = $1 AND url_short IN (%s)`, TableName, strings.Join(inArray, ",")), params...)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

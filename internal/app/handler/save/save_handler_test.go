@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/arturturundaev/shorturl/internal/app/entity"
 	"github.com/arturturundaev/shorturl/internal/app/handler/batch"
+	"github.com/arturturundaev/shorturl/internal/app/middleware"
 	"github.com/arturturundaev/shorturl/internal/app/service"
 	"github.com/gin-gonic/gin"
 	"github.com/jmoiron/sqlx"
@@ -18,6 +19,11 @@ import (
 
 type MockReadRepository struct{}
 
+func (repository *MockReadRepository) GetUrlsByUserID(userID string) ([]entity.ShortURLEntity, error) {
+	//TODO implement me
+	panic("implement me")
+}
+
 func (repository *MockReadRepository) Ping(ctx context.Context) error {
 	return nil
 }
@@ -27,6 +33,11 @@ func (repository *MockReadRepository) GetDB() *sqlx.DB {
 }
 
 type MockWriteRepository struct{}
+
+func (repository *MockWriteRepository) Delete(shortURLs []string, addedUserID string) error {
+	//TODO implement me
+	panic("implement me")
+}
 
 func (repository *MockWriteRepository) Batch(request []batch.ButchRequest) ([]entity.ShortURLEntity, error) {
 	return nil, nil
@@ -41,7 +52,7 @@ func (repository *MockReadRepository) FindByShortURL(shortURL string) (*entity.S
 	return nil, nil
 }
 
-func (repository *MockWriteRepository) Save(shortURL string, url string) error {
+func (repository *MockWriteRepository) Save(shortURL string, url string, addedUserID string) error {
 
 	if url == "repositoryError" {
 		return fmt.Errorf("Error on insert row")
@@ -97,7 +108,7 @@ func TestSaveHandler_Handle(t *testing.T) {
 			response := httptest.NewRecorder()
 
 			context, _ := gin.CreateTestContext(response)
-			context.AddParam("short", strings.TrimLeft(tt.request, "/"))
+			context.Set(middleware.UserIDProperty, "1")
 			context.Request = request
 
 			handler.Handle(context)

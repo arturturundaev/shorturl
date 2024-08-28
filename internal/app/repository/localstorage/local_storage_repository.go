@@ -12,10 +12,16 @@ type LocalStorageRepository struct {
 	Rows map[string]LocalStorageRow
 }
 
+func (repo *LocalStorageRepository) GetUrlsByUserID(userID string) ([]entity.ShortURLEntity, error) {
+	var models []entity.ShortURLEntity
+	return models, nil
+}
+
 type LocalStorageRow struct {
 	ShortURL      string
 	URL           string
 	CorrelationID string
+	AddedUserID   string
 }
 
 func (repo *LocalStorageRepository) Batch(ents []batch.ButchRequest) ([]entity.ShortURLEntity, error) {
@@ -44,8 +50,8 @@ func (repo *LocalStorageRepository) FindByShortURL(shortURL string) (*entity.Sho
 	return nil, nil
 }
 
-func (repo *LocalStorageRepository) Save(shortURL string, URL string) error {
-	repo.Rows[shortURL] = LocalStorageRow{ShortURL: shortURL, URL: URL}
+func (repo *LocalStorageRepository) Save(shortURL, URL, addedUserID string) error {
+	repo.Rows[shortURL] = LocalStorageRow{ShortURL: shortURL, URL: URL, AddedUserID: addedUserID}
 
 	return nil
 }
@@ -56,5 +62,9 @@ func (repo *LocalStorageRepository) Ping(ctx context.Context) error {
 }
 
 func (repo *LocalStorageRepository) GetDB() *sqlx.DB {
+	return nil
+}
+
+func (repo *LocalStorageRepository) Delete(shortURLs []string, addedUserID string) error {
 	return nil
 }
