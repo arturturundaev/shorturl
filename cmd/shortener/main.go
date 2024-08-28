@@ -5,7 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"github.com/arturturundaev/shorturl/internal/app/handler/batch"
-	delete2 "github.com/arturturundaev/shorturl/internal/app/handler/delete"
+	deleteUrl "github.com/arturturundaev/shorturl/internal/app/handler/delete"
 	"github.com/arturturundaev/shorturl/internal/app/handler/find"
 	"github.com/arturturundaev/shorturl/internal/app/handler/ping"
 	"github.com/arturturundaev/shorturl/internal/app/handler/save"
@@ -109,7 +109,7 @@ func main() {
 	handlerPing := ping.NewPingHandler(pingService)
 	handlerButch := batch.NewButchHandler(shortURLService, serverConfig.BaseShort.URL)
 	handlerFindByUser := user.NewURLFindByUserHandler(shortURLService, serverConfig.BaseShort.URL)
-	handlerDelete := delete2.NewDeleteHandler(shortURLService)
+	handlerDelete := deleteUrl.NewDeleteHandler(shortURLService)
 
 	router.Use(gzip.Gzip(gzip.DefaultCompression, gzip.WithDecompressFn(gzip.DefaultDecompressHandle)))
 
