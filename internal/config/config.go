@@ -3,6 +3,7 @@ package config
 //  -a=http://localhost:8081/api/shorten -b=http://localhost:8081/api/shorten
 import (
 	"cmp"
+	"flag"
 	"fmt"
 	"net/netip"
 	"os"
@@ -39,23 +40,33 @@ type DatabaseURLType struct {
 	URL string
 }
 
-func NewConfig(ServerAddress, BaseURL, FileStorage, databaseURL string) *Config {
+func NewConfig() *Config {
+	var ServerAddress AddressStartType
+	var BaseURL BaseShortURLType
+	var FileStorage FileStorageType
+	var databaseURL DatabaseURLType
+
+	flag.Var(&ServerAddress, "a", "start url and port")
+	flag.Var(&BaseURL, "b", "url redirect")
+	flag.Var(&FileStorage, "f", "file storage path")
+	flag.Var(&databaseURL, "d", "database storage path")
+	flag.Parse()
 	var URL, port string
-	data := strings.Split(cmp.Or(ServerAddress, os.Getenv("SERVER_ADDRESS"), "localhost:8080"), ":")
+	data := strings.Split(cmp.Or(ServerAddress.String(), os.Getenv("SERVER_ADDRESS"), "localhost:8080"), ":")
 	URL = data[0]
 	port = data[1]
 
-	BaseURLFinal := cmp.Or(BaseURL, os.Getenv("BASE_URL"), "http://localhost:8080")
-	FileStorageFinal := cmp.Or(FileStorage, os.Getenv("FILE_STORAGE_PATH"), "/tmp/db.txt")
-	databaseURLFinal := cmp.Or(databaseURL, os.Getenv("DATABASE_DSN"), "postgres://postgres:postgres@localhost:5432/shorturl?sslmode=disable")
+	BaseURLFinal := cmp.Or(BaseURL.String(), os.Getenv("BASE_URL"), "http://localhost:8080")
+	FileStorageFinal := cmp.Or(FileStorage.String(), os.Getenv("FILE_STORAGE_PATH"), "/tmp/db.txt")
+	databaseURLFinal := cmp.Or(databaseURL.String(), os.Getenv("DATABASE_DSN"), "postgres://postgres:postgres@localhost:5432/shorturl?sslmode=disable")
 
 	var storageType = StorageTypeMemory
 
-	if FileStorage != "" || os.Getenv("FILE_STORAGE_PATH") != "" {
+	if FileStorage.String() != "" || os.Getenv("FILE_STORAGE_PATH") != "" {
 		storageType = StorageTypeFile
 	}
 
-	if databaseURL != "" || os.Getenv("DATABASE_DSN") != "" {
+	if databaseURL.String() != "" || os.Getenv("DATABASE_DSN") != "" {
 		storageType = StorageTypeDB
 	}
 

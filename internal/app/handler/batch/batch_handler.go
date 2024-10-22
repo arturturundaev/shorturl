@@ -8,16 +8,16 @@ import (
 	"net/http"
 )
 
-type ServiceURLButcher interface {
+type serviceURLButcher interface {
 	Batch(request []ButchRequest) ([]entity.ShortURLEntity, error)
 }
 
 type ButchHandler struct {
-	service ServiceURLButcher
+	service serviceURLButcher
 	baseURL string
 }
 
-func NewButchHandler(service ServiceURLButcher, baseURL string) *ButchHandler {
+func NewButchHandler(service serviceURLButcher, baseURL string) *ButchHandler {
 	return &ButchHandler{service: service, baseURL: baseURL}
 }
 
