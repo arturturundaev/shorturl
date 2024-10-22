@@ -2,7 +2,6 @@ package main
 
 import (
 	"bytes"
-	"flag"
 	"fmt"
 	"github.com/arturturundaev/shorturl/internal/app/handler/batch"
 	deleteUrl "github.com/arturturundaev/shorturl/internal/app/handler/delete"
@@ -50,17 +49,6 @@ func main() {
 			log.Println("panic occurred:", err)
 		}
 	}()
-
-	var addressStart config.AddressStartType
-	var baseShort config.BaseShortURLType
-	var fileStorage config.FileStorageType
-	var databaseURL config.DatabaseURLType
-
-	flag.Var(&addressStart, "a", "start url and port")
-	flag.Var(&baseShort, "b", "url redirect")
-	flag.Var(&fileStorage, "f", "file storage path")
-	flag.Var(&databaseURL, "d", "database storage path")
-	flag.Parse()
 
 	serverConfig := config.NewConfig(
 		addressStart.String(),
