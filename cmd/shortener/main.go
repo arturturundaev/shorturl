@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bytes"
 	"fmt"
 	"github.com/arturturundaev/shorturl/internal/app/handler/batch"
 	deleteUrl "github.com/arturturundaev/shorturl/internal/app/handler/delete"
@@ -17,7 +16,8 @@ import (
 	"github.com/arturturundaev/shorturl/internal/app/service"
 	"github.com/arturturundaev/shorturl/internal/config"
 	"github.com/gin-contrib/gzip"
-	ginzap "github.com/gin-contrib/zap"
+	"github.com/gin-contrib/pprof"
+	_ "github.com/gin-contrib/pprof"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-migrate/migrate/v4"
 	_ "github.com/golang-migrate/migrate/v4/database/pgx/v5"
@@ -25,13 +25,10 @@ import (
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"github.com/jmoiron/sqlx"
 	"go.uber.org/zap"
-	"go.uber.org/zap/zapcore"
-	"io"
 	"log"
 	"net/http"
 	"os"
 	"path/filepath"
-	"time"
 )
 
 // -d=postgres://postgres:postgres@localhost:5432/shorturl?sslmode=disable
@@ -50,12 +47,7 @@ func main() {
 		}
 	}()
 
-	serverConfig := config.NewConfig(
-		addressStart.String(),
-		baseShort.String(),
-		fileStorage.String(),
-		databaseURL.String(),
-	)
+	serverConfig := config.NewConfig()
 
 	router := gin.Default()
 
@@ -109,6 +101,10 @@ func main() {
 	router.GET(URLByUser, jwtValidate.Handle, handlerFindByUser.Handle)
 	router.DELETE(DeleteByUrls, jwtValidate.Handle, handlerDelete.Handle)
 
+	pprof.Register(router, "dev/pprof")
+
+	logger.Info("server start on port: " + serverConfig.AddressStart.String())
+
 	errServer := http.ListenAndServe(serverConfig.AddressStart.String(), router)
 	if errServer != nil {
 		logger.Fatal(errServer.Error())
@@ -116,9 +112,9 @@ func main() {
 }
 
 func addLogger(r *gin.Engine) (*zap.Logger, error) {
-	logger, err := zap.NewProduction()
+	return zap.NewProduction()
 
-	if err != nil {
+	/*if err != nil {
 		return nil, err
 	}
 
@@ -144,9 +140,9 @@ func addLogger(r *gin.Engine) (*zap.Logger, error) {
 
 			return fields
 		}),
-	}))
+	}))*/
 
-	return logger, nil
+	//return logger, nil
 }
 
 func initMigrations(migrationPath string, DB *sqlx.DB) {

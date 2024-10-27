@@ -2,17 +2,20 @@ package ping
 
 import (
 	"context"
-	"github.com/arturturundaev/shorturl/internal/app/service"
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"time"
 )
 
-type PingHandler struct {
-	service *service.PingService
+type pignger interface {
+	Ping(ctx context.Context) error
 }
 
-func NewPingHandler(service *service.PingService) *PingHandler {
+type PingHandler struct {
+	service pignger
+}
+
+func NewPingHandler(service pignger) *PingHandler {
 	return &PingHandler{service: service}
 }
 
