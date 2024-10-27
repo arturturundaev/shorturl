@@ -12,15 +12,18 @@ type serviceURLButcher interface {
 	Batch(request []ButchRequest) ([]entity.ShortURLEntity, error)
 }
 
+// ButchHandler ButchHandler
 type ButchHandler struct {
 	service serviceURLButcher
 	baseURL string
 }
 
+// NewButchHandler конструктор
 func NewButchHandler(service serviceURLButcher, baseURL string) *ButchHandler {
 	return &ButchHandler{service: service, baseURL: baseURL}
 }
 
+// Handle массовоt создание
 func (h *ButchHandler) Handle(ctx *gin.Context) {
 	var response []ButchResponse
 	request, err := NewButchRequest(ctx)

@@ -32,12 +32,25 @@ import (
 )
 
 // -d=postgres://postgres:postgres@localhost:5432/shorturl?sslmode=disable
+// SaveFullURL создание
 const SaveFullURL = `/`
+
+// GetFullURL получение
 const GetFullURL = `/:short`
+
+// SaveFullURL2 v2
 const SaveFullURL2 = `/api/shorten`
+
+// SaveBatch массовое сохранение
 const SaveBatch = `/api/shorten/batch`
+
+// Ping пинг
 const Ping = `/ping`
+
+// URLByUser получение по пользователю
 const URLByUser = `/api/user/urls`
+
+// DeleteByUrls удаление ссылок
 const DeleteByUrls = `/api/user/urls`
 
 func main() {
