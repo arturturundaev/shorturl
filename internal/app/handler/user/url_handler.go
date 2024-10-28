@@ -1,25 +1,30 @@
 package user
 
 import (
+	"net/http"
+
 	"github.com/arturturundaev/shorturl/internal/app/entity"
 	"github.com/arturturundaev/shorturl/internal/app/middleware"
 	"github.com/gin-gonic/gin"
-	"net/http"
 )
 
+// Handle интерфейс поиска ссылок по пользователю
 type URLServiceFinder interface {
 	GetUrlsByUserID(userID string) ([]entity.ShortURLEntity, error)
 }
 
+// Handle сервис
 type URLFindByUserHandler struct {
 	service URLServiceFinder
 	baseURL string
 }
 
+// Handle конструктор
 func NewURLFindByUserHandler(service URLServiceFinder, baseURL string) *URLFindByUserHandler {
 	return &URLFindByUserHandler{service: service, baseURL: baseURL}
 }
 
+// Handle обработчик
 func (handler *URLFindByUserHandler) Handle(ctx *gin.Context) {
 	addedUserID, _ := ctx.Get(middleware.UserIDProperty)
 

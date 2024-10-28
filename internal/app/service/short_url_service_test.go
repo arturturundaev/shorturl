@@ -1,11 +1,12 @@
 package service
 
 import (
+	"testing"
+
 	"github.com/arturturundaev/shorturl/internal/app/entity"
 	"github.com/arturturundaev/shorturl/internal/app/handler/batch"
 	"github.com/jmoiron/sqlx"
 	"github.com/stretchr/testify/mock"
-	"testing"
 )
 
 type RepositoryWriteMock struct {

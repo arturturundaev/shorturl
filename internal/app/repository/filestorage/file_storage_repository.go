@@ -5,46 +5,55 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
+	"os"
+	"strings"
+
 	"github.com/arturturundaev/shorturl/internal/app/entity"
 	"github.com/arturturundaev/shorturl/internal/app/handler/batch"
 	"github.com/arturturundaev/shorturl/internal/app/utils"
 	"github.com/jmoiron/sqlx"
-	"io"
-	"os"
-	"strings"
 )
 
+// FileStorageReadRepository сервис
 type FileStorageReadRepository struct {
 	file *os.File
 }
 
+// Find поиск
 func (repo *FileStorageReadRepository) Find(shortURLs []string, addedUserID string) ([]entity.ShortURLEntity, error) {
 	//TODO implement me
 	panic("implement me")
 }
 
+// GetUrlsByUserID получение ссылок по пользователю
 func (repo *FileStorageReadRepository) GetUrlsByUserID(userID string) ([]entity.ShortURLEntity, error) {
 	var models []entity.ShortURLEntity
 
 	return models, nil
 }
 
+// GetDB получение коннекта к репозиторию на чтение
 func (repo *FileStorageReadRepository) GetDB() *sqlx.DB {
 	return nil
 }
 
+// GetDB получение коннекта к репозиторию на запись
 func (repo *FileStorageWriteRepository) GetDB() *sqlx.DB {
 	return nil
 }
 
+// Ping  пинг
 func (repo *FileStorageReadRepository) Ping(ctx context.Context) error {
 	return nil
 }
 
+// FileStorageWriteRepository сервис
 type FileStorageWriteRepository struct {
 	file *os.File
 }
 
+// Batch Массовое сохранение
 func (repo *FileStorageWriteRepository) Batch(ents []batch.ButchRequest) ([]entity.ShortURLEntity, error) {
 	var models []entity.ShortURLEntity
 	var shortURL string
@@ -60,6 +69,7 @@ func (repo *FileStorageWriteRepository) Batch(ents []batch.ButchRequest) ([]enti
 	return models, nil
 }
 
+// NewFileStorageRepositoryWrite контсруктор на запись
 func NewFileStorageRepositoryWrite(path string) (*FileStorageWriteRepository, error) {
 	file, err := os.OpenFile(path, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0666)
 	if err != nil {
@@ -69,6 +79,7 @@ func NewFileStorageRepositoryWrite(path string) (*FileStorageWriteRepository, er
 	return &FileStorageWriteRepository{file: file}, nil
 }
 
+// NewFileStorageRepositoryRead контсруктор на чтение
 func NewFileStorageRepositoryRead(path string) (*FileStorageReadRepository, error) {
 	file, err := os.OpenFile(path, os.O_RDONLY|os.O_CREATE, 0666)
 	if err != nil {
@@ -78,6 +89,7 @@ func NewFileStorageRepositoryRead(path string) (*FileStorageReadRepository, erro
 	return &FileStorageReadRepository{file: file}, nil
 }
 
+// FindByShortURL поиск по короткой ссылке
 func (repo *FileStorageReadRepository) FindByShortURL(shortURL string) (*entity.ShortURLEntity, error) {
 	var dto entity.ShortURLEntity
 
@@ -104,6 +116,7 @@ func (repo *FileStorageReadRepository) FindByShortURL(shortURL string) (*entity.
 	return nil, nil
 }
 
+// Save сохранение
 func (repo *FileStorageWriteRepository) Save(shortURL, URL, addedUserID string) error {
 	_, err := repo.file.WriteString(fmt.Sprintf(`{"short_url":"%s","original_url":"%s", "added_user_id":"%s"}`+"\n", shortURL, URL, addedUserID))
 
@@ -114,6 +127,7 @@ func (repo *FileStorageWriteRepository) Save(shortURL, URL, addedUserID string) 
 	return nil
 }
 
+// Delete удаление
 func (repo *FileStorageWriteRepository) Delete(shortURLs []string, addedUserID string) error {
 	return nil
 }

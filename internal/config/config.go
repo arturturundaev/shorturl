@@ -11,6 +11,7 @@ import (
 	"strings"
 )
 
+// Config структура
 type Config struct {
 	AddressStart AddressStartType
 	BaseShort    BaseShortURLType
@@ -19,27 +20,37 @@ type Config struct {
 	StorageType  string
 }
 
+// StorageTypeMemory место зранения
 const StorageTypeMemory = "Memory"
+
+// StorageTypeFile место зранения
 const StorageTypeFile = "File"
+
+// StorageTypeDB место зранения
 const StorageTypeDB = "DB"
 
+// FileStorageType стуктура
 type FileStorageType struct {
 	Path string
 }
 
+// AddressStartType стуктура
 type AddressStartType struct {
 	URL  string
 	Port string
 }
 
+// BaseShortURLType стуктура
 type BaseShortURLType struct {
 	URL string
 }
 
+// DatabaseURLType стуктура
 type DatabaseURLType struct {
 	URL string
 }
 
+// NewConfig получение конфигов
 func NewConfig() *Config {
 	var ServerAddress AddressStartType
 	var BaseURL BaseShortURLType
@@ -79,6 +90,7 @@ func NewConfig() *Config {
 	}
 }
 
+// String AddressStartType
 func (d *AddressStartType) String() string {
 	arr := make([]string, 0)
 	arr = append(arr, d.URL, d.Port)
@@ -90,6 +102,7 @@ func (d *AddressStartType) String() string {
 	return ""
 }
 
+// Set AddressStartType
 func (d *AddressStartType) Set(flagValue string) error {
 	data := strings.Split(flagValue, ":")
 
@@ -121,30 +134,36 @@ func (d *AddressStartType) Set(flagValue string) error {
 	return nil
 }
 
+// String BaseShortURLType
 func (d *BaseShortURLType) String() string {
 	return d.URL
 }
 
+// Set BaseShortURLType
 func (d *BaseShortURLType) Set(flagValue string) error {
 	d.URL = flagValue
 
 	return nil
 }
 
+// String FileStorageType
 func (d *FileStorageType) String() string {
 	return d.Path
 }
 
+// Set FileStorageType
 func (d *FileStorageType) Set(flagValue string) error {
 	d.Path = flagValue
 
 	return nil
 }
 
+// String DatabaseURLType
 func (d *DatabaseURLType) String() string {
 	return d.URL
 }
 
+// Set DatabaseURLType
 func (d *DatabaseURLType) Set(flagValue string) error {
 	d.URL = flagValue
 

@@ -2,24 +2,28 @@ package delete
 
 import (
 	"encoding/json"
-	"github.com/arturturundaev/shorturl/internal/app/middleware"
-	"github.com/gin-gonic/gin"
 	"io"
 	"net/http"
+
+	"github.com/arturturundaev/shorturl/internal/app/middleware"
+	"github.com/gin-gonic/gin"
 )
 
 type deleter interface {
 	Delete(URLList []string, addedUserID string)
 }
 
+// DeleteHandler сервис
 type DeleteHandler struct {
 	service deleter
 }
 
+// NewDeleteHandler конструктор
 func NewDeleteHandler(service deleter) *DeleteHandler {
 	return &DeleteHandler{service: service}
 }
 
+// Handle обработчик удаления
 func (h *DeleteHandler) Handle(ctx *gin.Context) {
 	var data []string
 	body, err := io.ReadAll(ctx.Request.Body)

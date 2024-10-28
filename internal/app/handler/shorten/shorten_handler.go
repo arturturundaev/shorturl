@@ -3,25 +3,30 @@ package shorten
 import (
 	"errors"
 	"fmt"
+	"net/http"
+
 	"github.com/arturturundaev/shorturl/internal/app/entity"
 	"github.com/arturturundaev/shorturl/internal/app/service"
 	"github.com/gin-gonic/gin"
-	"net/http"
 )
 
+// Handle интерфейс для сохранения
 type URLSaver interface {
 	Save(ctx *gin.Context, url string) (*entity.ShortURLEntity, error)
 }
 
+// Handle сервис
 type ShortenHandler struct {
 	service URLSaver
 	baseURL string
 }
 
+// Handle конструктор
 func NewShortenHandler(service URLSaver, baseURL string) *ShortenHandler {
 	return &ShortenHandler{service: service, baseURL: baseURL}
 }
 
+// Handle обаботчик
 func (h *ShortenHandler) Handle(ctx *gin.Context) {
 	dto, errGenerateShortURL := NewShortenRequest(ctx)
 

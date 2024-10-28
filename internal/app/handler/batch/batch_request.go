@@ -2,14 +2,17 @@ package batch
 
 import (
 	"fmt"
+
 	"github.com/gin-gonic/gin"
 )
 
+// ButchRequest dto
 type ButchRequest struct {
 	CorrelationID string `json:"correlation_id"`
 	OriginalURL   string `json:"original_url"`
 }
 
+// NewButchRequest конструктор
 func NewButchRequest(context *gin.Context) ([]ButchRequest, error) {
 	var dto []ButchRequest
 
