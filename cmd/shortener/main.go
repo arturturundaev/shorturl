@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
 	"github.com/arturturundaev/shorturl/internal/app/handler/batch"
 	deleteUrl "github.com/arturturundaev/shorturl/internal/app/handler/delete"
@@ -18,6 +19,7 @@ import (
 	"github.com/gin-contrib/gzip"
 	"github.com/gin-contrib/pprof"
 	_ "github.com/gin-contrib/pprof"
+	ginzap "github.com/gin-contrib/zap"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-migrate/migrate/v4"
 	_ "github.com/golang-migrate/migrate/v4/database/pgx/v5"
@@ -25,10 +27,13 @@ import (
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"github.com/jmoiron/sqlx"
 	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
+	"io"
 	"log"
 	"net/http"
 	"os"
 	"path/filepath"
+	"time"
 )
 
 // -d=postgres://postgres:postgres@localhost:5432/shorturl?sslmode=disable
@@ -64,7 +69,7 @@ func main() {
 
 	router := gin.Default()
 
-	logger, err := addLogger(router)
+	logger, err := addLogger(router, serverConfig.FullLog)
 
 	if err != nil {
 		fmt.Print(err.Error())
@@ -124,38 +129,40 @@ func main() {
 	}
 }
 
-func addLogger(r *gin.Engine) (*zap.Logger, error) {
-	return zap.NewProduction()
+func addLogger(r *gin.Engine, fullLogger bool) (*zap.Logger, error) {
+	logger, err := zap.NewProduction()
 
-	/*if err != nil {
+	if err != nil {
 		return nil, err
 	}
 
-	r.Use(ginzap.Ginzap(logger, time.RFC3339, true))
-	r.Use(ginzap.RecoveryWithZap(logger, true))
-	r.Use(ginzap.GinzapWithConfig(logger, &ginzap.Config{
-		UTC:        true,
-		TimeFormat: time.RFC3339,
-		Context: ginzap.Fn(func(c *gin.Context) []zapcore.Field {
-			var fields []zapcore.Field
-			// log request ID
-			if requestID := c.Writer.Header().Get("X-Request-Id"); requestID != "" {
-				fields = append(fields, zap.String("request_id", requestID))
-			}
+	if fullLogger {
+		r.Use(ginzap.Ginzap(logger, time.RFC3339, true))
+		r.Use(ginzap.RecoveryWithZap(logger, true))
+		r.Use(ginzap.GinzapWithConfig(logger, &ginzap.Config{
+			UTC:        true,
+			TimeFormat: time.RFC3339,
+			Context: ginzap.Fn(func(c *gin.Context) []zapcore.Field {
+				var fields []zapcore.Field
+				// log request ID
+				if requestID := c.Writer.Header().Get("X-Request-Id"); requestID != "" {
+					fields = append(fields, zap.String("request_id", requestID))
+				}
 
-			// log request body
-			var body []byte
-			var buf bytes.Buffer
-			tee := io.TeeReader(c.Request.Body, &buf)
-			body, _ = io.ReadAll(tee)
-			c.Request.Body = io.NopCloser(&buf)
-			fields = append(fields, zap.String("body", string(body)))
+				// log request body
+				var body []byte
+				var buf bytes.Buffer
+				tee := io.TeeReader(c.Request.Body, &buf)
+				body, _ = io.ReadAll(tee)
+				c.Request.Body = io.NopCloser(&buf)
+				fields = append(fields, zap.String("body", string(body)))
 
-			return fields
-		}),
-	}))*/
+				return fields
+			}),
+		}))
+	}
 
-	//return logger, nil
+	return logger, nil
 }
 
 func initMigrations(migrationPath string, DB *sqlx.DB) {

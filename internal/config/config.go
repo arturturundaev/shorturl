@@ -18,6 +18,7 @@ type Config struct {
 	FileStorage  FileStorageType
 	DatabaseURL  DatabaseURLType
 	StorageType  string
+	FullLog      bool
 }
 
 // StorageTypeMemory место зранения
@@ -87,6 +88,7 @@ func NewConfig() *Config {
 		FileStorage:  FileStorageType{Path: FileStorageFinal},
 		DatabaseURL:  DatabaseURLType{URL: databaseURLFinal},
 		StorageType:  storageType,
+		FullLog:      false,
 	}
 }
 

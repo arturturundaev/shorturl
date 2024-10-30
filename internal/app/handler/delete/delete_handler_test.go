@@ -27,7 +27,7 @@ func TestDeleteHandler_Handle(t *testing.T) {
 	type testCase struct {
 		name                   string
 		requestBody            string
-		userId                 string
+		userID                 string
 		responseStatus         int
 		serviceDeleteExecTimes int
 	}
@@ -36,21 +36,21 @@ func TestDeleteHandler_Handle(t *testing.T) {
 		{
 			name:                   "Unmarshal fail",
 			requestBody:            "none",
-			userId:                 "none",
+			userID:                 "none",
 			responseStatus:         http.StatusBadRequest,
 			serviceDeleteExecTimes: 0,
 		},
 		{
 			name:                   "not auth",
 			requestBody:            `["bla"]`,
-			userId:                 "none",
+			userID:                 "none",
 			responseStatus:         http.StatusUnauthorized,
 			serviceDeleteExecTimes: 0,
 		},
 		{
 			name:                   "success",
 			requestBody:            `["bla"]`,
-			userId:                 "bla",
+			userID:                 "bla",
 			responseStatus:         http.StatusAccepted,
 			serviceDeleteExecTimes: 0,
 		},
@@ -60,8 +60,8 @@ func TestDeleteHandler_Handle(t *testing.T) {
 			ctx, _ := gin.CreateTestContext(httptest.NewRecorder())
 			ctx.Request = httptest.NewRequest(http.MethodPost, "/", strings.NewReader(tt.requestBody))
 
-			if tt.userId != "none" {
-				ctx.Set(middleware.UserIDProperty, tt.userId)
+			if tt.userID != "none" {
+				ctx.Set(middleware.UserIDProperty, tt.userID)
 			}
 			handler.Handle(ctx)
 			assert.Equal(t, tt.responseStatus, ctx.Writer.Status())
