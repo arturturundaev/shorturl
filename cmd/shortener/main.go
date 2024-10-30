@@ -18,7 +18,6 @@ import (
 	"github.com/arturturundaev/shorturl/internal/config"
 	"github.com/gin-contrib/gzip"
 	"github.com/gin-contrib/pprof"
-	_ "github.com/gin-contrib/pprof"
 	ginzap "github.com/gin-contrib/zap"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-migrate/migrate/v4"

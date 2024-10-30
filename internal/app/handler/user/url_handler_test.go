@@ -33,7 +33,7 @@ func TestURLFindByUserHandler_Handle(t *testing.T) {
 
 	type testCase struct {
 		name            string
-		userId          string
+		userID          string
 		serviceResponse serviceGetUrlsByUserID
 		responseStatus  int
 	}
@@ -41,7 +41,7 @@ func TestURLFindByUserHandler_Handle(t *testing.T) {
 	tests := []testCase{
 		{
 			name:   "fail find in repository",
-			userId: "fail",
+			userID: "fail",
 			serviceResponse: serviceGetUrlsByUserID{
 				entities: nil,
 				err:      errors.New("repository error"),
@@ -50,7 +50,7 @@ func TestURLFindByUserHandler_Handle(t *testing.T) {
 		},
 		{
 			name:   "no auth",
-			userId: "no_auth",
+			userID: "no_auth",
 			serviceResponse: serviceGetUrlsByUserID{
 				entities: make([]entity.ShortURLEntity, 0),
 				err:      nil,
@@ -59,7 +59,7 @@ func TestURLFindByUserHandler_Handle(t *testing.T) {
 		},
 		{
 			name:   "success",
-			userId: "success",
+			userID: "success",
 			serviceResponse: serviceGetUrlsByUserID{
 				entities: []entity.ShortURLEntity{
 					{
@@ -78,9 +78,9 @@ func TestURLFindByUserHandler_Handle(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			ctx, _ := gin.CreateTestContext(httptest.NewRecorder())
-			ctx.Set(middleware.UserIDProperty, tt.userId)
+			ctx.Set(middleware.UserIDProperty, tt.userID)
 
-			service.On("GetUrlsByUserID", tt.userId).Return(tt.serviceResponse.entities, tt.serviceResponse.err)
+			service.On("GetUrlsByUserID", tt.userID).Return(tt.serviceResponse.entities, tt.serviceResponse.err)
 			handler := &URLFindByUserHandler{
 				service: service,
 				baseURL: "",
