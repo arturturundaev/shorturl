@@ -1,6 +1,6 @@
 module github.com/arturturundaev/shorturl
 
-go 1.23
+go 1.22
 
 require (
 	github.com/gin-contrib/gzip v1.0.1
