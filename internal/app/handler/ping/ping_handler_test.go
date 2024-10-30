@@ -14,7 +14,7 @@ type pigngerMock struct {
 	mock.Mock
 }
 
-func (p pigngerMock) Ping(ctx context.Context) error {
+func (p *pigngerMock) Ping(ctx context.Context) error {
 	return nil
 }
 

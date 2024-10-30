@@ -16,7 +16,7 @@ type URLServiceFinderTest struct {
 	mock.Mock
 }
 
-func (service URLServiceFinderTest) GetUrlsByUserID(userID string) ([]entity.ShortURLEntity, error) {
+func (service *URLServiceFinderTest) GetUrlsByUserID(userID string) ([]entity.ShortURLEntity, error) {
 	args := service.Called(userID)
 
 	return args.Get(0).([]entity.ShortURLEntity), args.Error(1)

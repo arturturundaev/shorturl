@@ -13,19 +13,19 @@ type RepositoryWriteMock struct {
 	mock.Mock
 }
 
-func (r RepositoryWriteMock) Save(shortURL, url, addedUserID string) error {
+func (r *RepositoryWriteMock) Save(shortURL, url, addedUserID string) error {
 	return nil
 }
 
-func (r RepositoryWriteMock) Batch(request []batch.ButchRequest) ([]entity.ShortURLEntity, error) {
+func (r *RepositoryWriteMock) Batch(request []batch.ButchRequest) ([]entity.ShortURLEntity, error) {
 	return make([]entity.ShortURLEntity, 0), nil
 }
 
-func (r RepositoryWriteMock) GetDB() *sqlx.DB {
+func (r *RepositoryWriteMock) GetDB() *sqlx.DB {
 	return nil
 }
 
-func (r RepositoryWriteMock) Delete(shortURLs []string, addedUserID string) error {
+func (r *RepositoryWriteMock) Delete(shortURLs []string, addedUserID string) error {
 	return nil
 }
 
