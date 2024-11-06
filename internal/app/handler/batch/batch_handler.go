@@ -8,19 +8,22 @@ import (
 	"net/http"
 )
 
-type ServiceURLButcher interface {
+type serviceURLButcher interface {
 	Batch(request []ButchRequest) ([]entity.ShortURLEntity, error)
 }
 
+// ButchHandler ButchHandler
 type ButchHandler struct {
-	service ServiceURLButcher
+	service serviceURLButcher
 	baseURL string
 }
 
-func NewButchHandler(service ServiceURLButcher, baseURL string) *ButchHandler {
+// NewButchHandler конструктор
+func NewButchHandler(service serviceURLButcher, baseURL string) *ButchHandler {
 	return &ButchHandler{service: service, baseURL: baseURL}
 }
 
+// Handle массовоt создание
 func (h *ButchHandler) Handle(ctx *gin.Context) {
 	var response []ButchResponse
 	request, err := NewButchRequest(ctx)

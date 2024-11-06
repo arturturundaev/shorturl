@@ -5,6 +5,7 @@ import (
 	"encoding/base64"
 )
 
+// GenerateShortURL формированиерое краткого url
 func GenerateShortURL(url string) string {
 	hash := sha1.New()
 	hash.Write([]byte(url))

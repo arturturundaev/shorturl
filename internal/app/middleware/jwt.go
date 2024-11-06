@@ -2,31 +2,41 @@ package middleware
 
 import (
 	"fmt"
+	"net/http"
+	"time"
+
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
-	"net/http"
-	"time"
 )
 
+// JWTValidator сервис
 type JWTValidator struct {
 	Claims Claims
 	domain string
 }
 
+// Claims структура
 type Claims struct {
 	jwt.RegisteredClaims
 	UserID string
 }
 
+// TokenExp время жизни токена
 const TokenExp = 3 * time.Hour
+
+// SecretKey ключ шифрования
 const SecretKey = "0N#6Ke|+OR:(`G;"
+
+// UserIDProperty в каком поле храниться ID пользователя
 const UserIDProperty = "UserId"
 
+// NewJWTValidator конструктор
 func NewJWTValidator(domain string) *JWTValidator {
 	return &JWTValidator{domain: domain}
 }
 
+// Handle обработка проверки токена
 func (JWTValidator *JWTValidator) Handle(ctx *gin.Context) {
 	var err error
 	token, _ := ctx.Cookie("Authorization")
@@ -59,6 +69,7 @@ func (JWTValidator *JWTValidator) Handle(ctx *gin.Context) {
 
 }
 
+// ValidateJWT проверка токена
 func (JWTValidator *JWTValidator) ValidateJWT(ctx *gin.Context, tokenString string) error {
 	claims := &Claims{}
 	token, err := jwt.ParseWithClaims(tokenString, claims,
@@ -81,6 +92,7 @@ func (JWTValidator *JWTValidator) ValidateJWT(ctx *gin.Context, tokenString stri
 	return nil
 }
 
+// BuildJWTString формирование токена
 func (JWTValidator *JWTValidator) BuildJWTString(ctx *gin.Context) (string, error) {
 	userID := JWTValidator.getNewUserID()
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, Claims{

@@ -3,21 +3,27 @@ package postgres
 import (
 	"context"
 	"fmt"
+	"strings"
+
 	"github.com/arturturundaev/shorturl/internal/app/entity"
 	"github.com/arturturundaev/shorturl/internal/app/handler/batch"
 	"github.com/arturturundaev/shorturl/internal/app/utils"
 	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx"
-	"strings"
 )
 
+// TableName имя таблицы
 const TableName = "url"
+
+// Количество записей на одну вставвку
 const ButchSize = 100
 
+// PostgresRepository сервис
 type PostgresRepository struct {
 	DB *sqlx.DB
 }
 
+// NewPostgresRepository конструктор
 func NewPostgresRepository(databaseURL string) (*PostgresRepository, error) {
 	database, err := sqlx.Open("postgres", databaseURL)
 	if err != nil {
@@ -27,6 +33,7 @@ func NewPostgresRepository(databaseURL string) (*PostgresRepository, error) {
 	return &PostgresRepository{DB: database}, nil
 }
 
+// Ping  пинг
 func (repo *PostgresRepository) Ping(ctx context.Context) error {
 	select {
 	case <-ctx.Done():
@@ -36,6 +43,7 @@ func (repo *PostgresRepository) Ping(ctx context.Context) error {
 	}
 }
 
+// FindByShortURL поиск по короткой ссылке
 func (repo *PostgresRepository) FindByShortURL(shortURL string) (*entity.ShortURLEntity, error) {
 
 	ent := []entity.ShortURLEntity{}
@@ -54,6 +62,7 @@ func (repo *PostgresRepository) FindByShortURL(shortURL string) (*entity.ShortUR
 	return &ent[0], nil
 }
 
+// Save сохранение
 func (repo *PostgresRepository) Save(shortURL, URL, addedUserID string) error {
 
 	id := uuid.New().String()
@@ -66,10 +75,12 @@ func (repo *PostgresRepository) Save(shortURL, URL, addedUserID string) error {
 	return nil
 }
 
+// GetDB получение коннекта к репозиторию
 func (repo *PostgresRepository) GetDB() *sqlx.DB {
 	return repo.DB
 }
 
+// Batch Массовое сохранение
 func (repo *PostgresRepository) Batch(request []batch.ButchRequest) ([]entity.ShortURLEntity, error) {
 	var models []entity.ShortURLEntity
 	var allModels []entity.ShortURLEntity
@@ -122,6 +133,7 @@ func (repo *PostgresRepository) Batch(request []batch.ButchRequest) ([]entity.Sh
 	return allModels, nil
 }
 
+// GetUrlsByUserID получение ссылок по пользователю
 func (repo *PostgresRepository) GetUrlsByUserID(userID string) ([]entity.ShortURLEntity, error) {
 	ent := []entity.ShortURLEntity{}
 
@@ -136,6 +148,7 @@ func (repo *PostgresRepository) GetUrlsByUserID(userID string) ([]entity.ShortUR
 	return ent, nil
 }
 
+// Delete удаление
 func (repo *PostgresRepository) Delete(shortURLs []string, addedUserID string) error {
 	var inArray []string
 	var params []interface{}

@@ -2,7 +2,6 @@ package main
 
 import (
 	"bytes"
-	"flag"
 	"fmt"
 	"github.com/arturturundaev/shorturl/internal/app/handler/batch"
 	deleteUrl "github.com/arturturundaev/shorturl/internal/app/handler/delete"
@@ -18,6 +17,7 @@ import (
 	"github.com/arturturundaev/shorturl/internal/app/service"
 	"github.com/arturturundaev/shorturl/internal/config"
 	"github.com/gin-contrib/gzip"
+	"github.com/gin-contrib/pprof"
 	ginzap "github.com/gin-contrib/zap"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-migrate/migrate/v4"
@@ -36,12 +36,25 @@ import (
 )
 
 // -d=postgres://postgres:postgres@localhost:5432/shorturl?sslmode=disable
+// SaveFullURL создание
 const SaveFullURL = `/`
+
+// GetFullURL получение
 const GetFullURL = `/:short`
+
+// SaveFullURL2 v2
 const SaveFullURL2 = `/api/shorten`
+
+// SaveBatch массовое сохранение
 const SaveBatch = `/api/shorten/batch`
+
+// Ping пинг
 const Ping = `/ping`
+
+// URLByUser получение по пользователю
 const URLByUser = `/api/user/urls`
+
+// DeleteByUrls удаление ссылок
 const DeleteByUrls = `/api/user/urls`
 
 func main() {
@@ -51,27 +64,11 @@ func main() {
 		}
 	}()
 
-	var addressStart config.AddressStartType
-	var baseShort config.BaseShortURLType
-	var fileStorage config.FileStorageType
-	var databaseURL config.DatabaseURLType
-
-	flag.Var(&addressStart, "a", "start url and port")
-	flag.Var(&baseShort, "b", "url redirect")
-	flag.Var(&fileStorage, "f", "file storage path")
-	flag.Var(&databaseURL, "d", "database storage path")
-	flag.Parse()
-
-	serverConfig := config.NewConfig(
-		addressStart.String(),
-		baseShort.String(),
-		fileStorage.String(),
-		databaseURL.String(),
-	)
+	serverConfig := config.NewConfig()
 
 	router := gin.Default()
 
-	logger, err := addLogger(router)
+	logger, err := addLogger(router, serverConfig.FullLog)
 
 	if err != nil {
 		fmt.Print(err.Error())
@@ -121,42 +118,48 @@ func main() {
 	router.GET(URLByUser, jwtValidate.Handle, handlerFindByUser.Handle)
 	router.DELETE(DeleteByUrls, jwtValidate.Handle, handlerDelete.Handle)
 
+	pprof.Register(router, "dev/pprof")
+
+	logger.Info("server start on port: " + serverConfig.AddressStart.String())
+
 	errServer := http.ListenAndServe(serverConfig.AddressStart.String(), router)
 	if errServer != nil {
 		logger.Fatal(errServer.Error())
 	}
 }
 
-func addLogger(r *gin.Engine) (*zap.Logger, error) {
+func addLogger(r *gin.Engine, fullLogger bool) (*zap.Logger, error) {
 	logger, err := zap.NewProduction()
 
 	if err != nil {
 		return nil, err
 	}
 
-	r.Use(ginzap.Ginzap(logger, time.RFC3339, true))
-	r.Use(ginzap.RecoveryWithZap(logger, true))
-	r.Use(ginzap.GinzapWithConfig(logger, &ginzap.Config{
-		UTC:        true,
-		TimeFormat: time.RFC3339,
-		Context: ginzap.Fn(func(c *gin.Context) []zapcore.Field {
-			var fields []zapcore.Field
-			// log request ID
-			if requestID := c.Writer.Header().Get("X-Request-Id"); requestID != "" {
-				fields = append(fields, zap.String("request_id", requestID))
-			}
+	if fullLogger {
+		r.Use(ginzap.Ginzap(logger, time.RFC3339, true))
+		r.Use(ginzap.RecoveryWithZap(logger, true))
+		r.Use(ginzap.GinzapWithConfig(logger, &ginzap.Config{
+			UTC:        true,
+			TimeFormat: time.RFC3339,
+			Context: ginzap.Fn(func(c *gin.Context) []zapcore.Field {
+				var fields []zapcore.Field
+				// log request ID
+				if requestID := c.Writer.Header().Get("X-Request-Id"); requestID != "" {
+					fields = append(fields, zap.String("request_id", requestID))
+				}
 
-			// log request body
-			var body []byte
-			var buf bytes.Buffer
-			tee := io.TeeReader(c.Request.Body, &buf)
-			body, _ = io.ReadAll(tee)
-			c.Request.Body = io.NopCloser(&buf)
-			fields = append(fields, zap.String("body", string(body)))
+				// log request body
+				var body []byte
+				var buf bytes.Buffer
+				tee := io.TeeReader(c.Request.Body, &buf)
+				body, _ = io.ReadAll(tee)
+				c.Request.Body = io.NopCloser(&buf)
+				fields = append(fields, zap.String("body", string(body)))
 
-			return fields
-		}),
-	}))
+				return fields
+			}),
+		}))
+	}
 
 	return logger, nil
 }

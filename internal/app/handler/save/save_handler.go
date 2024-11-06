@@ -2,21 +2,25 @@ package save
 
 import (
 	"errors"
-	"github.com/arturturundaev/shorturl/internal/app/service"
-	"github.com/gin-gonic/gin"
 	"io"
 	"net/http"
+
+	"github.com/arturturundaev/shorturl/internal/app/service"
+	"github.com/gin-gonic/gin"
 )
 
+// SaveHandler сервис
 type SaveHandler struct {
 	service *service.ShortURLService
 	baseURL string
 }
 
+// NewSaveHandler конструктор
 func NewSaveHandler(service *service.ShortURLService, baseURL string) *SaveHandler {
 	return &SaveHandler{service: service, baseURL: baseURL}
 }
 
+// Handle обработчик сохранения
 func (hndlr *SaveHandler) Handle(ctx *gin.Context) {
 	b, err := io.ReadAll(ctx.Request.Body)
 	if err != nil {

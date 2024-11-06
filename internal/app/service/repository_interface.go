@@ -2,11 +2,13 @@ package service
 
 import (
 	"context"
+
 	"github.com/arturturundaev/shorturl/internal/app/entity"
 	"github.com/arturturundaev/shorturl/internal/app/handler/batch"
 	"github.com/jmoiron/sqlx"
 )
 
+// RepositoryReader интерфейс на запись
 type RepositoryReader interface {
 	FindByShortURL(shortURL string) (*entity.ShortURLEntity, error)
 	Ping(ctx context.Context) error
@@ -14,6 +16,7 @@ type RepositoryReader interface {
 	GetDB() *sqlx.DB
 }
 
+// Интрефейс на чтение
 type RepositoryWriter interface {
 	Save(shortURL, url, addedUserID string) error
 	Batch(request []batch.ButchRequest) ([]entity.ShortURLEntity, error)

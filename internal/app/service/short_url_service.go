@@ -3,32 +3,38 @@ package service
 import (
 	"errors"
 	"fmt"
+	"strings"
+	"sync"
+
 	"github.com/arturturundaev/shorturl/internal/app/entity"
 	"github.com/arturturundaev/shorturl/internal/app/handler/batch"
 	"github.com/arturturundaev/shorturl/internal/app/middleware"
 	"github.com/arturturundaev/shorturl/internal/app/utils"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
-	"strings"
-	"sync"
 )
 
+// ShortURLService сервис
 type ShortURLService struct {
 	repositoryRead  RepositoryReader
 	repositoryWrite RepositoryWriter
 	logger          *zap.Logger
 }
 
+// ErrEntityExists ошибка нет записи
 var ErrEntityExists = errors.New("entity exists")
 
+// NewShortURLService конструктор
 func NewShortURLService(repositoryRead RepositoryReader, repositoryWrite RepositoryWriter) *ShortURLService {
 	return &ShortURLService{repositoryRead: repositoryRead, repositoryWrite: repositoryWrite}
 }
 
+// FindByShortURL поиск по короткой ссылке
 func (service *ShortURLService) FindByShortURL(shortURL string) (*entity.ShortURLEntity, error) {
 	return service.repositoryRead.FindByShortURL(shortURL)
 }
 
+// Save сохранение
 func (service *ShortURLService) Save(ctx *gin.Context, url string) (*entity.ShortURLEntity, error) {
 	addedUserID, exists := ctx.Get(middleware.UserIDProperty)
 
@@ -57,14 +63,17 @@ func (service *ShortURLService) Save(ctx *gin.Context, url string) (*entity.Shor
 	return &entity.ShortURLEntity{ShortURL: shortURL, URL: url}, nil
 }
 
+// Batch Массовое сохранение
 func (service *ShortURLService) Batch(request []batch.ButchRequest) ([]entity.ShortURLEntity, error) {
 	return service.repositoryWrite.Batch(request)
 }
 
+// GetUrlsByUserID получение ссылок по пользователю
 func (service *ShortURLService) GetUrlsByUserID(userID string) ([]entity.ShortURLEntity, error) {
 	return service.repositoryRead.GetUrlsByUserID(userID)
 }
 
+// Delete удаление
 func (service *ShortURLService) Delete(URLList []string, addedUserID string) {
 	var chunk []string
 	var chunks [][]string
@@ -98,6 +107,7 @@ func (service *ShortURLService) Delete(URLList []string, addedUserID string) {
 	service.notification(deletedURLs)
 }
 
+// sendToPrepare отправляем в поток на обработку
 func (service *ShortURLService) sendToPrepare(chunks [][]string) chan []string {
 	outCh := make(chan []string)
 	go func() {
@@ -130,6 +140,7 @@ func (service *ShortURLService) prepareGoodURL(inCh chan []string, addedUserID s
 	return outCh
 }
 
+// fanIn обработка потока
 func (service *ShortURLService) fanIn(chs ...chan []string) chan []string {
 	var wg sync.WaitGroup
 	outCh := make(chan []string)
@@ -160,5 +171,6 @@ func (service *ShortURLService) fanIn(chs ...chan []string) chan []string {
 	return outCh
 }
 
+// notification уведомление о обработанных письмах
 func (service *ShortURLService) notification(URLs []string) {
 }
