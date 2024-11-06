@@ -88,7 +88,7 @@ func NewConfig() *Config {
 		FileStorage:  FileStorageType{Path: FileStorageFinal},
 		DatabaseURL:  DatabaseURLType{URL: databaseURLFinal},
 		StorageType:  storageType,
-		FullLog:      false,
+		FullLog:      true,
 	}
 }
 

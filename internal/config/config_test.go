@@ -27,6 +27,7 @@ func TestNewConfig(t *testing.T) {
 					URL: "postgres://postgres:postgres@localhost:5432/shorturl?sslmode=disable",
 				},
 				StorageType: "Memory",
+				FullLog:     true,
 			},
 		},
 	}

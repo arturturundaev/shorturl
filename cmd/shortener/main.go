@@ -35,6 +35,16 @@ import (
 	"time"
 )
 
+// Build variables
+var (
+	// BuildVersion - version
+	BuildVersion string = "N/A"
+	// BuildDate - date
+	BuildDate string = "N/A"
+	// BuildCommit - commit
+	BuildCommit string = "N/A"
+)
+
 // -d=postgres://postgres:postgres@localhost:5432/shorturl?sslmode=disable
 // SaveFullURL создание
 const SaveFullURL = `/`
@@ -64,9 +74,27 @@ func main() {
 		}
 	}()
 
-	serverConfig := config.NewConfig()
+	router, log, serverConfig := initRouter()
+
+	log.Info(fmt.Sprintf("Build version: %s\n", BuildVersion))
+	log.Info(fmt.Sprintf("Build date: %s\n", BuildDate))
+	log.Info(fmt.Sprintf("Build commit: %s\n", BuildCommit))
+
+	log.Info("server start on port: " + serverConfig.AddressStart.String())
+
+	errServer := http.ListenAndServe(serverConfig.AddressStart.String(), router)
+	if errServer != nil {
+		log.Fatal(errServer.Error())
+	}
+}
+
+func initRouter() (*gin.Engine, *zap.Logger, *config.Config) {
 
 	router := gin.Default()
+
+	router.Use(gzip.Gzip(gzip.DefaultCompression, gzip.WithDecompressFn(gzip.DefaultDecompressHandle)))
+
+	serverConfig := config.NewConfig()
 
 	logger, err := addLogger(router, serverConfig.FullLog)
 
@@ -108,8 +136,6 @@ func main() {
 	handlerFindByUser := user.NewURLFindByUserHandler(shortURLService, serverConfig.BaseShort.URL)
 	handlerDelete := deleteUrl.NewDeleteHandler(shortURLService)
 
-	router.Use(gzip.Gzip(gzip.DefaultCompression, gzip.WithDecompressFn(gzip.DefaultDecompressHandle)))
-
 	router.GET(Ping, handlerPing.Handle)
 	router.POST(SaveFullURL, jwtValidate.Handle, handlerSave.Handle)
 	router.GET(GetFullURL, handlerFind.Handle)
@@ -120,12 +146,8 @@ func main() {
 
 	pprof.Register(router, "dev/pprof")
 
-	logger.Info("server start on port: " + serverConfig.AddressStart.String())
+	return router, logger, serverConfig
 
-	errServer := http.ListenAndServe(serverConfig.AddressStart.String(), router)
-	if errServer != nil {
-		logger.Fatal(errServer.Error())
-	}
 }
 
 func addLogger(r *gin.Engine, fullLogger bool) (*zap.Logger, error) {
@@ -186,7 +208,11 @@ func initMigrations(migrationPath string, DB *sqlx.DB) {
 func getRepository(serverConfig *config.Config, logger *zap.Logger) (service.RepositoryReader, service.RepositoryWriter) {
 
 	if serverConfig.StorageType == config.StorageTypeDB {
-		repository, errPingRepo := pg.NewPostgresRepository(serverConfig.DatabaseURL.URL)
+		database, err := sqlx.Open("postgres", serverConfig.DatabaseURL.URL)
+		if err != nil {
+			return nil, nil
+		}
+		repository, errPingRepo := pg.NewPostgresRepository(database)
 		if errPingRepo != nil {
 			logger.Error(errPingRepo.Error())
 		}

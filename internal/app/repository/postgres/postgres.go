@@ -24,13 +24,8 @@ type PostgresRepository struct {
 }
 
 // NewPostgresRepository конструктор
-func NewPostgresRepository(databaseURL string) (*PostgresRepository, error) {
-	database, err := sqlx.Open("postgres", databaseURL)
-	if err != nil {
-		return nil, err
-	}
-
-	return &PostgresRepository{DB: database}, nil
+func NewPostgresRepository(DB *sqlx.DB) (*PostgresRepository, error) {
+	return &PostgresRepository{DB: DB}, nil
 }
 
 // Ping  пинг

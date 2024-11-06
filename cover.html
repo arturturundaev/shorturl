@@ -55,7 +55,7 @@
 			<div id="nav">
 				<select id="files">
 				
-				<option value="file0">github.com/arturturundaev/shorturl/cmd/shortener/main.go (0.0%)</option>
+				<option value="file0">github.com/arturturundaev/shorturl/cmd/shortener/main.go (40.7%)</option>
 				
 				<option value="file1">github.com/arturturundaev/shorturl/internal/app/handler/batch/batch_handler.go (85.0%)</option>
 				
@@ -81,15 +81,15 @@
 				
 				<option value="file12">github.com/arturturundaev/shorturl/internal/app/repository/filestorage/file_storage_repository.go (0.0%)</option>
 				
-				<option value="file13">github.com/arturturundaev/shorturl/internal/app/repository/localstorage/local_storage_repository.go (0.0%)</option>
+				<option value="file13">github.com/arturturundaev/shorturl/internal/app/repository/localstorage/local_storage_repository.go (44.4%)</option>
 				
-				<option value="file14">github.com/arturturundaev/shorturl/internal/app/repository/postgres/postgres.go (0.0%)</option>
+				<option value="file14">github.com/arturturundaev/shorturl/internal/app/repository/postgres/postgres.go (48.4%)</option>
 				
 				<option value="file15">github.com/arturturundaev/shorturl/internal/app/service/ping_service.go (0.0%)</option>
 				
 				<option value="file16">github.com/arturturundaev/shorturl/internal/app/service/short_url_service.go (71.2%)</option>
 				
-				<option value="file17">github.com/arturturundaev/shorturl/internal/app/utils/short_url_generator.go (0.0%)</option>
+				<option value="file17">github.com/arturturundaev/shorturl/internal/app/utils/short_url_generator.go (100.0%)</option>
 				
 				<option value="file18">github.com/arturturundaev/shorturl/internal/config/config.go (51.9%)</option>
 				
@@ -171,9 +171,23 @@ func main() <span class="cov0" title="0">{
                 }</span>
         }()
 
-        <span class="cov0" title="0">serverConfig := config.NewConfig()
+        <span class="cov0" title="0">router, log, serverConfig := initRouter()
+
+        log.Info("server start on port: " + serverConfig.AddressStart.String())
+
+        errServer := http.ListenAndServe(serverConfig.AddressStart.String(), router)
+        if errServer != nil </span><span class="cov0" title="0">{
+                log.Fatal(errServer.Error())
+        }</span>
+}
+
+func initRouter() (*gin.Engine, *zap.Logger, *config.Config) <span class="cov8" title="1">{
 
         router := gin.Default()
+
+        router.Use(gzip.Gzip(gzip.DefaultCompression, gzip.WithDecompressFn(gzip.DefaultDecompressHandle)))
+
+        serverConfig := config.NewConfig()
 
         logger, err := addLogger(router, serverConfig.FullLog)
 
@@ -182,17 +196,17 @@ func main() <span class="cov0" title="0">{
                 os.Exit(5)
         }</span>
 
-        <span class="cov0" title="0">repositoryRead, repositoryWrite := getRepository(serverConfig, logger)
+        <span class="cov8" title="1">repositoryRead, repositoryWrite := getRepository(serverConfig, logger)
 
         if repositoryRead == nil </span><span class="cov0" title="0">{
                 logger.Error("ошибка инициализации репозитория на чтение. Тип репозитория: " + config.StorageTypeDB)
         }</span>
 
-        <span class="cov0" title="0">if repositoryWrite == nil </span><span class="cov0" title="0">{
+        <span class="cov8" title="1">if repositoryWrite == nil </span><span class="cov0" title="0">{
                 logger.Error("ошибка инициализации репозитория на запись. Тип репозитория: " + config.StorageTypeDB)
         }</span>
 
-        <span class="cov0" title="0">if serverConfig.StorageType == config.StorageTypeDB </span><span class="cov0" title="0">{
+        <span class="cov8" title="1">if serverConfig.StorageType == config.StorageTypeDB </span><span class="cov0" title="0">{
                 absPath, errPathMigration := filepath.Abs(".")
                 if errPathMigration != nil </span><span class="cov0" title="0">{
                         logger.Error("ошибка определения директории для миграций!")
@@ -201,7 +215,7 @@ func main() <span class="cov0" title="0">{
                 }</span>
         }
 
-        <span class="cov0" title="0">jwtValidate := middleware.NewJWTValidator(serverConfig.AddressStart.URL)
+        <span class="cov8" title="1">jwtValidate := middleware.NewJWTValidator(serverConfig.AddressStart.URL)
 
         shortURLService := service.NewShortURLService(repositoryRead, repositoryWrite)
 
@@ -215,8 +229,6 @@ func main() <span class="cov0" title="0">{
         handlerFindByUser := user.NewURLFindByUserHandler(shortURLService, serverConfig.BaseShort.URL)
         handlerDelete := deleteUrl.NewDeleteHandler(shortURLService)
 
-        router.Use(gzip.Gzip(gzip.DefaultCompression, gzip.WithDecompressFn(gzip.DefaultDecompressHandle)))
-
         router.GET(Ping, handlerPing.Handle)
         router.POST(SaveFullURL, jwtValidate.Handle, handlerSave.Handle)
         router.GET(GetFullURL, handlerFind.Handle)
@@ -227,22 +239,18 @@ func main() <span class="cov0" title="0">{
 
         pprof.Register(router, "dev/pprof")
 
-        logger.Info("server start on port: " + serverConfig.AddressStart.String())
+        return router, logger, serverConfig</span>
 
-        errServer := http.ListenAndServe(serverConfig.AddressStart.String(), router)
-        if errServer != nil </span><span class="cov0" title="0">{
-                logger.Fatal(errServer.Error())
-        }</span>
 }
 
-func addLogger(r *gin.Engine, fullLogger bool) (*zap.Logger, error) <span class="cov0" title="0">{
+func addLogger(r *gin.Engine, fullLogger bool) (*zap.Logger, error) <span class="cov8" title="1">{
         logger, err := zap.NewProduction()
 
         if err != nil </span><span class="cov0" title="0">{
                 return nil, err
         }</span>
 
-        <span class="cov0" title="0">if fullLogger </span><span class="cov0" title="0">{
+        <span class="cov8" title="1">if fullLogger </span><span class="cov0" title="0">{
                 r.Use(ginzap.Ginzap(logger, time.RFC3339, true))
                 r.Use(ginzap.RecoveryWithZap(logger, true))
                 r.Use(ginzap.GinzapWithConfig(logger, &amp;ginzap.Config{
@@ -268,7 +276,7 @@ func addLogger(r *gin.Engine, fullLogger bool) (*zap.Logger, error) <span class=
                 }))
         }
 
-        <span class="cov0" title="0">return logger, nil</span>
+        <span class="cov8" title="1">return logger, nil</span>
 }
 
 func initMigrations(migrationPath string, DB *sqlx.DB) <span class="cov0" title="0">{
@@ -290,10 +298,14 @@ func initMigrations(migrationPath string, DB *sqlx.DB) <span class="cov0" title=
         }
 }
 
-func getRepository(serverConfig *config.Config, logger *zap.Logger) (service.RepositoryReader, service.RepositoryWriter) <span class="cov0" title="0">{
+func getRepository(serverConfig *config.Config, logger *zap.Logger) (service.RepositoryReader, service.RepositoryWriter) <span class="cov8" title="1">{
 
         if serverConfig.StorageType == config.StorageTypeDB </span><span class="cov0" title="0">{
-                repository, errPingRepo := pg.NewPostgresRepository(serverConfig.DatabaseURL.URL)
+                database, err := sqlx.Open("postgres", serverConfig.DatabaseURL.URL)
+                if err != nil </span><span class="cov0" title="0">{
+                        return nil, nil
+                }</span>
+                <span class="cov0" title="0">repository, errPingRepo := pg.NewPostgresRepository(database)
                 if errPingRepo != nil </span><span class="cov0" title="0">{
                         logger.Error(errPingRepo.Error())
                 }</span>
@@ -301,7 +313,7 @@ func getRepository(serverConfig *config.Config, logger *zap.Logger) (service.Rep
                 <span class="cov0" title="0">return repository, repository</span>
         }
 
-        <span class="cov0" title="0">if serverConfig.StorageType == config.StorageTypeFile </span><span class="cov0" title="0">{
+        <span class="cov8" title="1">if serverConfig.StorageType == config.StorageTypeFile </span><span class="cov0" title="0">{
                 repositoryWrite, errStorageWrite := filestorage.NewFileStorageRepositoryWrite(serverConfig.FileStorage.Path)
                 if errStorageWrite != nil </span><span class="cov0" title="0">{
                         logger.Error(errStorageWrite.Error())
@@ -315,7 +327,7 @@ func getRepository(serverConfig *config.Config, logger *zap.Logger) (service.Rep
                 <span class="cov0" title="0">return repositoryRead, repositoryWrite</span>
         }
 
-        <span class="cov0" title="0">if serverConfig.StorageType == config.StorageTypeMemory </span><span class="cov0" title="0">{
+        <span class="cov8" title="1">if serverConfig.StorageType == config.StorageTypeMemory </span><span class="cov8" title="1">{
                 repositoryWrite := localstorage.NewLocalStorageRepository()
 
                 return repositoryWrite, repositoryWrite
@@ -1035,20 +1047,20 @@ type LocalStorageRow struct {
 }
 
 // Batch Массовое сохранение
-func (repo *LocalStorageRepository) Batch(ents []batch.ButchRequest) ([]entity.ShortURLEntity, error) <span class="cov0" title="0">{
+func (repo *LocalStorageRepository) Batch(ents []batch.ButchRequest) ([]entity.ShortURLEntity, error) <span class="cov8" title="1">{
         var shortURL string
         var models []entity.ShortURLEntity
-        for _, ent := range ents </span><span class="cov0" title="0">{
+        for _, ent := range ents </span><span class="cov8" title="1">{
                 shortURL = utils.GenerateShortURL(ent.OriginalURL)
                 repo.Rows[shortURL] = LocalStorageRow{ShortURL: shortURL, URL: ent.OriginalURL, CorrelationID: ent.CorrelationID}
                 models = append(models, entity.ShortURLEntity{ShortURL: shortURL, URL: ent.OriginalURL, CorrelationID: ent.CorrelationID})
         }</span>
 
-        <span class="cov0" title="0">return models, nil</span>
+        <span class="cov8" title="1">return models, nil</span>
 }
 
 // NewLocalStorageRepository конструктор
-func NewLocalStorageRepository() *LocalStorageRepository <span class="cov0" title="0">{
+func NewLocalStorageRepository() *LocalStorageRepository <span class="cov8" title="1">{
         return &amp;LocalStorageRepository{
                 Rows: make(map[string]LocalStorageRow),
         }
@@ -1113,27 +1125,22 @@ type PostgresRepository struct {
 }
 
 // NewPostgresRepository конструктор
-func NewPostgresRepository(databaseURL string) (*PostgresRepository, error) <span class="cov0" title="0">{
-        database, err := sqlx.Open("postgres", databaseURL)
-        if err != nil </span><span class="cov0" title="0">{
-                return nil, err
-        }</span>
-
-        <span class="cov0" title="0">return &amp;PostgresRepository{DB: database}, nil</span>
-}
+func NewPostgresRepository(DB *sqlx.DB) (*PostgresRepository, error) <span class="cov0" title="0">{
+        return &amp;PostgresRepository{DB: DB}, nil
+}</span>
 
 // Ping  пинг
-func (repo *PostgresRepository) Ping(ctx context.Context) error <span class="cov0" title="0">{
+func (repo *PostgresRepository) Ping(ctx context.Context) error <span class="cov8" title="1">{
         select </span>{
         case &lt;-ctx.Done():<span class="cov0" title="0">
                 return fmt.Errorf("прервали работу")</span>
-        default:<span class="cov0" title="0">
+        default:<span class="cov8" title="1">
                 return repo.DB.Ping()</span>
         }
 }
 
 // FindByShortURL поиск по короткой ссылке
-func (repo *PostgresRepository) FindByShortURL(shortURL string) (*entity.ShortURLEntity, error) <span class="cov0" title="0">{
+func (repo *PostgresRepository) FindByShortURL(shortURL string) (*entity.ShortURLEntity, error) <span class="cov8" title="1">{
 
         ent := []entity.ShortURLEntity{}
         err := repo.DB.Select(&amp;ent,
@@ -1144,11 +1151,11 @@ func (repo *PostgresRepository) FindByShortURL(shortURL string) (*entity.ShortUR
                 return nil, err
         }</span>
 
-        <span class="cov0" title="0">if len(ent) == 0 </span><span class="cov0" title="0">{
+        <span class="cov8" title="1">if len(ent) == 0 </span><span class="cov0" title="0">{
                 return nil, nil
         }</span>
 
-        <span class="cov0" title="0">return &amp;ent[0], nil</span>
+        <span class="cov8" title="1">return &amp;ent[0], nil</span>
 }
 
 // Save сохранение
@@ -1170,7 +1177,7 @@ func (repo *PostgresRepository) GetDB() *sqlx.DB <span class="cov0" title="0">{
 }</span>
 
 // Batch Массовое сохранение
-func (repo *PostgresRepository) Batch(request []batch.ButchRequest) ([]entity.ShortURLEntity, error) <span class="cov0" title="0">{
+func (repo *PostgresRepository) Batch(request []batch.ButchRequest) ([]entity.ShortURLEntity, error) <span class="cov8" title="1">{
         var models []entity.ShortURLEntity
         var allModels []entity.ShortURLEntity
 
@@ -1180,17 +1187,17 @@ func (repo *PostgresRepository) Batch(request []batch.ButchRequest) ([]entity.Sh
                 return nil, err
         }</span>
 
-        <span class="cov0" title="0">k := 0
+        <span class="cov8" title="1">k := 0
         var values []string
         var params []interface{}
 
-        for i, item := range request </span><span class="cov0" title="0">{
+        for i, item := range request </span><span class="cov8" title="1">{
                 models = append(models, entity.ShortURLEntity{URL: item.OriginalURL, CorrelationID: item.CorrelationID, ShortURL: utils.GenerateShortURL(item.OriginalURL)})
 
-                if len(models) == ButchSize || len(request) == i+1 </span><span class="cov0" title="0">{
+                if len(models) == ButchSize || len(request) == i+1 </span><span class="cov8" title="1">{
                         values = nil
                         params = nil
-                        for _, enty := range models </span><span class="cov0" title="0">{
+                        for _, enty := range models </span><span class="cov8" title="1">{
                                 values = append(values, "("+
                                         "$"+fmt.Sprintf("%d,", k+1)+
                                         "$"+fmt.Sprintf("%d,", k+2)+
@@ -1200,7 +1207,7 @@ func (repo *PostgresRepository) Batch(request []batch.ButchRequest) ([]entity.Sh
                                 k += 4
                         }</span>
 
-                        <span class="cov0" title="0">valuesStr := strings.Join(values, ",")
+                        <span class="cov8" title="1">valuesStr := strings.Join(values, ",")
                         _, err = repo.DB.Exec(fmt.Sprintf(`INSERT into %s values %s`, TableName, valuesStr), params...)
                         if err != nil </span><span class="cov0" title="0">{
                                 err2 := tx.Rollback()
@@ -1209,17 +1216,17 @@ func (repo *PostgresRepository) Batch(request []batch.ButchRequest) ([]entity.Sh
                                 }</span>
                                 <span class="cov0" title="0">return nil, err</span>
                         }
-                        <span class="cov0" title="0">allModels = append(allModels, models...)
+                        <span class="cov8" title="1">allModels = append(allModels, models...)
                         models = nil</span>
                 }
         }
 
-        <span class="cov0" title="0">err = tx.Commit()
+        <span class="cov8" title="1">err = tx.Commit()
         if err != nil </span><span class="cov0" title="0">{
                 return nil, err
         }</span>
 
-        <span class="cov0" title="0">return allModels, nil</span>
+        <span class="cov8" title="1">return allModels, nil</span>
 }
 
 // GetUrlsByUserID получение ссылок по пользователю
@@ -1465,7 +1472,7 @@ import (
 )
 
 // GenerateShortURL формированиерое краткого url
-func GenerateShortURL(url string) string <span class="cov0" title="0">{
+func GenerateShortURL(url string) string <span class="cov8" title="1">{
         hash := sha1.New()
         hash.Write([]byte(url))
         return base64.URLEncoding.EncodeToString(hash.Sum(nil))[:8]
