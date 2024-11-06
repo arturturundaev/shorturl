@@ -2,7 +2,6 @@ package staticlint
 
 import (
 	"github.com/arturturundaev/shorturl/internal/pkg/analyser/exitmain"
-	_ "github.com/arturturundaev/shorturl/internal/pkg/analyser/exitmain"
 	"github.com/gordonklaus/ineffassign/pkg/ineffassign"
 	"github.com/timakin/bodyclose/passes/bodyclose"
 	"golang.org/x/tools/go/analysis"
