@@ -33,9 +33,14 @@ func TestNewConfig(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := NewConfig(); !reflect.DeepEqual(got, tt.want) {
+			got := NewConfig()
+			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("NewConfig() = %v, want %v", got, tt.want)
 			}
+			got.BaseShort.Set("s")
+			got.FileStorage.Set("s")
+			got.DatabaseURL.Set("s")
+			got.AddressStart.Set("127.0.0.1:8080")
 		})
 	}
 }

@@ -57,6 +57,9 @@ func (repository *MockWriteRepository) Save(shortURL string, url string, addedUs
 	if url == "repositoryError" {
 		return fmt.Errorf("Error on insert row")
 	}
+	if url == "exists" {
+		return service.ErrEntityExists
+	}
 	return nil
 }
 
@@ -98,6 +101,16 @@ func TestSaveHandler_Handle(t *testing.T) {
 			want: want{
 				statusCode: http.StatusCreated,
 				body:       "http://example.com/nnF0wba_",
+			},
+		},
+		{
+			name:    "Success",
+			method:  http.MethodPost,
+			request: "/",
+			body:    "exists",
+			want: want{
+				statusCode: http.StatusConflict,
+				body:       "http://example.com/TWjI8TRZ",
 			},
 		},
 	}

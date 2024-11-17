@@ -55,6 +55,9 @@ func (repository *MockReadRepository) FindByShortURL(shortURL string) (*entity.S
 	if shortURL == "find" {
 		return &entity.ShortURLEntity{URL: "findFull", ShortURL: "find"}, nil
 	}
+	if shortURL == "Deleted" {
+		return &entity.ShortURLEntity{URL: "findFull", ShortURL: "find", IsDeleted: true}, nil
+	}
 
 	return nil, nil
 }
@@ -92,7 +95,7 @@ func TestFindHandler_Handle(t *testing.T) {
 			body:    "",
 			want: want{
 				statusCode: http.StatusBadRequest,
-				body:       "Row not found by short url: repositoryError",
+				body:       "not find",
 				location:   "",
 			},
 		},
@@ -105,6 +108,17 @@ func TestFindHandler_Handle(t *testing.T) {
 				statusCode: http.StatusTemporaryRedirect,
 				body:       "<a href=\"/findFull\">Temporary Redirect</a>.\n\n",
 				location:   "/findFull",
+			},
+		},
+		{
+			name:    "Deleted",
+			method:  http.MethodGet,
+			request: "/Deleted",
+			body:    "",
+			want: want{
+				statusCode: http.StatusOK,
+				body:       "",
+				location:   "",
 			},
 		},
 	}

@@ -35,11 +35,6 @@ func (h *ShortenHandler) Handle(ctx *gin.Context) {
 		return
 	}
 
-	if dto.URL == "" {
-		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "Empty URL"})
-		return
-	}
-
 	data, errRepository := h.service.Save(ctx, dto.URL)
 
 	if errRepository != nil && !errors.Is(errRepository, service.ErrEntityExists) {
