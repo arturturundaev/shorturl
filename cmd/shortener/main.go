@@ -2,7 +2,6 @@ package main
 
 import (
 	"bytes"
-	"context"
 	"fmt"
 	"github.com/arturturundaev/shorturl/internal/app/handler/batch"
 	deleteUrl "github.com/arturturundaev/shorturl/internal/app/handler/delete"
@@ -91,35 +90,24 @@ func main() {
 	}
 
 	go func() {
-		var errServer error
-		if serverConfig.HTTPS.Enabled {
-			errServer = server.ListenAndServeTLS(serverConfig.HTTPS.SSLPemPath, serverConfig.HTTPS.SSLKeyPath)
-		} else {
-			errServer = server.ListenAndServe()
+		signalChan := make(chan os.Signal, 1)
+		signal.Notify(signalChan, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
+		<-signalChan
+		if serverConfig.StorageType == config.StorageTypeMemory {
+			repoRW.(*localstorage.LocalStorageRepository).SaveToFile("/tmp/save.txt")
 		}
-		if errServer != nil {
-			logger.Fatal(errServer.Error())
-		}
+		os.Exit(0)
 	}()
 
-	signalChan := make(chan os.Signal, 1)
-	signal.Notify(signalChan, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
-	sig := <-signalChan
-	logger.Error(fmt.Sprintf("Shutdown server: %v...", sig))
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
-	if err := server.Shutdown(ctx); err != nil {
-		logger.Error(fmt.Sprintf("HTTP server Shutdown error: %v\n", err))
+	var errServer error
+	if serverConfig.HTTPS.Enabled {
+		errServer = server.ListenAndServeTLS(serverConfig.HTTPS.SSLPemPath, serverConfig.HTTPS.SSLKeyPath)
+	} else {
+		errServer = server.ListenAndServe()
 	}
-	// Если храним всё в памяти - сохраним всё в файл
-	if serverConfig.StorageType == config.StorageTypeMemory {
-		err := repoRW.(*localstorage.LocalStorageRepository).SaveToFile("/tmp/save.txt")
-		if err != nil {
-			logger.Error(err.Error())
-		}
+	if errServer != nil {
+		logger.Fatal(errServer.Error())
 	}
-
-	logger.Info("Server exited")
 }
 
 func initRouter() (*gin.Engine, *zap.Logger, *config.Config, service.RepositoryWriter) {
