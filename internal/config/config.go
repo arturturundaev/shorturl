@@ -11,7 +11,6 @@ import (
 	"encoding/json"
 	"encoding/pem"
 	"flag"
-	"fmt"
 	"log"
 	"math/big"
 	"net"
@@ -71,12 +70,8 @@ func NewConfig() *Config {
 			log.Fatal(err)
 		}
 	}
-	fmt.Println(cfg.AddressStart)
-	fmt.Println(os.Getenv("SERVER_ADDRESS"))
-	fmt.Println(preConfig.AddressStart)
-	fmt.Println("127.0.0.1:8086")
 
-	cfg.AddressStart = cmp.Or(cfg.AddressStart, os.Getenv("SERVER_ADDRESS"), preConfig.AddressStart, "127.0.0.1:8086")
+	cfg.AddressStart = cmp.Or(cfg.AddressStart, os.Getenv("SERVER_ADDRESS"), preConfig.AddressStart, "127.0.0.1:8080")
 	cfg.BaseShort = cmp.Or(cfg.BaseShort, os.Getenv("BASE_URL"), preConfig.BaseShort, "127.0.0.1:8080")
 	cfg.FileStorage = cmp.Or(cfg.FileStorage, os.Getenv("FILE_STORAGE_PATH"), preConfig.FileStorage)
 	cfg.DatabaseURL = cmp.Or(cfg.DatabaseURL, os.Getenv("DATABASE_DSN"), preConfig.DatabaseURL)
