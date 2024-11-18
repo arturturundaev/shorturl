@@ -22,8 +22,7 @@ type FileStorageReadRepository struct {
 
 // Find поиск
 func (repo *FileStorageReadRepository) Find(shortURLs []string, addedUserID string) ([]entity.ShortURLEntity, error) {
-	//TODO implement me
-	panic("implement me")
+	return make([]entity.ShortURLEntity, 0), nil
 }
 
 // GetUrlsByUserID получение ссылок по пользователю

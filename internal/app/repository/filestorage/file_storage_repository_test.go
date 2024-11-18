@@ -3,6 +3,8 @@ package filestorage
 import (
 	"github.com/arturturundaev/shorturl/internal/app/entity"
 	"github.com/arturturundaev/shorturl/internal/app/handler/batch"
+	"github.com/gin-gonic/gin"
+	"net/http/httptest"
 	"reflect"
 	"testing"
 )
@@ -197,4 +199,50 @@ func TestFileStorageWriteRepository_Batch(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestFileStorageReadRepository_Find(t *testing.T) {
+	repositoryWrite, err := NewFileStorageRepositoryRead("/tmp/filestorage-test.txt")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	repositoryWrite.Find(nil, "bla")
+}
+
+func TestFileStorageReadRepository_GetUrlsByUserID(t *testing.T) {
+	repositoryWrite, err := NewFileStorageRepositoryRead("/tmp/filestorage-test.txt")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	repositoryWrite.GetUrlsByUserID("bla")
+}
+
+func TestFileStorageReadRepository_GetDB(t *testing.T) {
+	repositoryWrite, err := NewFileStorageRepositoryRead("/tmp/filestorage-test.txt")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	repositoryWrite.GetDB()
+}
+
+func TestFileStorageReadRepository_GetDB2(t *testing.T) {
+	repositoryWrite, err := NewFileStorageRepositoryWrite("/tmp/filestorage-test.txt")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	repositoryWrite.GetDB()
+}
+
+func TestFileStorageReadRepository_Ping(t *testing.T) {
+	repositoryWrite, err := NewFileStorageRepositoryRead("/tmp/filestorage-test.txt")
+	if err != nil {
+		t.Fatal(err)
+	}
+	ctx, _ := gin.CreateTestContext(httptest.NewRecorder())
+
+	repositoryWrite.Ping(ctx)
 }

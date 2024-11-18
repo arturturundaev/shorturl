@@ -1,12 +1,14 @@
 package localstorage
 
 import (
+	"bufio"
 	"context"
-
+	"encoding/json"
 	"github.com/arturturundaev/shorturl/internal/app/entity"
 	"github.com/arturturundaev/shorturl/internal/app/handler/batch"
 	"github.com/arturturundaev/shorturl/internal/app/utils"
 	"github.com/jmoiron/sqlx"
+	"os"
 )
 
 // LocalStorageRepository сервис
@@ -77,5 +79,27 @@ func (repo *LocalStorageRepository) GetDB() *sqlx.DB {
 
 // Delete удаление
 func (repo *LocalStorageRepository) Delete(shortURLs []string, addedUserID string) error {
+	return nil
+}
+
+func (repo *LocalStorageRepository) SaveToFile(fileName string) error {
+	file, err := os.OpenFile(fileName, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0666)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+	writer := bufio.NewWriter(file)
+	encoder := json.NewEncoder(writer)
+	for _, v := range repo.Rows {
+		err = encoder.Encode(v)
+		if err != nil {
+			return err
+		}
+	}
+	err = writer.Flush()
+	if err != nil {
+		return err
+	}
+
 	return nil
 }

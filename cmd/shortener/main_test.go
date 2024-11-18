@@ -27,7 +27,7 @@ func Test_initRouter(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			_, _, _ = initRouter()
+			_, _, _, _ = initRouter()
 		})
 	}
 }
@@ -65,7 +65,7 @@ func Test_getRepository(t *testing.T) {
 	}{
 		{
 			name:         "success connect to file storage",
-			serverConfig: &config.Config{StorageType: config.StorageTypeFile, FileStorage: config.FileStorageType{Path: "/tmp/bla.txt"}},
+			serverConfig: &config.Config{StorageType: config.StorageTypeFile, FileStorage: "/tmp/bla.txt"},
 		},
 	}
 	for _, tt := range tests {

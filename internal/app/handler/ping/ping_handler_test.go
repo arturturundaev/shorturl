@@ -2,6 +2,7 @@ package ping
 
 import (
 	"context"
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -15,6 +16,15 @@ type pigngerMock struct {
 }
 
 func (p *pigngerMock) Ping(ctx context.Context) error {
+	result := ctx.Value("result")
+
+	if result == nil {
+		return nil
+	}
+
+	if result == "error" {
+		return fmt.Errorf("error")
+	}
 	return nil
 }
 
@@ -33,15 +43,22 @@ func TestPingHandler_Handle(t *testing.T) {
 			serviceReposnse: nil,
 			wuntCode:        http.StatusOK,
 		},
+		{
+			name:            "error",
+			service:         srv,
+			serviceReposnse: fmt.Errorf("error"),
+			wuntCode:        http.StatusInternalServerError,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			tt.service.On("Ping", tt.name).Return(tt.serviceReposnse)
+			ctx, _ := gin.CreateTestContext(httptest.NewRecorder())
+			ctx.Set("result", tt.name)
+			tt.service.On("Ping", ctx).Return(tt.serviceReposnse)
 			h := &PingHandler{
 				service: tt.service,
 			}
 
-			ctx, _ := gin.CreateTestContext(httptest.NewRecorder())
 			h.Handle(ctx)
 
 			assert.Equal(t, tt.wuntCode, ctx.Writer.Status())

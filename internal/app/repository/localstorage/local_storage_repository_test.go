@@ -152,3 +152,9 @@ func TestLocalStorageRepository_GetUrlsByUserID(t *testing.T) {
 		t.Errorf("GetUrlsByUserID() error")
 	}
 }
+
+func TestLocalStorageRepository_SaveToFile(t *testing.T) {
+	repo := NewLocalStorageRepository()
+	repo.Save("bla", "bla", "bla")
+	repo.SaveToFile("/tmp/test.txt")
+}
