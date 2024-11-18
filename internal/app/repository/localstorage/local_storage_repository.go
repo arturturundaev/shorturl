@@ -82,6 +82,7 @@ func (repo *LocalStorageRepository) Delete(shortURLs []string, addedUserID strin
 	return nil
 }
 
+// SaveToFile сохраняем текущее состояние в файл при падении
 func (repo *LocalStorageRepository) SaveToFile(fileName string) error {
 	file, err := os.OpenFile(fileName, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0666)
 	if err != nil {
