@@ -14,7 +14,7 @@ func TestNewConfig(t *testing.T) {
 			"wthout any settings",
 			&Config{
 				AddressStart: "localhost:8080",
-				BaseShort:    "localhost:8080",
+				BaseShort:    "http://localhost:8080",
 				FileStorage:  "",
 				DatabaseURL:  "",
 				StorageType:  "Memory",
