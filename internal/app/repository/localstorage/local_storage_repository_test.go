@@ -4,6 +4,8 @@ import (
 	"github.com/arturturundaev/shorturl/internal/app/entity"
 	"github.com/arturturundaev/shorturl/internal/app/handler/batch"
 	"github.com/arturturundaev/shorturl/internal/app/utils"
+	"github.com/gin-gonic/gin"
+	"net/http/httptest"
 	"reflect"
 	"testing"
 )
@@ -114,7 +116,9 @@ func TestLocalStorageRepository_Save(t *testing.T) {
 
 func TestLocalStorageRepository_Ping(t *testing.T) {
 	repo := NewLocalStorageRepository()
-	resultPing := repo.Ping(nil)
+	ctx, _ := gin.CreateTestContext(httptest.NewRecorder())
+
+	resultPing := repo.Ping(ctx)
 
 	if resultPing != nil {
 		t.Errorf("Ping() error")

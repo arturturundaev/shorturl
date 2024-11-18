@@ -73,20 +73,20 @@ func TestFileStorageReadRepository_FindByShortURL(t *testing.T) {
 
 	tests := []struct {
 		name         string
-		findShortUrl string
+		findShortURL string
 		want         *entity.ShortURLEntity
 		wantErr      bool
 	}{
 		{
 			name:         "not find",
-			findShortUrl: "bla2",
+			findShortURL: "bla2",
 			want:         nil,
 			wantErr:      false,
 		},
 
 		{
 			name:         "find",
-			findShortUrl: "bla",
+			findShortURL: "bla",
 			want: &entity.ShortURLEntity{
 				ShortURL:      "bla",
 				URL:           "bla",
@@ -99,7 +99,7 @@ func TestFileStorageReadRepository_FindByShortURL(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := repositoryRead.FindByShortURL(tt.findShortUrl)
+			got, err := repositoryRead.FindByShortURL(tt.findShortURL)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("FindByShortURL() error = %v, wantErr %v", err, tt.wantErr)
 				return

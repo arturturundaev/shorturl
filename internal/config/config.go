@@ -11,6 +11,7 @@ import (
 	"encoding/json"
 	"encoding/pem"
 	"flag"
+	"fmt"
 	"log"
 	"math/big"
 	"net"
@@ -70,6 +71,10 @@ func NewConfig() *Config {
 			log.Fatal(err)
 		}
 	}
+	fmt.Println(cfg.AddressStart)
+	fmt.Println(os.Getenv("SERVER_ADDRESS"))
+	fmt.Println(preConfig.AddressStart)
+	fmt.Println("127.0.0.1:8086")
 
 	cfg.AddressStart = cmp.Or(cfg.AddressStart, os.Getenv("SERVER_ADDRESS"), preConfig.AddressStart, "127.0.0.1:8086")
 	cfg.BaseShort = cmp.Or(cfg.BaseShort, os.Getenv("BASE_URL"), preConfig.BaseShort, "127.0.0.1:8080")
@@ -148,10 +153,10 @@ func saveToFile(filePath string, cypherType string, cypher []byte) error {
 		Bytes: cypher,
 	})
 
-	file, err := os.Create(filePath)
+	file, _ = os.Create(filePath)
 	defer file.Close()
 
-	_, err = buf.WriteTo(file)
+	_, err := buf.WriteTo(file)
 	if err != nil {
 		return err
 	}
