@@ -13,8 +13,8 @@ func TestNewConfig(t *testing.T) {
 		{
 			"wthout any settings",
 			&Config{
-				AddressStart: "127.0.0.1:8080",
-				BaseShort:    "127.0.0.1:8080",
+				AddressStart: "localhost:8080",
+				BaseShort:    "localhost:8080",
 				FileStorage:  "",
 				DatabaseURL:  "",
 				StorageType:  "Memory",
