@@ -104,3 +104,10 @@ func (repo *LocalStorageRepository) SaveToFile(fileName string) error {
 
 	return nil
 }
+
+func (repo *LocalStorageRepository) GetUrlsCount() int32 {
+	return 0
+}
+func (repo *LocalStorageRepository) GetUsersCount() int32 {
+	return 0
+}

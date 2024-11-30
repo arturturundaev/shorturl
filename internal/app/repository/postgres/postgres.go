@@ -168,3 +168,29 @@ func (repo *PostgresRepository) Delete(shortURLs []string, addedUserID string) e
 func (repo *PostgresRepository) SaveToFile(fileName string) error {
 	return nil
 }
+
+// getUrlsCount
+func (repo *PostgresRepository) GetUrlsCount() int32 {
+	var count int32
+
+	err := repo.DB.QueryRow(fmt.Sprintf("select COUNT(*) from %s", TableName)).Scan(&count)
+
+	if err != nil {
+		return 0
+	}
+
+	return count
+}
+
+// getUsersCount
+func (repo *PostgresRepository) GetUsersCount() int32 {
+	var count int32
+
+	err := repo.DB.QueryRow(fmt.Sprintf("select COUNT(DISTINCT added_user_id) from %s", TableName)).Scan(&count)
+
+	if err != nil {
+		return 0
+	}
+
+	return count
+}

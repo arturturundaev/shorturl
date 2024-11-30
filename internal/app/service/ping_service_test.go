@@ -9,6 +9,16 @@ import (
 
 type RepositoryMock struct{}
 
+func (r RepositoryMock) GetUrlsCount() int32 {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (r RepositoryMock) GetUsersCount() int32 {
+	//TODO implement me
+	panic("implement me")
+}
+
 func (r RepositoryMock) FindByShortURL(shortURL string) (*entity.ShortURLEntity, error) {
 	return nil, nil
 }

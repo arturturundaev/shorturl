@@ -135,3 +135,11 @@ func (repo *FileStorageWriteRepository) Delete(shortURLs []string, addedUserID s
 func (repo *FileStorageWriteRepository) SaveToFile(fileName string) error {
 	return nil
 }
+
+func (repo *FileStorageReadRepository) GetUrlsCount() int32 {
+	return 0
+}
+
+func (repo *FileStorageReadRepository) GetUsersCount() int32 {
+	return 0
+}

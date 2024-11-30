@@ -19,6 +19,16 @@ import (
 
 type MockReadRepository struct{}
 
+func (repository *MockReadRepository) GetUrlsCount() int32 {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (repository *MockReadRepository) GetUsersCount() int32 {
+	//TODO implement me
+	panic("implement me")
+}
+
 func (repository *MockReadRepository) GetUrlsByUserID(userID string) ([]entity.ShortURLEntity, error) {
 	//TODO implement me
 	panic("implement me")

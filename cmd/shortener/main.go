@@ -9,6 +9,7 @@ import (
 	"github.com/arturturundaev/shorturl/internal/app/handler/ping"
 	"github.com/arturturundaev/shorturl/internal/app/handler/save"
 	"github.com/arturturundaev/shorturl/internal/app/handler/shorten"
+	"github.com/arturturundaev/shorturl/internal/app/handler/stats"
 	"github.com/arturturundaev/shorturl/internal/app/handler/user"
 	"github.com/arturturundaev/shorturl/internal/app/middleware"
 	"github.com/arturturundaev/shorturl/internal/app/repository/filestorage"
@@ -68,6 +69,9 @@ const URLByUser = `/api/user/urls`
 
 // DeleteByUrls удаление ссылок
 const DeleteByUrls = `/api/user/urls`
+
+// UserUrlsCountStat
+const UserUrlsCountStat = `/api/internal/stats`
 
 func main() {
 	defer func() {
@@ -143,10 +147,13 @@ func initRouter() (*gin.Engine, *zap.Logger, *config.Config, service.RepositoryW
 	}
 
 	jwtValidate := middleware.NewJWTValidator(serverConfig.AddressStart)
+	trustedSubnet := middleware.NewTrustedSubnetMiddleware(serverConfig.TrustedSubnetFinal)
 
 	shortURLService := service.NewShortURLService(repositoryRead, repositoryWrite)
 
 	pingService := service.NewPingService(repositoryRead)
+
+	statService := service.NewStatService(repositoryRead)
 
 	handlerFind := find.NewFindHandler(shortURLService)
 	handlerSave := save.NewSaveHandler(shortURLService, serverConfig.BaseShort)
@@ -155,6 +162,7 @@ func initRouter() (*gin.Engine, *zap.Logger, *config.Config, service.RepositoryW
 	handlerButch := batch.NewButchHandler(shortURLService, serverConfig.BaseShort)
 	handlerFindByUser := user.NewURLFindByUserHandler(shortURLService, serverConfig.BaseShort)
 	handlerDelete := deleteUrl.NewDeleteHandler(shortURLService)
+	handlerUsersUrlsCount := stats.NewUrlsAndUsersStatHandler(statService)
 
 	router.GET(Ping, handlerPing.Handle)
 	router.POST(SaveFullURL, jwtValidate.Handle, handlerSave.Handle)
@@ -163,6 +171,7 @@ func initRouter() (*gin.Engine, *zap.Logger, *config.Config, service.RepositoryW
 	router.POST(SaveBatch, handlerButch.Handle)
 	router.GET(URLByUser, jwtValidate.Handle, handlerFindByUser.Handle)
 	router.DELETE(DeleteByUrls, jwtValidate.Handle, handlerDelete.Handle)
+	router.GET(UserUrlsCountStat, trustedSubnet.Handle, handlerUsersUrlsCount.Handle)
 
 	pprof.Register(router, "dev/pprof")
 

@@ -16,6 +16,7 @@ import (
 	"net"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -32,6 +33,8 @@ type Config struct {
 		SSLKeyPath string
 		SSLPemPath string
 	}
+	TrustedSubnet      string `json:"trusted_subnet"`
+	TrustedSubnetFinal []*net.IPNet
 }
 
 // StorageTypeMemory место зранения
@@ -57,6 +60,7 @@ func NewConfig() *Config {
 	flag.BoolVar(&cfg.HTTPS.Enabled, "s", false, "ssl enabled")
 	flag.StringVar(&cfg.HTTPS.SSLKeyPath, "sslk", "./auto_server.key", "Path to ssl key file")
 	flag.StringVar(&cfg.HTTPS.SSLPemPath, "sslp", "./auto_server.pem", "Path to ssl pem file")
+	flag.StringVar(&cfg.TrustedSubnet, "t", "", "Path to ssl pem file")
 	flag.Parse()
 
 	preConfig := &Config{}
@@ -75,6 +79,7 @@ func NewConfig() *Config {
 	cfg.BaseShort = cmp.Or(cfg.BaseShort, os.Getenv("BASE_URL"), preConfig.BaseShort, "http://localhost:8080")
 	cfg.FileStorage = cmp.Or(cfg.FileStorage, os.Getenv("FILE_STORAGE_PATH"), preConfig.FileStorage)
 	cfg.DatabaseURL = cmp.Or(cfg.DatabaseURL, os.Getenv("DATABASE_DSN"), preConfig.DatabaseURL)
+	cfg.TrustedSubnet = cmp.Or(cfg.TrustedSubnet, os.Getenv("TRUSTED_SUBNET"), preConfig.TrustedSubnet)
 
 	var storageType = StorageTypeMemory
 
@@ -99,6 +104,8 @@ func NewConfig() *Config {
 	if cfg.HTTPS.Enabled && cfg.HTTPS.SSLKeyPath == "./auto_server.key" {
 		CreateTLSCert("./auto_server.pem", "./auto_server.key")
 	}
+
+	cfg.TrustedSubnetFinal = prepareTrustedSubnets(cfg.TrustedSubnet)
 
 	return cfg
 }
@@ -157,4 +164,17 @@ func saveToFile(filePath string, cypherType string, cypher []byte) error {
 	}
 
 	return nil
+}
+
+func prepareTrustedSubnets(data string) []*net.IPNet {
+	var subnets []*net.IPNet
+	if data != "" {
+		subStr := strings.Split(data, ",")
+		for _, subnetStr := range subStr {
+			_, subnetIPNet, _ := net.ParseCIDR(subnetStr)
+			subnets = append(subnets, subnetIPNet)
+		}
+	}
+
+	return subnets
 }
