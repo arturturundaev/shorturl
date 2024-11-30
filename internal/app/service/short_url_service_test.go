@@ -13,6 +13,11 @@ type RepositoryWriteMock struct {
 	mock.Mock
 }
 
+func (r *RepositoryWriteMock) SaveToFile(fileName string) error {
+	//TODO implement me
+	panic("implement me")
+}
+
 func (r *RepositoryWriteMock) Save(shortURL, url, addedUserID string) error {
 	return nil
 }

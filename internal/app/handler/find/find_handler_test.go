@@ -33,6 +33,11 @@ func (repository *MockReadRepository) GetDB() *sqlx.DB {
 
 type MockWriteRepository struct{}
 
+func (repository *MockWriteRepository) SaveToFile(fileName string) error {
+	//TODO implement me
+	panic("implement me")
+}
+
 func (repository *MockWriteRepository) Delete(shortURLs []string, addedUserID string) error {
 	//TODO implement me
 	panic("implement me")
