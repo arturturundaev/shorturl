@@ -23,6 +23,14 @@ import (
 )
 
 func main() {
+	checks := getChecks()
+
+	multichecker.Main(
+		checks...,
+	)
+}
+
+func getChecks() []*analysis.Analyzer {
 	checks := []*analysis.Analyzer{
 		// check consistency of Printf format strings and arguments
 		printf.Analyzer,
@@ -63,7 +71,5 @@ func main() {
 		checks = append(checks, v.Analyzer)
 	}
 
-	multichecker.Main(
-		checks...,
-	)
+	return checks
 }

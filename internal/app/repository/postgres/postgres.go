@@ -163,3 +163,8 @@ func (repo *PostgresRepository) Delete(shortURLs []string, addedUserID string) e
 
 	return nil
 }
+
+// SaveToFile при падении ничего не далем
+func (repo *PostgresRepository) SaveToFile(fileName string) error {
+	return nil
+}

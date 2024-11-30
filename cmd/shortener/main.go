@@ -31,7 +31,9 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"os/signal"
 	"path/filepath"
+	"syscall"
 	"time"
 )
 
@@ -74,21 +76,39 @@ func main() {
 		}
 	}()
 
-	router, log, serverConfig := initRouter()
+	router, logger, serverConfig, repoRW := initRouter()
 
-	log.Info(fmt.Sprintf("Build version: %s\n", BuildVersion))
-	log.Info(fmt.Sprintf("Build date: %s\n", BuildDate))
-	log.Info(fmt.Sprintf("Build commit: %s\n", BuildCommit))
+	logger.Info(fmt.Sprintf("Build version: %s\n", BuildVersion))
+	logger.Info(fmt.Sprintf("Build date: %s\n", BuildDate))
+	logger.Info(fmt.Sprintf("Build commit: %s\n", BuildCommit))
 
-	log.Info("server start on port: " + serverConfig.AddressStart.String())
+	logger.Info("server start on port: " + serverConfig.AddressStart)
 
-	errServer := http.ListenAndServe(serverConfig.AddressStart.String(), router)
+	server := &http.Server{
+		Addr:    serverConfig.AddressStart,
+		Handler: router,
+	}
+
+	go func() {
+		signalChan := make(chan os.Signal, 1)
+		signal.Notify(signalChan, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
+		<-signalChan
+		repoRW.SaveToFile("/tmp/save.txt")
+		os.Exit(0)
+	}()
+
+	var errServer error
+	if serverConfig.HTTPS.Enabled {
+		errServer = server.ListenAndServeTLS(serverConfig.HTTPS.SSLPemPath, serverConfig.HTTPS.SSLKeyPath)
+	} else {
+		errServer = server.ListenAndServe()
+	}
 	if errServer != nil {
-		log.Fatal(errServer.Error())
+		logger.Fatal(errServer.Error())
 	}
 }
 
-func initRouter() (*gin.Engine, *zap.Logger, *config.Config) {
+func initRouter() (*gin.Engine, *zap.Logger, *config.Config, service.RepositoryWriter) {
 
 	router := gin.Default()
 
@@ -122,31 +142,31 @@ func initRouter() (*gin.Engine, *zap.Logger, *config.Config) {
 		}
 	}
 
-	jwtValidate := middleware.NewJWTValidator(serverConfig.AddressStart.URL)
+	jwtValidate := middleware.NewJWTValidator(serverConfig.AddressStart)
 
 	shortURLService := service.NewShortURLService(repositoryRead, repositoryWrite)
 
 	pingService := service.NewPingService(repositoryRead)
 
 	handlerFind := find.NewFindHandler(shortURLService)
-	handlerSave := save.NewSaveHandler(shortURLService, serverConfig.BaseShort.URL)
-	handlerSave2 := shorten.NewShortenHandler(shortURLService, serverConfig.BaseShort.URL)
+	handlerSave := save.NewSaveHandler(shortURLService, serverConfig.BaseShort)
+	handlerShortener := shorten.NewShortenHandler(shortURLService, serverConfig.BaseShort)
 	handlerPing := ping.NewPingHandler(pingService)
-	handlerButch := batch.NewButchHandler(shortURLService, serverConfig.BaseShort.URL)
-	handlerFindByUser := user.NewURLFindByUserHandler(shortURLService, serverConfig.BaseShort.URL)
+	handlerButch := batch.NewButchHandler(shortURLService, serverConfig.BaseShort)
+	handlerFindByUser := user.NewURLFindByUserHandler(shortURLService, serverConfig.BaseShort)
 	handlerDelete := deleteUrl.NewDeleteHandler(shortURLService)
 
 	router.GET(Ping, handlerPing.Handle)
 	router.POST(SaveFullURL, jwtValidate.Handle, handlerSave.Handle)
 	router.GET(GetFullURL, handlerFind.Handle)
-	router.POST(SaveFullURL2, jwtValidate.Handle, handlerSave2.Handle)
+	router.POST(SaveFullURL2, jwtValidate.Handle, handlerShortener.Handle)
 	router.POST(SaveBatch, handlerButch.Handle)
 	router.GET(URLByUser, jwtValidate.Handle, handlerFindByUser.Handle)
 	router.DELETE(DeleteByUrls, jwtValidate.Handle, handlerDelete.Handle)
 
 	pprof.Register(router, "dev/pprof")
 
-	return router, logger, serverConfig
+	return router, logger, serverConfig, repositoryWrite
 
 }
 
@@ -208,7 +228,7 @@ func initMigrations(migrationPath string, DB *sqlx.DB) {
 func getRepository(serverConfig *config.Config, logger *zap.Logger) (service.RepositoryReader, service.RepositoryWriter) {
 
 	if serverConfig.StorageType == config.StorageTypeDB {
-		database, err := sqlx.Open("postgres", serverConfig.DatabaseURL.URL)
+		database, err := sqlx.Open("postgres", serverConfig.DatabaseURL)
 		if err != nil {
 			return nil, nil
 		}
@@ -221,12 +241,12 @@ func getRepository(serverConfig *config.Config, logger *zap.Logger) (service.Rep
 	}
 
 	if serverConfig.StorageType == config.StorageTypeFile {
-		repositoryWrite, errStorageWrite := filestorage.NewFileStorageRepositoryWrite(serverConfig.FileStorage.Path)
+		repositoryWrite, errStorageWrite := filestorage.NewFileStorageRepositoryWrite(serverConfig.FileStorage)
 		if errStorageWrite != nil {
 			logger.Error(errStorageWrite.Error())
 		}
 
-		repositoryRead, errStorageRead := filestorage.NewFileStorageRepositoryRead(serverConfig.FileStorage.Path)
+		repositoryRead, errStorageRead := filestorage.NewFileStorageRepositoryRead(serverConfig.FileStorage)
 		if errStorageRead != nil {
 			logger.Error(errStorageRead.Error())
 		}

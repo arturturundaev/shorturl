@@ -150,3 +150,87 @@ func TestPostgresRepository_Batch(t *testing.T) {
 		})
 	}
 }
+
+func TestPostgresRepository_GetUrlsByUserID(t *testing.T) {
+	db, mock, er := sqlxmock.Newx()
+	if er != nil {
+		t.Fatalf("an error '%s' was not expected when opening a stub database connection", er)
+	}
+	defer db.Close()
+
+	tests := []struct {
+		name    string
+		userID  string
+		rows    []entity.ShortURLEntity
+		want    []entity.ShortURLEntity
+		wantErr bool
+	}{
+		{
+			name:    "success",
+			userID:  "success",
+			rows:    []entity.ShortURLEntity{{ShortURL: "success", URL: "success"}},
+			want:    []entity.ShortURLEntity{{ShortURL: "success", URL: "success", CorrelationID: "", AddedUserID: "", IsDeleted: false}},
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			repo := &PostgresRepository{
+				DB: db,
+			}
+			rows := sqlxmock.NewRows([]string{"original_url", "url_short"})
+			for _, row := range tt.rows {
+				rows.AddRow(row.ShortURL, row.URL)
+			}
+			mock.ExpectQuery(regexp.QuoteMeta(fmt.Sprintf("select url_full as original_url, url_short from %s where added_user_id = $1", TableName))).WithArgs(tt.userID).WillReturnRows(rows)
+
+			got, err := repo.GetUrlsByUserID(tt.userID)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("GetUrlsByUserID() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("GetUrlsByUserID() got = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestPostgresRepository_Delete(t *testing.T) {
+	db, mock, er := sqlxmock.Newx()
+	if er != nil {
+		t.Fatalf("an error '%s' was not expected when opening a stub database connection", er)
+	}
+	defer db.Close()
+
+	type args struct {
+		shortURLs   []string
+		addedUserID string
+	}
+	tests := []struct {
+		name    string
+		args    args
+		wantErr bool
+	}{
+		{
+			name:    "success",
+			args:    args{shortURLs: []string{"a", "b"}, addedUserID: "1"},
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			repo := &PostgresRepository{
+				DB: db,
+			}
+
+			mock.ExpectExec(`(.+)`).
+				WithArgs("1", "a", "b").
+				WillReturnResult(sqlxmock.NewResult(0, 1))
+
+			if err := repo.Delete(tt.args.shortURLs, tt.args.addedUserID); (err != nil) != tt.wantErr {
+				t.Errorf("Delete() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
+}

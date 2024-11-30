@@ -4,6 +4,8 @@ import (
 	"github.com/arturturundaev/shorturl/internal/app/entity"
 	"github.com/arturturundaev/shorturl/internal/app/handler/batch"
 	"github.com/arturturundaev/shorturl/internal/app/utils"
+	"github.com/gin-gonic/gin"
+	"net/http/httptest"
 	"reflect"
 	"testing"
 )
@@ -57,4 +59,106 @@ func TestLocalStorageRepository_Batch(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestLocalStorageRepository_FindByShortURL(t *testing.T) {
+	repo := NewLocalStorageRepository()
+	err := repo.Save("bla", "bla", "bla")
+	if err != nil {
+		t.Errorf("Save() error = %v", err)
+	}
+	tests := []struct {
+		name     string
+		shortURL string
+		want     *entity.ShortURLEntity
+		wantErr  bool
+	}{
+		{
+			name:     "not exists",
+			shortURL: "bla2",
+			want:     nil,
+			wantErr:  false,
+		},
+		{
+			name:     "exists",
+			shortURL: "bla",
+			want: &entity.ShortURLEntity{
+				ShortURL:      "bla",
+				URL:           "bla",
+				CorrelationID: "",
+				AddedUserID:   "",
+				IsDeleted:     false,
+			},
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := repo.FindByShortURL(tt.shortURL)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("FindByShortURL() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("FindByShortURL() got = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestLocalStorageRepository_Save(t *testing.T) {
+	repo := NewLocalStorageRepository()
+	err := repo.Save("bla", "bla", "bla")
+	if err != nil {
+		t.Errorf("Save() error = %v", err)
+	}
+}
+
+func TestLocalStorageRepository_Ping(t *testing.T) {
+	repo := NewLocalStorageRepository()
+	ctx, _ := gin.CreateTestContext(httptest.NewRecorder())
+
+	resultPing := repo.Ping(ctx)
+
+	if resultPing != nil {
+		t.Errorf("Ping() error")
+	}
+}
+
+func TestLocalStorageRepository_GetDB(t *testing.T) {
+	repo := NewLocalStorageRepository()
+	db := repo.GetDB()
+
+	if db != nil {
+		t.Errorf("GetDB() error")
+	}
+}
+
+func TestLocalStorageRepository_Delete(t *testing.T) {
+	repo := NewLocalStorageRepository()
+	result := repo.Delete([]string{"bla"}, "bla")
+
+	if result != nil {
+		t.Errorf("Delete() error")
+	}
+}
+
+func TestLocalStorageRepository_GetUrlsByUserID(t *testing.T) {
+	repo := NewLocalStorageRepository()
+	got, err := repo.GetUrlsByUserID("bla")
+
+	if err != nil {
+		t.Errorf("Delete() error")
+	}
+
+	wnt := make([]entity.ShortURLEntity, 0)
+	if reflect.DeepEqual(got, wnt) {
+		t.Errorf("GetUrlsByUserID() error")
+	}
+}
+
+func TestLocalStorageRepository_SaveToFile(t *testing.T) {
+	repo := NewLocalStorageRepository()
+	repo.Save("bla", "bla", "bla")
+	repo.SaveToFile("/tmp/test.txt")
 }

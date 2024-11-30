@@ -13,27 +13,28 @@ func TestNewConfig(t *testing.T) {
 		{
 			"wthout any settings",
 			&Config{
-				AddressStart: AddressStartType{
-					URL:  "localhost",
-					Port: "8080",
-				},
-				BaseShort: BaseShortURLType{
-					URL: "http://localhost:8080",
-				},
-				FileStorage: FileStorageType{
-					Path: "/tmp/db.txt",
-				},
-				DatabaseURL: DatabaseURLType{
-					URL: "postgres://postgres:postgres@localhost:5432/shorturl?sslmode=disable",
-				},
-				StorageType: "Memory",
-				FullLog:     true,
+				AddressStart: "localhost:8080",
+				BaseShort:    "http://localhost:8080",
+				FileStorage:  "",
+				DatabaseURL:  "",
+				StorageType:  "Memory",
+				FullLog:      true,
+				HTTPS: struct {
+					Enabled    bool `json:"enable_https"`
+					SSLKeyPath string
+					SSLPemPath string
+				}(struct {
+					Enabled    bool
+					SSLKeyPath string
+					SSLPemPath string
+				}{Enabled: false, SSLKeyPath: "./auto_server.key", SSLPemPath: "./auto_server.pem"}),
 			},
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := NewConfig(); !reflect.DeepEqual(got, tt.want) {
+			got := NewConfig()
+			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("NewConfig() = %v, want %v", got, tt.want)
 			}
 		})

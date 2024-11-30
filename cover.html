@@ -55,43 +55,47 @@
 			<div id="nav">
 				<select id="files">
 				
-				<option value="file0">github.com/arturturundaev/shorturl/cmd/shortener/main.go (40.7%)</option>
+				<option value="file0">github.com/arturturundaev/shorturl/cmd/shortener/main.go (40.2%)</option>
 				
-				<option value="file1">github.com/arturturundaev/shorturl/internal/app/handler/batch/batch_handler.go (85.0%)</option>
+				<option value="file1">github.com/arturturundaev/shorturl/cmd/staticlint/linter.go (75.0%)</option>
 				
-				<option value="file2">github.com/arturturundaev/shorturl/internal/app/handler/batch/batch_request.go (83.3%)</option>
+				<option value="file2">github.com/arturturundaev/shorturl/internal/app/handler/batch/batch_handler.go (85.0%)</option>
 				
-				<option value="file3">github.com/arturturundaev/shorturl/internal/app/handler/delete/delete_handler.go (87.5%)</option>
+				<option value="file3">github.com/arturturundaev/shorturl/internal/app/handler/batch/batch_request.go (83.3%)</option>
 				
-				<option value="file4">github.com/arturturundaev/shorturl/internal/app/handler/find/find_handler.go (72.7%)</option>
+				<option value="file4">github.com/arturturundaev/shorturl/internal/app/handler/delete/delete_handler.go (87.5%)</option>
 				
-				<option value="file5">github.com/arturturundaev/shorturl/internal/app/handler/ping/ping_handler.go (66.7%)</option>
+				<option value="file5">github.com/arturturundaev/shorturl/internal/app/handler/find/find_handler.go (100.0%)</option>
 				
-				<option value="file6">github.com/arturturundaev/shorturl/internal/app/handler/save/save_handler.go (64.7%)</option>
+				<option value="file6">github.com/arturturundaev/shorturl/internal/app/handler/ping/ping_handler.go (88.9%)</option>
 				
-				<option value="file7">github.com/arturturundaev/shorturl/internal/app/handler/shorten/shorten_handler.go (70.6%)</option>
+				<option value="file7">github.com/arturturundaev/shorturl/internal/app/handler/save/save_handler.go (82.4%)</option>
 				
-				<option value="file8">github.com/arturturundaev/shorturl/internal/app/handler/shorten/shorten_request.go (100.0%)</option>
+				<option value="file8">github.com/arturturundaev/shorturl/internal/app/handler/shorten/shorten_handler.go (100.0%)</option>
 				
-				<option value="file9">github.com/arturturundaev/shorturl/internal/app/handler/user/url_handler.go (92.9%)</option>
+				<option value="file9">github.com/arturturundaev/shorturl/internal/app/handler/shorten/shorten_request.go (100.0%)</option>
 				
-				<option value="file10">github.com/arturturundaev/shorturl/internal/app/handler/user/url_list_response.go (100.0%)</option>
+				<option value="file10">github.com/arturturundaev/shorturl/internal/app/handler/user/url_handler.go (92.9%)</option>
 				
-				<option value="file11">github.com/arturturundaev/shorturl/internal/app/middleware/jwt.go (62.2%)</option>
+				<option value="file11">github.com/arturturundaev/shorturl/internal/app/handler/user/url_list_response.go (100.0%)</option>
 				
-				<option value="file12">github.com/arturturundaev/shorturl/internal/app/repository/filestorage/file_storage_repository.go (0.0%)</option>
+				<option value="file12">github.com/arturturundaev/shorturl/internal/app/middleware/jwt.go (86.5%)</option>
 				
-				<option value="file13">github.com/arturturundaev/shorturl/internal/app/repository/localstorage/local_storage_repository.go (44.4%)</option>
+				<option value="file13">github.com/arturturundaev/shorturl/internal/app/repository/filestorage/file_storage_repository.go (81.0%)</option>
 				
-				<option value="file14">github.com/arturturundaev/shorturl/internal/app/repository/postgres/postgres.go (48.4%)</option>
+				<option value="file14">github.com/arturturundaev/shorturl/internal/app/repository/localstorage/local_storage_repository.go (90.6%)</option>
 				
-				<option value="file15">github.com/arturturundaev/shorturl/internal/app/service/ping_service.go (0.0%)</option>
+				<option value="file15">github.com/arturturundaev/shorturl/internal/app/repository/postgres/postgres.go (48.4%)</option>
 				
-				<option value="file16">github.com/arturturundaev/shorturl/internal/app/service/short_url_service.go (71.2%)</option>
+				<option value="file16">github.com/arturturundaev/shorturl/internal/app/service/ping_service.go (50.0%)</option>
 				
-				<option value="file17">github.com/arturturundaev/shorturl/internal/app/utils/short_url_generator.go (100.0%)</option>
+				<option value="file17">github.com/arturturundaev/shorturl/internal/app/service/short_url_service.go (71.2%)</option>
 				
-				<option value="file18">github.com/arturturundaev/shorturl/internal/config/config.go (51.9%)</option>
+				<option value="file18">github.com/arturturundaev/shorturl/internal/app/utils/short_url_generator.go (100.0%)</option>
+				
+				<option value="file19">github.com/arturturundaev/shorturl/internal/config/config.go (46.3%)</option>
+				
+				<option value="file20">github.com/arturturundaev/shorturl/internal/pkg/analyser/exitmain/exitmain.go (91.3%)</option>
 				
 				</select>
 			</div>
@@ -109,6 +113,7 @@
 
 import (
         "bytes"
+        "context"
         "fmt"
         "github.com/arturturundaev/shorturl/internal/app/handler/batch"
         deleteUrl "github.com/arturturundaev/shorturl/internal/app/handler/delete"
@@ -138,8 +143,20 @@ import (
         "log"
         "net/http"
         "os"
+        "os/signal"
         "path/filepath"
+        "syscall"
         "time"
+)
+
+// Build variables
+var (
+        // BuildVersion - version
+        BuildVersion string = "N/A"
+        // BuildDate - date
+        BuildDate string = "N/A"
+        // BuildCommit - commit
+        BuildCommit string = "N/A"
 )
 
 // -d=postgres://postgres:postgres@localhost:5432/shorturl?sslmode=disable
@@ -171,17 +188,52 @@ func main() <span class="cov0" title="0">{
                 }</span>
         }()
 
-        <span class="cov0" title="0">router, log, serverConfig := initRouter()
+        <span class="cov0" title="0">router, logger, serverConfig, repoRW := initRouter()
 
-        log.Info("server start on port: " + serverConfig.AddressStart.String())
+        logger.Info(fmt.Sprintf("Build version: %s\n", BuildVersion))
+        logger.Info(fmt.Sprintf("Build date: %s\n", BuildDate))
+        logger.Info(fmt.Sprintf("Build commit: %s\n", BuildCommit))
 
-        errServer := http.ListenAndServe(serverConfig.AddressStart.String(), router)
-        if errServer != nil </span><span class="cov0" title="0">{
-                log.Fatal(errServer.Error())
+        logger.Info("server start on port: " + serverConfig.AddressStart)
+
+        server := &amp;http.Server{
+                Addr:    serverConfig.AddressStart,
+                Handler: router,
+        }
+
+        go func() </span><span class="cov0" title="0">{
+                var errServer error
+                if serverConfig.HTTPS.Enabled </span><span class="cov0" title="0">{
+                        errServer = server.ListenAndServeTLS(serverConfig.HTTPS.SSLPemPath, serverConfig.HTTPS.SSLKeyPath)
+                }</span> else<span class="cov0" title="0"> {
+                        errServer = server.ListenAndServe()
+                }</span>
+                <span class="cov0" title="0">if errServer != nil </span><span class="cov0" title="0">{
+                        logger.Fatal(errServer.Error())
+                }</span>
+        }()
+
+        <span class="cov0" title="0">signalChan := make(chan os.Signal, 1)
+        signal.Notify(signalChan, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
+        sig := &lt;-signalChan
+        logger.Error(fmt.Sprintf("Shutdown server: %v...", sig))
+        ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+        defer cancel()
+        if err := server.Shutdown(ctx); err != nil </span><span class="cov0" title="0">{
+                logger.Error(fmt.Sprintf("HTTP server Shutdown error: %v\n", err))
         }</span>
+        // Если храним всё в памяти - сохраним всё в файл
+        <span class="cov0" title="0">if serverConfig.StorageType == config.StorageTypeMemory </span><span class="cov0" title="0">{
+                err := repoRW.(*localstorage.LocalStorageRepository).SaveToFile("/tmp/save.txt")
+                if err != nil </span><span class="cov0" title="0">{
+                        logger.Error(err.Error())
+                }</span>
+        }
+
+        <span class="cov0" title="0">logger.Info("Server exited")</span>
 }
 
-func initRouter() (*gin.Engine, *zap.Logger, *config.Config) <span class="cov8" title="1">{
+func initRouter() (*gin.Engine, *zap.Logger, *config.Config, service.RepositoryWriter) <span class="cov8" title="1">{
 
         router := gin.Default()
 
@@ -215,18 +267,18 @@ func initRouter() (*gin.Engine, *zap.Logger, *config.Config) <span class="cov8" 
                 }</span>
         }
 
-        <span class="cov8" title="1">jwtValidate := middleware.NewJWTValidator(serverConfig.AddressStart.URL)
+        <span class="cov8" title="1">jwtValidate := middleware.NewJWTValidator(serverConfig.AddressStart)
 
         shortURLService := service.NewShortURLService(repositoryRead, repositoryWrite)
 
         pingService := service.NewPingService(repositoryRead)
 
         handlerFind := find.NewFindHandler(shortURLService)
-        handlerSave := save.NewSaveHandler(shortURLService, serverConfig.BaseShort.URL)
-        handlerSave2 := shorten.NewShortenHandler(shortURLService, serverConfig.BaseShort.URL)
+        handlerSave := save.NewSaveHandler(shortURLService, serverConfig.BaseShort)
+        handlerSave2 := shorten.NewShortenHandler(shortURLService, serverConfig.BaseShort)
         handlerPing := ping.NewPingHandler(pingService)
-        handlerButch := batch.NewButchHandler(shortURLService, serverConfig.BaseShort.URL)
-        handlerFindByUser := user.NewURLFindByUserHandler(shortURLService, serverConfig.BaseShort.URL)
+        handlerButch := batch.NewButchHandler(shortURLService, serverConfig.BaseShort)
+        handlerFindByUser := user.NewURLFindByUserHandler(shortURLService, serverConfig.BaseShort)
         handlerDelete := deleteUrl.NewDeleteHandler(shortURLService)
 
         router.GET(Ping, handlerPing.Handle)
@@ -239,7 +291,7 @@ func initRouter() (*gin.Engine, *zap.Logger, *config.Config) <span class="cov8" 
 
         pprof.Register(router, "dev/pprof")
 
-        return router, logger, serverConfig</span>
+        return router, logger, serverConfig, repositoryWrite</span>
 
 }
 
@@ -250,7 +302,7 @@ func addLogger(r *gin.Engine, fullLogger bool) (*zap.Logger, error) <span class=
                 return nil, err
         }</span>
 
-        <span class="cov8" title="1">if fullLogger </span><span class="cov0" title="0">{
+        <span class="cov8" title="1">if fullLogger </span><span class="cov8" title="1">{
                 r.Use(ginzap.Ginzap(logger, time.RFC3339, true))
                 r.Use(ginzap.RecoveryWithZap(logger, true))
                 r.Use(ginzap.GinzapWithConfig(logger, &amp;ginzap.Config{
@@ -301,7 +353,7 @@ func initMigrations(migrationPath string, DB *sqlx.DB) <span class="cov0" title=
 func getRepository(serverConfig *config.Config, logger *zap.Logger) (service.RepositoryReader, service.RepositoryWriter) <span class="cov8" title="1">{
 
         if serverConfig.StorageType == config.StorageTypeDB </span><span class="cov0" title="0">{
-                database, err := sqlx.Open("postgres", serverConfig.DatabaseURL.URL)
+                database, err := sqlx.Open("postgres", serverConfig.DatabaseURL)
                 if err != nil </span><span class="cov0" title="0">{
                         return nil, nil
                 }</span>
@@ -313,18 +365,18 @@ func getRepository(serverConfig *config.Config, logger *zap.Logger) (service.Rep
                 <span class="cov0" title="0">return repository, repository</span>
         }
 
-        <span class="cov8" title="1">if serverConfig.StorageType == config.StorageTypeFile </span><span class="cov0" title="0">{
-                repositoryWrite, errStorageWrite := filestorage.NewFileStorageRepositoryWrite(serverConfig.FileStorage.Path)
+        <span class="cov8" title="1">if serverConfig.StorageType == config.StorageTypeFile </span><span class="cov8" title="1">{
+                repositoryWrite, errStorageWrite := filestorage.NewFileStorageRepositoryWrite(serverConfig.FileStorage)
                 if errStorageWrite != nil </span><span class="cov0" title="0">{
                         logger.Error(errStorageWrite.Error())
                 }</span>
 
-                <span class="cov0" title="0">repositoryRead, errStorageRead := filestorage.NewFileStorageRepositoryRead(serverConfig.FileStorage.Path)
+                <span class="cov8" title="1">repositoryRead, errStorageRead := filestorage.NewFileStorageRepositoryRead(serverConfig.FileStorage)
                 if errStorageRead != nil </span><span class="cov0" title="0">{
                         logger.Error(errStorageRead.Error())
                 }</span>
 
-                <span class="cov0" title="0">return repositoryRead, repositoryWrite</span>
+                <span class="cov8" title="1">return repositoryRead, repositoryWrite</span>
         }
 
         <span class="cov8" title="1">if serverConfig.StorageType == config.StorageTypeMemory </span><span class="cov8" title="1">{
@@ -337,7 +389,84 @@ func getRepository(serverConfig *config.Config, logger *zap.Logger) (service.Rep
 }
 </pre>
 		
-		<pre class="file" id="file1" style="display: none">package batch
+		<pre class="file" id="file1" style="display: none">package staticlint
+
+import (
+        "github.com/arturturundaev/shorturl/internal/pkg/analyser/exitmain"
+        "github.com/gordonklaus/ineffassign/pkg/ineffassign"
+        "github.com/timakin/bodyclose/passes/bodyclose"
+        "golang.org/x/tools/go/analysis"
+        "golang.org/x/tools/go/analysis/multichecker"
+        "golang.org/x/tools/go/analysis/passes/appends"
+        "golang.org/x/tools/go/analysis/passes/errorsas"
+        "golang.org/x/tools/go/analysis/passes/httpresponse"
+        "golang.org/x/tools/go/analysis/passes/lostcancel"
+        "golang.org/x/tools/go/analysis/passes/printf"
+        "golang.org/x/tools/go/analysis/passes/shadow"
+        "golang.org/x/tools/go/analysis/passes/structtag"
+        "golang.org/x/tools/go/analysis/passes/testinggoroutine"
+        "golang.org/x/tools/go/analysis/passes/unmarshal"
+        "golang.org/x/tools/go/analysis/passes/unreachable"
+        "honnef.co/go/tools/quickfix/qf1001"
+        "honnef.co/go/tools/simple"
+        "honnef.co/go/tools/staticcheck"
+        "honnef.co/go/tools/stylecheck/st1001"
+)
+
+func main() <span class="cov0" title="0">{
+        checks := getChecks()
+
+        multichecker.Main(
+                checks...,
+        )
+}</span>
+
+func getChecks() []*analysis.Analyzer <span class="cov8" title="1">{
+        checks := []*analysis.Analyzer{
+                // check consistency of Printf format strings and arguments
+                printf.Analyzer,
+                // check for possible unintended shadowing of variables
+                shadow.Analyzer,
+                // check that struct field tags
+                structtag.Analyzer,
+                // checks for unreachable code
+                unreachable.Analyzer,
+                // report passing non-pointer or non-interface values to unmarshal
+                unmarshal.Analyzer,
+                // report calls to (*testing.T).Fatal from goroutines started by a test
+                testinggoroutine.Analyzer,
+                // check cancel func returned by context.WithCancel is called
+                lostcancel.Analyzer,
+                // check for mistakes using HTTP responses
+                httpresponse.Analyzer,
+                errorsas.Analyzer,
+                // report passing non-pointer or non-error values to errors.As
+                appends.Analyzer,
+                // dot imports are discouraged
+                st1001.Analyzer,
+                // Apply De Morgan's law
+                qf1001.Analyzer,
+                // detect ineffectual assignments in Go code
+                ineffassign.Analyzer,
+                // checks whether HTTP response body is closed successfully
+                bodyclose.Analyzer,
+                // Checking the use of a direct call to os.Exit in the main function of the main package
+                exitmain.Analyzer,
+        }
+
+        for _, v := range staticcheck.Analyzers </span><span class="cov8" title="1">{
+                checks = append(checks, v.Analyzer)
+        }</span>
+
+        <span class="cov8" title="1">for _, v := range simple.Analyzers </span><span class="cov8" title="1">{
+                checks = append(checks, v.Analyzer)
+        }</span>
+
+        <span class="cov8" title="1">return checks</span>
+}
+</pre>
+		
+		<pre class="file" id="file2" style="display: none">package batch
 
 import (
         "encoding/json"
@@ -395,7 +524,7 @@ func (h *ButchHandler) Handle(ctx *gin.Context) <span class="cov8" title="1">{
 }
 </pre>
 		
-		<pre class="file" id="file2" style="display: none">package batch
+		<pre class="file" id="file3" style="display: none">package batch
 
 import (
         "fmt"
@@ -425,7 +554,7 @@ func NewButchRequest(context *gin.Context) ([]ButchRequest, error) <span class="
 }
 </pre>
 		
-		<pre class="file" id="file3" style="display: none">package delete
+		<pre class="file" id="file4" style="display: none">package delete
 
 import (
         "encoding/json"
@@ -478,9 +607,10 @@ func (h *DeleteHandler) Handle(ctx *gin.Context) <span class="cov8" title="1">{
 }
 </pre>
 		
-		<pre class="file" id="file4" style="display: none">package find
+		<pre class="file" id="file5" style="display: none">package find
 
 import (
+        "fmt"
         "net/http"
 
         "github.com/arturturundaev/shorturl/internal/app/service"
@@ -503,12 +633,16 @@ func (hndlr *FindHandler) Handle(ctx *gin.Context) <span class="cov8" title="1">
         data, err := hndlr.service.FindByShortURL(ctx.Param("short"))
 
         if err != nil || data == nil </span><span class="cov8" title="1">{
-                ctx.String(http.StatusBadRequest, "%s", err.Error())
+                er := err
+                if data == nil </span><span class="cov8" title="1">{
+                        er = fmt.Errorf("not find")
+                }</span>
+                <span class="cov8" title="1">ctx.String(http.StatusBadRequest, "%s", er.Error())
                 ctx.Abort()
-                return
-        }</span>
+                return</span>
+        }
 
-        <span class="cov8" title="1">if data.IsDeleted </span><span class="cov0" title="0">{
+        <span class="cov8" title="1">if data.IsDeleted </span><span class="cov8" title="1">{
                 ctx.Status(http.StatusGone)
                 ctx.Abort()
                 return
@@ -518,7 +652,7 @@ func (hndlr *FindHandler) Handle(ctx *gin.Context) <span class="cov8" title="1">
 }
 </pre>
 		
-		<pre class="file" id="file5" style="display: none">package ping
+		<pre class="file" id="file6" style="display: none">package ping
 
 import (
         "context"
@@ -551,7 +685,7 @@ func (h *PingHandler) Handle(ctx *gin.Context) <span class="cov8" title="1">{
 
         err := h.service.Ping(contxt)
 
-        if err != nil </span><span class="cov0" title="0">{
+        if err != nil </span><span class="cov8" title="1">{
                 ctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
                 return
         }</span>
@@ -560,7 +694,7 @@ func (h *PingHandler) Handle(ctx *gin.Context) <span class="cov8" title="1">{
 }
 </pre>
 		
-		<pre class="file" id="file6" style="display: none">package save
+		<pre class="file" id="file7" style="display: none">package save
 
 import (
         "errors"
@@ -593,7 +727,7 @@ func (hndlr *SaveHandler) Handle(ctx *gin.Context) <span class="cov8" title="1">
 
         <span class="cov8" title="1">data, err := hndlr.service.Save(ctx, string(b))
 
-        if errors.Is(err, service.ErrEntityExists) </span><span class="cov0" title="0">{
+        if errors.Is(err, service.ErrEntityExists) </span><span class="cov8" title="1">{
                 ctx.Header("Content-type", "text/plain")
                 ctx.String(http.StatusConflict, "%s/%s", hndlr.baseURL, data.ShortURL)
                 return
@@ -610,7 +744,7 @@ func (hndlr *SaveHandler) Handle(ctx *gin.Context) <span class="cov8" title="1">
 }
 </pre>
 		
-		<pre class="file" id="file7" style="display: none">package shorten
+		<pre class="file" id="file8" style="display: none">package shorten
 
 import (
         "errors"
@@ -647,14 +781,9 @@ func (h *ShortenHandler) Handle(ctx *gin.Context) <span class="cov8" title="1">{
                 return
         }</span>
 
-        <span class="cov8" title="1">if dto.URL == "" </span><span class="cov0" title="0">{
-                ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "Empty URL"})
-                return
-        }</span>
-
         <span class="cov8" title="1">data, errRepository := h.service.Save(ctx, dto.URL)
 
-        if errRepository != nil &amp;&amp; !errors.Is(errRepository, service.ErrEntityExists) </span><span class="cov0" title="0">{
+        if errRepository != nil &amp;&amp; !errors.Is(errRepository, service.ErrEntityExists) </span><span class="cov8" title="1">{
                 ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": errRepository.Error()})
                 return
         }</span>
@@ -663,7 +792,7 @@ func (h *ShortenHandler) Handle(ctx *gin.Context) <span class="cov8" title="1">{
 
         status := http.StatusCreated
 
-        if errors.Is(errRepository, service.ErrEntityExists) </span><span class="cov0" title="0">{
+        if errors.Is(errRepository, service.ErrEntityExists) </span><span class="cov8" title="1">{
                 status = http.StatusConflict
         }</span>
 
@@ -671,7 +800,7 @@ func (h *ShortenHandler) Handle(ctx *gin.Context) <span class="cov8" title="1">{
 }
 </pre>
 		
-		<pre class="file" id="file8" style="display: none">package shorten
+		<pre class="file" id="file9" style="display: none">package shorten
 
 import (
         "github.com/gin-gonic/gin"
@@ -694,7 +823,7 @@ func NewShortenRequest(context *gin.Context) (*ShortenRequest, error) <span clas
 }
 </pre>
 		
-		<pre class="file" id="file9" style="display: none">package user
+		<pre class="file" id="file10" style="display: none">package user
 
 import (
         "net/http"
@@ -746,7 +875,7 @@ func (handler *URLFindByUserHandler) Handle(ctx *gin.Context) <span class="cov8"
 }
 </pre>
 		
-		<pre class="file" id="file10" style="display: none">package user
+		<pre class="file" id="file11" style="display: none">package user
 
 import "fmt"
 
@@ -762,7 +891,7 @@ func NewURLResponse(baseURL, shortURL, originURL string) URLListItemResponse <sp
 }</span>
 </pre>
 		
-		<pre class="file" id="file11" style="display: none">package middleware
+		<pre class="file" id="file12" style="display: none">package middleware
 
 import (
         "fmt"
@@ -810,9 +939,9 @@ func (JWTValidator *JWTValidator) Handle(ctx *gin.Context) <span class="cov8" ti
                 if err != nil </span><span class="cov0" title="0">{
                         ctx.AbortWithStatusJSON(http.StatusForbidden, err)
                 }</span>
-        } else<span class="cov0" title="0"> {
+        } else<span class="cov8" title="1"> {
                 errorValidateToken := JWTValidator.ValidateJWT(ctx, token)
-                if errorValidateToken != nil </span><span class="cov0" title="0">{
+                if errorValidateToken != nil </span><span class="cov8" title="1">{
                         token, err = JWTValidator.BuildJWTString(ctx)
                         if err != nil </span><span class="cov0" title="0">{
                                 ctx.AbortWithStatusJSON(http.StatusForbidden, err)
@@ -837,21 +966,21 @@ func (JWTValidator *JWTValidator) Handle(ctx *gin.Context) <span class="cov8" ti
 func (JWTValidator *JWTValidator) ValidateJWT(ctx *gin.Context, tokenString string) error <span class="cov8" title="1">{
         claims := &amp;Claims{}
         token, err := jwt.ParseWithClaims(tokenString, claims,
-                func(t *jwt.Token) (interface{}, error) </span><span class="cov0" title="0">{
+                func(t *jwt.Token) (interface{}, error) </span><span class="cov8" title="1">{
                         if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok </span><span class="cov0" title="0">{
                                 return nil, fmt.Errorf("unexpected signing method: %v", t.Header["alg"])
                         }</span>
-                        <span class="cov0" title="0">return []byte(SecretKey), nil</span>
+                        <span class="cov8" title="1">return []byte(SecretKey), nil</span>
                 })
         <span class="cov8" title="1">if err != nil </span><span class="cov8" title="1">{
                 return err
         }</span>
 
-        <span class="cov0" title="0">if !token.Valid </span><span class="cov0" title="0">{
+        <span class="cov8" title="1">if !token.Valid </span><span class="cov0" title="0">{
                 return fmt.Errorf("token is not valid")
         }</span>
 
-        <span class="cov0" title="0">ctx.Set(UserIDProperty, claims.UserID)
+        <span class="cov8" title="1">ctx.Set(UserIDProperty, claims.UserID)
 
         return nil</span>
 }
@@ -881,7 +1010,7 @@ func (JWTValidator *JWTValidator) getNewUserID() string <span class="cov8" title
 }</span>
 </pre>
 		
-		<pre class="file" id="file12" style="display: none">package filestorage
+		<pre class="file" id="file13" style="display: none">package filestorage
 
 import (
         "bufio"
@@ -904,30 +1033,29 @@ type FileStorageReadRepository struct {
 }
 
 // Find поиск
-func (repo *FileStorageReadRepository) Find(shortURLs []string, addedUserID string) ([]entity.ShortURLEntity, error) <span class="cov0" title="0">{
-        //TODO implement me
-        panic("implement me")</span>
-}
+func (repo *FileStorageReadRepository) Find(shortURLs []string, addedUserID string) ([]entity.ShortURLEntity, error) <span class="cov8" title="1">{
+        return make([]entity.ShortURLEntity, 0), nil
+}</span>
 
 // GetUrlsByUserID получение ссылок по пользователю
-func (repo *FileStorageReadRepository) GetUrlsByUserID(userID string) ([]entity.ShortURLEntity, error) <span class="cov0" title="0">{
+func (repo *FileStorageReadRepository) GetUrlsByUserID(userID string) ([]entity.ShortURLEntity, error) <span class="cov8" title="1">{
         var models []entity.ShortURLEntity
 
         return models, nil
 }</span>
 
 // GetDB получение коннекта к репозиторию на чтение
-func (repo *FileStorageReadRepository) GetDB() *sqlx.DB <span class="cov0" title="0">{
+func (repo *FileStorageReadRepository) GetDB() *sqlx.DB <span class="cov8" title="1">{
         return nil
 }</span>
 
 // GetDB получение коннекта к репозиторию на запись
-func (repo *FileStorageWriteRepository) GetDB() *sqlx.DB <span class="cov0" title="0">{
+func (repo *FileStorageWriteRepository) GetDB() *sqlx.DB <span class="cov8" title="1">{
         return nil
 }</span>
 
 // Ping  пинг
-func (repo *FileStorageReadRepository) Ping(ctx context.Context) error <span class="cov0" title="0">{
+func (repo *FileStorageReadRepository) Ping(ctx context.Context) error <span class="cov8" title="1">{
         return nil
 }</span>
 
@@ -937,77 +1065,77 @@ type FileStorageWriteRepository struct {
 }
 
 // Batch Массовое сохранение
-func (repo *FileStorageWriteRepository) Batch(ents []batch.ButchRequest) ([]entity.ShortURLEntity, error) <span class="cov0" title="0">{
+func (repo *FileStorageWriteRepository) Batch(ents []batch.ButchRequest) ([]entity.ShortURLEntity, error) <span class="cov8" title="1">{
         var models []entity.ShortURLEntity
         var shortURL string
-        for _, ent := range ents </span><span class="cov0" title="0">{
+        for _, ent := range ents </span><span class="cov8" title="1">{
                 shortURL = utils.GenerateShortURL(ent.OriginalURL)
                 _, err := repo.file.WriteString(fmt.Sprintf(`{"short_url":"%s","original_url":"%s", "correlation_id":"%s"}`+"\n", shortURL, ent.OriginalURL, ent.CorrelationID))
                 if err != nil </span><span class="cov0" title="0">{
                         return nil, err
                 }</span>
-                <span class="cov0" title="0">models = append(models, entity.ShortURLEntity{ShortURL: shortURL, URL: ent.OriginalURL, CorrelationID: ent.CorrelationID})</span>
+                <span class="cov8" title="1">models = append(models, entity.ShortURLEntity{ShortURL: shortURL, URL: ent.OriginalURL, CorrelationID: ent.CorrelationID})</span>
         }
 
-        <span class="cov0" title="0">return models, nil</span>
+        <span class="cov8" title="1">return models, nil</span>
 }
 
 // NewFileStorageRepositoryWrite контсруктор на запись
-func NewFileStorageRepositoryWrite(path string) (*FileStorageWriteRepository, error) <span class="cov0" title="0">{
+func NewFileStorageRepositoryWrite(path string) (*FileStorageWriteRepository, error) <span class="cov8" title="1">{
         file, err := os.OpenFile(path, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0666)
         if err != nil </span><span class="cov0" title="0">{
                 return nil, err
         }</span>
 
-        <span class="cov0" title="0">return &amp;FileStorageWriteRepository{file: file}, nil</span>
+        <span class="cov8" title="1">return &amp;FileStorageWriteRepository{file: file}, nil</span>
 }
 
 // NewFileStorageRepositoryRead контсруктор на чтение
-func NewFileStorageRepositoryRead(path string) (*FileStorageReadRepository, error) <span class="cov0" title="0">{
+func NewFileStorageRepositoryRead(path string) (*FileStorageReadRepository, error) <span class="cov8" title="1">{
         file, err := os.OpenFile(path, os.O_RDONLY|os.O_CREATE, 0666)
         if err != nil </span><span class="cov0" title="0">{
                 return nil, err
         }</span>
 
-        <span class="cov0" title="0">return &amp;FileStorageReadRepository{file: file}, nil</span>
+        <span class="cov8" title="1">return &amp;FileStorageReadRepository{file: file}, nil</span>
 }
 
 // FindByShortURL поиск по короткой ссылке
-func (repo *FileStorageReadRepository) FindByShortURL(shortURL string) (*entity.ShortURLEntity, error) <span class="cov0" title="0">{
+func (repo *FileStorageReadRepository) FindByShortURL(shortURL string) (*entity.ShortURLEntity, error) <span class="cov8" title="1">{
         var dto entity.ShortURLEntity
 
         _, err := repo.file.Seek(0, io.SeekStart)
         if err != nil </span><span class="cov0" title="0">{
                 return nil, err
         }</span>
-        <span class="cov0" title="0">scanner := bufio.NewScanner(repo.file)
-        for scanner.Scan() </span><span class="cov0" title="0">{
-                if strings.Contains(scanner.Text(), shortURL) </span><span class="cov0" title="0">{
+        <span class="cov8" title="1">scanner := bufio.NewScanner(repo.file)
+        for scanner.Scan() </span><span class="cov8" title="1">{
+                if strings.Contains(scanner.Text(), shortURL) </span><span class="cov8" title="1">{
                         err := json.Unmarshal(scanner.Bytes(), &amp;dto)
                         if err != nil </span><span class="cov0" title="0">{
                                 return nil, err
                         }</span>
 
-                        <span class="cov0" title="0">return &amp;dto, nil</span>
+                        <span class="cov8" title="1">return &amp;dto, nil</span>
                 }
         }
 
-        <span class="cov0" title="0">if err := scanner.Err(); err != nil </span><span class="cov0" title="0">{
+        <span class="cov8" title="1">if err := scanner.Err(); err != nil </span><span class="cov0" title="0">{
                 return nil, err
         }</span>
 
-        <span class="cov0" title="0">return nil, nil</span>
+        <span class="cov8" title="1">return nil, nil</span>
 }
 
 // Save сохранение
-func (repo *FileStorageWriteRepository) Save(shortURL, URL, addedUserID string) error <span class="cov0" title="0">{
+func (repo *FileStorageWriteRepository) Save(shortURL, URL, addedUserID string) error <span class="cov8" title="1">{
         _, err := repo.file.WriteString(fmt.Sprintf(`{"short_url":"%s","original_url":"%s", "added_user_id":"%s"}`+"\n", shortURL, URL, addedUserID))
 
         if err != nil </span><span class="cov0" title="0">{
                 return err
         }</span>
 
-        <span class="cov0" title="0">return nil</span>
+        <span class="cov8" title="1">return nil</span>
 }
 
 // Delete удаление
@@ -1016,15 +1144,17 @@ func (repo *FileStorageWriteRepository) Delete(shortURLs []string, addedUserID s
 }</span>
 </pre>
 		
-		<pre class="file" id="file13" style="display: none">package localstorage
+		<pre class="file" id="file14" style="display: none">package localstorage
 
 import (
+        "bufio"
         "context"
-
+        "encoding/json"
         "github.com/arturturundaev/shorturl/internal/app/entity"
         "github.com/arturturundaev/shorturl/internal/app/handler/batch"
         "github.com/arturturundaev/shorturl/internal/app/utils"
         "github.com/jmoiron/sqlx"
+        "os"
 )
 
 // LocalStorageRepository сервис
@@ -1033,7 +1163,7 @@ type LocalStorageRepository struct {
 }
 
 // GetUrlsByUserID получение ссылок по пользователю
-func (repo *LocalStorageRepository) GetUrlsByUserID(userID string) ([]entity.ShortURLEntity, error) <span class="cov0" title="0">{
+func (repo *LocalStorageRepository) GetUrlsByUserID(userID string) ([]entity.ShortURLEntity, error) <span class="cov8" title="1">{
         var models []entity.ShortURLEntity
         return models, nil
 }</span>
@@ -1067,39 +1197,61 @@ func NewLocalStorageRepository() *LocalStorageRepository <span class="cov8" titl
 }</span>
 
 // FindByShortURL поиск по короткой ссылке
-func (repo *LocalStorageRepository) FindByShortURL(shortURL string) (*entity.ShortURLEntity, error) <span class="cov0" title="0">{
-        if row, exists := repo.Rows[shortURL]; exists </span><span class="cov0" title="0">{
+func (repo *LocalStorageRepository) FindByShortURL(shortURL string) (*entity.ShortURLEntity, error) <span class="cov8" title="1">{
+        if row, exists := repo.Rows[shortURL]; exists </span><span class="cov8" title="1">{
                 return &amp;(entity.ShortURLEntity{ShortURL: row.ShortURL, URL: row.URL, CorrelationID: row.CorrelationID}), nil
         }</span>
 
-        <span class="cov0" title="0">return nil, nil</span>
+        <span class="cov8" title="1">return nil, nil</span>
 }
 
 // Save сохранение
-func (repo *LocalStorageRepository) Save(shortURL, URL, addedUserID string) error <span class="cov0" title="0">{
+func (repo *LocalStorageRepository) Save(shortURL, URL, addedUserID string) error <span class="cov8" title="1">{
         repo.Rows[shortURL] = LocalStorageRow{ShortURL: shortURL, URL: URL, AddedUserID: addedUserID}
 
         return nil
 }</span>
 
 // Ping  пинг
-func (repo *LocalStorageRepository) Ping(ctx context.Context) error <span class="cov0" title="0">{
+func (repo *LocalStorageRepository) Ping(ctx context.Context) error <span class="cov8" title="1">{
 
         return nil
 }</span>
 
 // GetDB получение коннекта к репозиторию
-func (repo *LocalStorageRepository) GetDB() *sqlx.DB <span class="cov0" title="0">{
+func (repo *LocalStorageRepository) GetDB() *sqlx.DB <span class="cov8" title="1">{
         return nil
 }</span>
 
 // Delete удаление
-func (repo *LocalStorageRepository) Delete(shortURLs []string, addedUserID string) error <span class="cov0" title="0">{
+func (repo *LocalStorageRepository) Delete(shortURLs []string, addedUserID string) error <span class="cov8" title="1">{
         return nil
 }</span>
+
+func (repo *LocalStorageRepository) SaveToFile(fileName string) error <span class="cov8" title="1">{
+        file, err := os.OpenFile(fileName, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0666)
+        if err != nil </span><span class="cov0" title="0">{
+                return err
+        }</span>
+        <span class="cov8" title="1">defer file.Close()
+        writer := bufio.NewWriter(file)
+        encoder := json.NewEncoder(writer)
+        for _, v := range repo.Rows </span><span class="cov8" title="1">{
+                err = encoder.Encode(v)
+                if err != nil </span><span class="cov0" title="0">{
+                        return err
+                }</span>
+        }
+        <span class="cov8" title="1">err = writer.Flush()
+        if err != nil </span><span class="cov0" title="0">{
+                return err
+        }</span>
+
+        <span class="cov8" title="1">return nil</span>
+}
 </pre>
 		
-		<pre class="file" id="file14" style="display: none">package postgres
+		<pre class="file" id="file15" style="display: none">package postgres
 
 import (
         "context"
@@ -1266,7 +1418,7 @@ func (repo *PostgresRepository) Delete(shortURLs []string, addedUserID string) e
 }
 </pre>
 		
-		<pre class="file" id="file15" style="display: none">package service
+		<pre class="file" id="file16" style="display: none">package service
 
 import "context"
 
@@ -1276,7 +1428,7 @@ type PingService struct {
 }
 
 // NewPingService Конструктор
-func NewPingService(repository RepositoryReader) *PingService <span class="cov0" title="0">{
+func NewPingService(repository RepositoryReader) *PingService <span class="cov8" title="1">{
         return &amp;PingService{repository: repository}
 }</span>
 
@@ -1286,7 +1438,7 @@ func (s *PingService) Ping(ctx context.Context) error <span class="cov0" title="
 }</span>
 </pre>
 		
-		<pre class="file" id="file16" style="display: none">package service
+		<pre class="file" id="file17" style="display: none">package service
 
 import (
         "errors"
@@ -1345,7 +1497,7 @@ func (service *ShortURLService) Save(ctx *gin.Context, url string) (*entity.Shor
         <span class="cov0" title="0">err := service.repositoryWrite.Save(shortURL, url, addedUserID.(string))
 
         if err != nil </span><span class="cov0" title="0">{
-                return nil, err
+                return &amp;entity.ShortURLEntity{ShortURL: shortURL, URL: url}, err
         }</span>
 
         <span class="cov0" title="0">return &amp;entity.ShortURLEntity{ShortURL: shortURL, URL: url}, nil</span>
@@ -1464,7 +1616,7 @@ func (service *ShortURLService) notification(URLs []string) {<span class="cov8" 
 }</span>
 </pre>
 		
-		<pre class="file" id="file17" style="display: none">package utils
+		<pre class="file" id="file18" style="display: none">package utils
 
 import (
         "crypto/sha1"
@@ -1480,27 +1632,40 @@ func GenerateShortURL(url string) string <span class="cov8" title="1">{
 }</span>
 </pre>
 		
-		<pre class="file" id="file18" style="display: none">package config
+		<pre class="file" id="file19" style="display: none">package config
 
 //  -a=http://localhost:8081/api/shorten -b=http://localhost:8081/api/shorten
 import (
+        "bytes"
         "cmp"
+        "crypto/rand"
+        "crypto/rsa"
+        "crypto/x509"
+        "crypto/x509/pkix"
+        "encoding/json"
+        "encoding/pem"
         "flag"
-        "fmt"
-        "net/netip"
+        "log"
+        "math/big"
+        "net"
         "os"
         "strconv"
-        "strings"
+        "time"
 )
 
 // Config структура
 type Config struct {
-        AddressStart AddressStartType
-        BaseShort    BaseShortURLType
-        FileStorage  FileStorageType
-        DatabaseURL  DatabaseURLType
+        AddressStart string `json:"server_address"`
+        BaseShort    string `json:"base_url"`
+        FileStorage  string `json:"file_storage_path"`
+        DatabaseURL  string `json:"database_dsn"`
         StorageType  string
         FullLog      bool
+        HTTPS        struct {
+                Enabled    bool `json:"enable_https"`
+                SSLKeyPath string
+                SSLPemPath string
+        }
 }
 
 // StorageTypeMemory место зранения
@@ -1512,147 +1677,192 @@ const StorageTypeFile = "File"
 // StorageTypeDB место зранения
 const StorageTypeDB = "DB"
 
-// FileStorageType стуктура
-type FileStorageType struct {
-        Path string
-}
-
-// AddressStartType стуктура
-type AddressStartType struct {
-        URL  string
-        Port string
-}
-
-// BaseShortURLType стуктура
-type BaseShortURLType struct {
-        URL string
-}
-
-// DatabaseURLType стуктура
-type DatabaseURLType struct {
-        URL string
-}
-
 // NewConfig получение конфигов
 func NewConfig() *Config <span class="cov8" title="1">{
-        var ServerAddress AddressStartType
-        var BaseURL BaseShortURLType
-        var FileStorage FileStorageType
-        var databaseURL DatabaseURLType
+        var configPath string
+        flag.StringVar(&amp;configPath, "c", "", "Path to config file")
 
-        flag.Var(&amp;ServerAddress, "a", "start url and port")
-        flag.Var(&amp;BaseURL, "b", "url redirect")
-        flag.Var(&amp;FileStorage, "f", "file storage path")
-        flag.Var(&amp;databaseURL, "d", "database storage path")
+        cfg := &amp;Config{}
+
+        flag.StringVar(&amp;cfg.AddressStart, "a", "", "start url and port")
+        flag.StringVar(&amp;cfg.BaseShort, "b", "", "url redirect")
+        flag.StringVar(&amp;cfg.FileStorage, "f", "", "file storage path")
+        flag.StringVar(&amp;cfg.DatabaseURL, "d", "", "database storage path")
+        flag.BoolVar(&amp;cfg.HTTPS.Enabled, "s", false, "ssl enabled")
+        flag.StringVar(&amp;cfg.HTTPS.SSLKeyPath, "sslk", "./auto_server.key", "Path to ssl key file")
+        flag.StringVar(&amp;cfg.HTTPS.SSLPemPath, "sslp", "./auto_server.pem", "Path to ssl pem file")
         flag.Parse()
-        var URL, port string
-        data := strings.Split(cmp.Or(ServerAddress.String(), os.Getenv("SERVER_ADDRESS"), "localhost:8080"), ":")
-        URL = data[0]
-        port = data[1]
 
-        BaseURLFinal := cmp.Or(BaseURL.String(), os.Getenv("BASE_URL"), "http://localhost:8080")
-        FileStorageFinal := cmp.Or(FileStorage.String(), os.Getenv("FILE_STORAGE_PATH"), "/tmp/db.txt")
-        databaseURLFinal := cmp.Or(databaseURL.String(), os.Getenv("DATABASE_DSN"), "postgres://postgres:postgres@localhost:5432/shorturl?sslmode=disable")
+        preConfig := &amp;Config{}
+        if configPath != "" </span><span class="cov0" title="0">{
+                rawContent, err := os.ReadFile(configPath)
+                if err != nil </span><span class="cov0" title="0">{
+                        log.Fatal(err)
+                }</span>
+
+                <span class="cov0" title="0">if err = json.Unmarshal(rawContent, preConfig); err != nil </span><span class="cov0" title="0">{
+                        log.Fatal(err)
+                }</span>
+        }
+
+        <span class="cov8" title="1">cfg.AddressStart = cmp.Or(cfg.AddressStart, os.Getenv("SERVER_ADDRESS"), preConfig.AddressStart, "127.0.0.1:8086")
+        cfg.BaseShort = cmp.Or(cfg.BaseShort, os.Getenv("BASE_URL"), preConfig.BaseShort, "127.0.0.1:8080")
+        cfg.FileStorage = cmp.Or(cfg.FileStorage, os.Getenv("FILE_STORAGE_PATH"), preConfig.FileStorage)
+        cfg.DatabaseURL = cmp.Or(cfg.DatabaseURL, os.Getenv("DATABASE_DSN"), preConfig.DatabaseURL)
 
         var storageType = StorageTypeMemory
 
-        if FileStorage.String() != "" || os.Getenv("FILE_STORAGE_PATH") != "" </span><span class="cov0" title="0">{
+        if cfg.FileStorage != "" || os.Getenv("FILE_STORAGE_PATH") != "" </span><span class="cov0" title="0">{
                 storageType = StorageTypeFile
         }</span>
 
-        <span class="cov8" title="1">if databaseURL.String() != "" || os.Getenv("DATABASE_DSN") != "" </span><span class="cov0" title="0">{
+        <span class="cov8" title="1">if cfg.DatabaseURL != "" || os.Getenv("DATABASE_DSN") != "" </span><span class="cov0" title="0">{
                 storageType = StorageTypeDB
         }</span>
 
-        <span class="cov8" title="1">return &amp;Config{
-                AddressStart: AddressStartType{URL: URL, Port: port},
-                BaseShort:    BaseShortURLType{URL: BaseURLFinal},
-                FileStorage:  FileStorageType{Path: FileStorageFinal},
-                DatabaseURL:  DatabaseURLType{URL: databaseURLFinal},
-                StorageType:  storageType,
-                FullLog:      false,
-        }</span>
-}
+        <span class="cov8" title="1">cfg.StorageType = storageType
+        cfg.FullLog = true
 
-// String AddressStartType
-func (d *AddressStartType) String() string <span class="cov8" title="1">{
-        arr := make([]string, 0)
-        arr = append(arr, d.URL, d.Port)
-
-        if arr[0] != "" &amp;&amp; arr[1] != "" </span><span class="cov0" title="0">{
-                return fmt.Sprint(strings.Join(arr, ":"))
-        }</span>
-
-        <span class="cov8" title="1">return ""</span>
-}
-
-// Set AddressStartType
-func (d *AddressStartType) Set(flagValue string) error <span class="cov0" title="0">{
-        data := strings.Split(flagValue, ":")
-
-        var ip string
-
-        if data[0] == "localhost" </span><span class="cov0" title="0">{
-                ip = data[0]
-        }</span> else<span class="cov0" title="0"> {
-                add, err := netip.ParseAddr(data[0])
-                if err != nil </span><span class="cov0" title="0">{
-                        return err
+        if envHTTPSStr := os.Getenv("ENABLE_HTTPS"); envHTTPSStr != "" </span><span class="cov0" title="0">{
+                envHTTPS, err := strconv.ParseBool(envHTTPSStr)
+                if err == nil </span><span class="cov0" title="0">{
+                        cfg.HTTPS.Enabled = envHTTPS
                 }</span>
-
-                <span class="cov0" title="0">ip = add.String()</span>
         }
 
-        <span class="cov0" title="0">port, err2 := strconv.Atoi(data[1])
-        if err2 != nil </span><span class="cov0" title="0">{
-                return err2
+        <span class="cov8" title="1">if cfg.HTTPS.Enabled &amp;&amp; cfg.HTTPS.SSLKeyPath == "./auto_server.key" </span><span class="cov0" title="0">{
+                CreateTLSCert("./auto_server.pem", "./auto_server.key")
         }</span>
 
-        <span class="cov0" title="0">if port &lt; 1 || port &gt; 65535 </span><span class="cov0" title="0">{
-                return fmt.Errorf("PORT incorrected")
-        }</span>
-
-        <span class="cov0" title="0">d.URL = ip
-        d.Port = data[1]
-
-        return nil</span>
+        <span class="cov8" title="1">return cfg</span>
 }
 
-// String BaseShortURLType
-func (d *BaseShortURLType) String() string <span class="cov8" title="1">{
-        return d.URL
-}</span>
+// CreateTLSCert - generate TLS certificate and key for run server HTTPS
+func CreateTLSCert(certPath string, keyPath string) error <span class="cov0" title="0">{
+        cert := x509.Certificate{
+                SerialNumber: big.NewInt(1),
+                Subject: pkix.Name{
+                        Organization: []string{"artur.turundaev"},
+                        Country:      []string{"RU"},
+                        Province:     []string{"Moscow"},
+                        Locality:     []string{"Moscow"},
+                        CommonName:   "localhost",
+                },
+                NotBefore:             time.Now(),
+                NotAfter:              time.Now().Add(365 * 24 * time.Hour),
+                KeyUsage:              x509.KeyUsageKeyEncipherment | x509.KeyUsageDigitalSignature,
+                ExtKeyUsage:           []x509.ExtKeyUsage{x509.ExtKeyUsageServerAuth},
+                BasicConstraintsValid: true,
+                IPAddresses:           []net.IP{net.ParseIP("127.0.0.1")},
+        }
 
-// Set BaseShortURLType
-func (d *BaseShortURLType) Set(flagValue string) error <span class="cov0" title="0">{
-        d.URL = flagValue
+        privateKey, _ := rsa.GenerateKey(rand.Reader, 4096)
+        certBytes, _ := x509.CreateCertificate(rand.Reader, &amp;cert, &amp;cert, &amp;privateKey.PublicKey, privateKey)
+        err := saveToFile(certPath, "CERTIFICATE", certBytes)
+        if err != nil </span><span class="cov0" title="0">{
+                return err
+        }</span>
 
-        return nil
-}</span>
+        <span class="cov0" title="0">err = saveToFile(keyPath, "RSA PRIVATE KEY", x509.MarshalPKCS1PrivateKey(privateKey))
+        if err != nil </span><span class="cov0" title="0">{
+                return err
+        }</span>
 
-// String FileStorageType
-func (d *FileStorageType) String() string <span class="cov8" title="1">{
-        return d.Path
-}</span>
+        <span class="cov0" title="0">return nil</span>
+}
 
-// Set FileStorageType
-func (d *FileStorageType) Set(flagValue string) error <span class="cov0" title="0">{
-        d.Path = flagValue
+func saveToFile(filePath string, cypherType string, cypher []byte) error <span class="cov0" title="0">{
+        var (
+                buf  bytes.Buffer
+                file *os.File
+        )
 
-        return nil
-}</span>
+        _ = pem.Encode(&amp;buf, &amp;pem.Block{
+                Type:  cypherType,
+                Bytes: cypher,
+        })
 
-// String DatabaseURLType
-func (d *DatabaseURLType) String() string <span class="cov8" title="1">{
-        return d.URL
-}</span>
+        file, err := os.Create(filePath)
+        defer file.Close()
 
-// Set DatabaseURLType
-func (d *DatabaseURLType) Set(flagValue string) error <span class="cov0" title="0">{
-        d.URL = flagValue
+        _, err = buf.WriteTo(file)
+        if err != nil </span><span class="cov0" title="0">{
+                return err
+        }</span>
 
-        return nil
-}</span>
+        <span class="cov0" title="0">return nil</span>
+}
+</pre>
+		
+		<pre class="file" id="file20" style="display: none">package exitmain
+
+import (
+        "go/ast"
+        "golang.org/x/tools/go/analysis"
+        "golang.org/x/tools/go/analysis/passes/inspect"
+        "honnef.co/go/tools/analysis/code"
+        "strings"
+)
+
+// Analyzer - Check direct call to os.Exit in the main function
+var Analyzer = &amp;analysis.Analyzer{
+        Name:     "mainexit",
+        Doc:      "Checking the use of a direct call to os.Exit in the main function of the main package",
+        Run:      run,
+        Requires: []*analysis.Analyzer{inspect.Analyzer},
+}
+
+func run(pass *analysis.Pass) (interface{}, error) <span class="cov8" title="1">{
+        if pass.Pkg.Name() != "main" </span><span class="cov8" title="1">{
+                return nil, nil
+        }</span>
+
+        <span class="cov8" title="1">fn := func(node ast.Node) </span><span class="cov8" title="1">{
+                switch v := node.(type) </span>{
+                case *ast.FuncDecl:<span class="cov8" title="1">
+                        if v.Body == nil </span><span class="cov0" title="0">{
+                                return
+                        }</span>
+
+                        <span class="cov8" title="1">if v.Name.Name != "main" </span><span class="cov8" title="1">{
+                                return
+                        }</span>
+
+                        <span class="cov8" title="1">if strings.HasSuffix(pass.Pkg.Path(), ".example") ||
+                                strings.HasSuffix(pass.Pkg.Path(), ".test") ||
+                                strings.HasSuffix(pass.Pkg.Path(), "benchmark") ||
+                                strings.HasSuffix(pass.Pkg.Path(), "fuzz") </span><span class="cov0" title="0">{
+                                return
+                        }</span>
+
+                        <span class="cov8" title="1">ast.Inspect(v, func(n ast.Node) bool </span><span class="cov8" title="1">{
+                                ce, okCe := n.(*ast.CallExpr)
+                                if !okCe </span><span class="cov8" title="1">{
+                                        return true
+                                }</span>
+
+                                <span class="cov8" title="1">se, okSe := ce.Fun.(*ast.SelectorExpr)
+                                if !okSe </span><span class="cov8" title="1">{
+                                        return true
+                                }</span>
+
+                                <span class="cov8" title="1">if ident, ok := se.X.(*ast.Ident); ok &amp;&amp; ident.Name == "os" &amp;&amp; se.Sel.Name == "Exit" </span><span class="cov8" title="1">{
+                                        pass.Reportf(se.Pos(), "avoid using os.Exit directly in main function")
+                                }</span>
+
+                                <span class="cov8" title="1">return false</span>
+                        })
+                }
+        }
+        //
+        <span class="cov8" title="1">needle := []ast.Node{
+                (*ast.FuncDecl)(nil),
+        }
+
+        code.Preorder(pass, fn, needle...)
+
+        return nil, nil</span>
+}
 </pre>
 		
 		</div>

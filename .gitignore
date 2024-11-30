@@ -22,3 +22,5 @@ vendor/
 .idea
 .vscode
 analize/statictest
+/auto_server.key
+/auto_server.pem

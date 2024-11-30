@@ -1,6 +1,7 @@
 package find
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/arturturundaev/shorturl/internal/app/service"
@@ -23,7 +24,11 @@ func (hndlr *FindHandler) Handle(ctx *gin.Context) {
 	data, err := hndlr.service.FindByShortURL(ctx.Param("short"))
 
 	if err != nil || data == nil {
-		ctx.String(http.StatusBadRequest, "%s", err.Error())
+		er := err
+		if data == nil {
+			er = fmt.Errorf("not find")
+		}
+		ctx.String(http.StatusBadRequest, "%s", er.Error())
 		ctx.Abort()
 		return
 	}

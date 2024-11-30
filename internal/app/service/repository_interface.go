@@ -22,4 +22,5 @@ type RepositoryWriter interface {
 	Batch(request []batch.ButchRequest) ([]entity.ShortURLEntity, error)
 	GetDB() *sqlx.DB
 	Delete(shortURLs []string, addedUserID string) error
+	SaveToFile(fileName string) error
 }

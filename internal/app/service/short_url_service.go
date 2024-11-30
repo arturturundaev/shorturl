@@ -57,7 +57,7 @@ func (service *ShortURLService) Save(ctx *gin.Context, url string) (*entity.Shor
 	err := service.repositoryWrite.Save(shortURL, url, addedUserID.(string))
 
 	if err != nil {
-		return nil, err
+		return &entity.ShortURLEntity{ShortURL: shortURL, URL: url}, err
 	}
 
 	return &entity.ShortURLEntity{ShortURL: shortURL, URL: url}, nil

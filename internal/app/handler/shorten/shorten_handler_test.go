@@ -3,6 +3,7 @@ package shorten
 import (
 	"errors"
 	"github.com/arturturundaev/shorturl/internal/app/entity"
+	service2 "github.com/arturturundaev/shorturl/internal/app/service"
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
 	"io"
@@ -21,6 +22,9 @@ func (service *ServiceMock) Save(ctx *gin.Context, url string) (*entity.ShortURL
 
 	if url == "error" {
 		return nil, errors.New("error")
+	}
+	if url == "exists" {
+		return &entity.ShortURLEntity{ShortURL: "7CwAhsKq", URL: "https://practicum.yandex.ru"}, service2.ErrEntityExists
 	}
 
 	return nil, nil
@@ -81,6 +85,22 @@ func TestShortenHandler_Handle(t *testing.T) {
 			body: "{\"url\": \"https://practicum.yandex.ru\"}",
 			want: want{
 				statusCode: http.StatusCreated,
+				body:       "{\"result\":\"http://example.com/7CwAhsKq\"}",
+			},
+		},
+		{
+			name: "error",
+			body: "{\"url\": \"error\"}",
+			want: want{
+				statusCode: http.StatusBadRequest,
+				body:       "{\"error\":\"error\"}",
+			},
+		},
+		{
+			name: "exists",
+			body: "{\"url\": \"exists\"}",
+			want: want{
+				statusCode: http.StatusConflict,
 				body:       "{\"result\":\"http://example.com/7CwAhsKq\"}",
 			},
 		},
