@@ -130,3 +130,8 @@ func (repo *FileStorageWriteRepository) Save(shortURL, URL, addedUserID string) 
 func (repo *FileStorageWriteRepository) Delete(shortURLs []string, addedUserID string) error {
 	return nil
 }
+
+// SaveToFile при падении ничего не далем
+func (repo *FileStorageWriteRepository) SaveToFile(fileName string) error {
+	return nil
+}

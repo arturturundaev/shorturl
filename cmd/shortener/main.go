@@ -93,9 +93,7 @@ func main() {
 		signalChan := make(chan os.Signal, 1)
 		signal.Notify(signalChan, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
 		<-signalChan
-		if serverConfig.StorageType == config.StorageTypeMemory {
-			repoRW.(*localstorage.LocalStorageRepository).SaveToFile("/tmp/save.txt")
-		}
+		repoRW.SaveToFile("/tmp/save.txt")
 		os.Exit(0)
 	}()
 
@@ -152,7 +150,7 @@ func initRouter() (*gin.Engine, *zap.Logger, *config.Config, service.RepositoryW
 
 	handlerFind := find.NewFindHandler(shortURLService)
 	handlerSave := save.NewSaveHandler(shortURLService, serverConfig.BaseShort)
-	handlerSave2 := shorten.NewShortenHandler(shortURLService, serverConfig.BaseShort)
+	handlerShortener := shorten.NewShortenHandler(shortURLService, serverConfig.BaseShort)
 	handlerPing := ping.NewPingHandler(pingService)
 	handlerButch := batch.NewButchHandler(shortURLService, serverConfig.BaseShort)
 	handlerFindByUser := user.NewURLFindByUserHandler(shortURLService, serverConfig.BaseShort)
@@ -161,7 +159,7 @@ func initRouter() (*gin.Engine, *zap.Logger, *config.Config, service.RepositoryW
 	router.GET(Ping, handlerPing.Handle)
 	router.POST(SaveFullURL, jwtValidate.Handle, handlerSave.Handle)
 	router.GET(GetFullURL, handlerFind.Handle)
-	router.POST(SaveFullURL2, jwtValidate.Handle, handlerSave2.Handle)
+	router.POST(SaveFullURL2, jwtValidate.Handle, handlerShortener.Handle)
 	router.POST(SaveBatch, handlerButch.Handle)
 	router.GET(URLByUser, jwtValidate.Handle, handlerFindByUser.Handle)
 	router.DELETE(DeleteByUrls, jwtValidate.Handle, handlerDelete.Handle)
