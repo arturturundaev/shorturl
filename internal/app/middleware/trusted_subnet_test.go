@@ -86,7 +86,7 @@ func TestTrustedSubnetMiddleware_Handle(t *testing.T) {
 			h.Handle(ctx)
 
 			if ctx.Writer.Status() != tt.want {
-				t.Errorf(tt.name + " Bad request")
+				t.Error(tt.name + " Bad request")
 			}
 		})
 	}
