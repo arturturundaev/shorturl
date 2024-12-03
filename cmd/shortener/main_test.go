@@ -6,6 +6,8 @@ import (
 	"github.com/arturturundaev/shorturl/internal/config"
 	"github.com/gin-gonic/gin"
 	"github.com/jmoiron/sqlx"
+	"github.com/stretchr/testify/require"
+	sqlmock "github.com/zhashkevych/go-sqlxmock"
 	"go.uber.org/zap"
 	"net/http/httptest"
 	"testing"
@@ -43,6 +45,12 @@ func Test_addLogger(t *testing.T) {
 		{
 			name:       "",
 			fullLogger: false,
+			want:       nil,
+			wantErr:    false,
+		},
+		{
+			name:       "",
+			fullLogger: true,
 			want:       nil,
 			wantErr:    false,
 		},
@@ -112,6 +120,12 @@ func Test_getRepository2(t *testing.T) {
 	}
 }
 func Test_initMigrations(t *testing.T) {
+	db, mock, err := sqlmock.New()
+	require.NoError(t, err, "creating a db mock")
+	defer db.Close()
+	//dbx := sqlx.NewDb(db, "sqlmock")
+	mock.ExpectQuery("SELECT CURRENT_DATABASE()").WillReturnRows(mock.NewRows([]string{"b"}).AddRow("sqlmock"))
+	mock.ExpectQuery("SELECT CURRENT_SCHEMA()").WillReturnRows(mock.NewRows([]string{"b"}).AddRow("public"))
 	type args struct {
 		migrationPath string
 		DB            *sqlx.DB
@@ -120,11 +134,33 @@ func Test_initMigrations(t *testing.T) {
 		name string
 		args args
 	}{
-		// TODO: Add test cases.
+		/*{
+			name: "test",
+			args: args{
+				migrationPath: "/tmp/",
+				DB:            dbx,
+			},
+		},*/
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			initMigrations(tt.args.migrationPath, tt.args.DB)
+		})
+	}
+}
+
+func Test_startServe(t *testing.T) {
+	tests := []struct {
+		name string
+	}{
+		{
+			name: "success",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Setenv("SERVER_ADDRESS", "-1")
+			startServe()
 		})
 	}
 }

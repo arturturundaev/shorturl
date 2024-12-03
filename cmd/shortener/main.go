@@ -74,6 +74,10 @@ const DeleteByUrls = `/api/user/urls`
 const UserUrlsCountStat = `/api/internal/stats`
 
 func main() {
+	startServe()
+}
+
+func startServe() {
 	defer func() {
 		if err := recover(); err != nil {
 			log.Println("panic occurred:", err)

@@ -55,7 +55,7 @@
 			<div id="nav">
 				<select id="files">
 				
-				<option value="file0">github.com/arturturundaev/shorturl/cmd/shortener/main.go (40.2%)</option>
+				<option value="file0">github.com/arturturundaev/shorturl/cmd/shortener/main.go (54.1%)</option>
 				
 				<option value="file1">github.com/arturturundaev/shorturl/cmd/staticlint/linter.go (75.0%)</option>
 				
@@ -75,27 +75,33 @@
 				
 				<option value="file9">github.com/arturturundaev/shorturl/internal/app/handler/shorten/shorten_request.go (100.0%)</option>
 				
-				<option value="file10">github.com/arturturundaev/shorturl/internal/app/handler/user/url_handler.go (92.9%)</option>
+				<option value="file10">github.com/arturturundaev/shorturl/internal/app/handler/stats/url_and_users.go (100.0%)</option>
 				
-				<option value="file11">github.com/arturturundaev/shorturl/internal/app/handler/user/url_list_response.go (100.0%)</option>
+				<option value="file11">github.com/arturturundaev/shorturl/internal/app/handler/user/url_handler.go (92.9%)</option>
 				
-				<option value="file12">github.com/arturturundaev/shorturl/internal/app/middleware/jwt.go (86.5%)</option>
+				<option value="file12">github.com/arturturundaev/shorturl/internal/app/handler/user/url_list_response.go (100.0%)</option>
 				
-				<option value="file13">github.com/arturturundaev/shorturl/internal/app/repository/filestorage/file_storage_repository.go (81.0%)</option>
+				<option value="file13">github.com/arturturundaev/shorturl/internal/app/middleware/jwt.go (86.5%)</option>
 				
-				<option value="file14">github.com/arturturundaev/shorturl/internal/app/repository/localstorage/local_storage_repository.go (90.6%)</option>
+				<option value="file14">github.com/arturturundaev/shorturl/internal/app/middleware/trusted_subnet.go (90.0%)</option>
 				
-				<option value="file15">github.com/arturturundaev/shorturl/internal/app/repository/postgres/postgres.go (48.4%)</option>
+				<option value="file15">github.com/arturturundaev/shorturl/internal/app/repository/filestorage/file_storage_repository.go (75.6%)</option>
 				
-				<option value="file16">github.com/arturturundaev/shorturl/internal/app/service/ping_service.go (50.0%)</option>
+				<option value="file16">github.com/arturturundaev/shorturl/internal/app/repository/localstorage/local_storage_repository.go (85.3%)</option>
 				
-				<option value="file17">github.com/arturturundaev/shorturl/internal/app/service/short_url_service.go (71.2%)</option>
+				<option value="file17">github.com/arturturundaev/shorturl/internal/app/repository/postgres/postgres.go (61.3%)</option>
 				
-				<option value="file18">github.com/arturturundaev/shorturl/internal/app/utils/short_url_generator.go (100.0%)</option>
+				<option value="file18">github.com/arturturundaev/shorturl/internal/app/service/ping_service.go (50.0%)</option>
 				
-				<option value="file19">github.com/arturturundaev/shorturl/internal/config/config.go (46.3%)</option>
+				<option value="file19">github.com/arturturundaev/shorturl/internal/app/service/short_url_service.go (71.2%)</option>
 				
-				<option value="file20">github.com/arturturundaev/shorturl/internal/pkg/analyser/exitmain/exitmain.go (91.3%)</option>
+				<option value="file20">github.com/arturturundaev/shorturl/internal/app/service/stats_service.go (100.0%)</option>
+				
+				<option value="file21">github.com/arturturundaev/shorturl/internal/app/utils/short_url_generator.go (100.0%)</option>
+				
+				<option value="file22">github.com/arturturundaev/shorturl/internal/config/config.go (87.5%)</option>
+				
+				<option value="file23">github.com/arturturundaev/shorturl/internal/pkg/analyser/exitmain/exitmain.go (91.3%)</option>
 				
 				</select>
 			</div>
@@ -113,7 +119,6 @@
 
 import (
         "bytes"
-        "context"
         "fmt"
         "github.com/arturturundaev/shorturl/internal/app/handler/batch"
         deleteUrl "github.com/arturturundaev/shorturl/internal/app/handler/delete"
@@ -121,6 +126,7 @@ import (
         "github.com/arturturundaev/shorturl/internal/app/handler/ping"
         "github.com/arturturundaev/shorturl/internal/app/handler/save"
         "github.com/arturturundaev/shorturl/internal/app/handler/shorten"
+        "github.com/arturturundaev/shorturl/internal/app/handler/stats"
         "github.com/arturturundaev/shorturl/internal/app/handler/user"
         "github.com/arturturundaev/shorturl/internal/app/middleware"
         "github.com/arturturundaev/shorturl/internal/app/repository/filestorage"
@@ -181,14 +187,21 @@ const URLByUser = `/api/user/urls`
 // DeleteByUrls удаление ссылок
 const DeleteByUrls = `/api/user/urls`
 
+// UserUrlsCountStat
+const UserUrlsCountStat = `/api/internal/stats`
+
 func main() <span class="cov0" title="0">{
-        defer func() </span><span class="cov0" title="0">{
-                if err := recover(); err != nil </span><span class="cov0" title="0">{
+        startServe()
+}</span>
+
+func startServe() <span class="cov8" title="1">{
+        defer func() </span><span class="cov8" title="1">{
+                if err := recover(); err != nil </span><span class="cov8" title="1">{
                         log.Println("panic occurred:", err)
                 }</span>
         }()
 
-        <span class="cov0" title="0">router, logger, serverConfig, repoRW := initRouter()
+        <span class="cov8" title="1">router, logger, serverConfig, repoRW := initRouter()
 
         logger.Info(fmt.Sprintf("Build version: %s\n", BuildVersion))
         logger.Info(fmt.Sprintf("Build date: %s\n", BuildDate))
@@ -202,35 +215,22 @@ func main() <span class="cov0" title="0">{
         }
 
         go func() </span><span class="cov0" title="0">{
-                var errServer error
-                if serverConfig.HTTPS.Enabled </span><span class="cov0" title="0">{
-                        errServer = server.ListenAndServeTLS(serverConfig.HTTPS.SSLPemPath, serverConfig.HTTPS.SSLKeyPath)
-                }</span> else<span class="cov0" title="0"> {
-                        errServer = server.ListenAndServe()
-                }</span>
-                <span class="cov0" title="0">if errServer != nil </span><span class="cov0" title="0">{
-                        logger.Fatal(errServer.Error())
-                }</span>
-        }()
+                signalChan := make(chan os.Signal, 1)
+                signal.Notify(signalChan, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
+                &lt;-signalChan
+                repoRW.SaveToFile("/tmp/save.txt")
+                os.Exit(0)
+        }</span>()
 
-        <span class="cov0" title="0">signalChan := make(chan os.Signal, 1)
-        signal.Notify(signalChan, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
-        sig := &lt;-signalChan
-        logger.Error(fmt.Sprintf("Shutdown server: %v...", sig))
-        ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-        defer cancel()
-        if err := server.Shutdown(ctx); err != nil </span><span class="cov0" title="0">{
-                logger.Error(fmt.Sprintf("HTTP server Shutdown error: %v\n", err))
+        <span class="cov0" title="0">var errServer error
+        if serverConfig.HTTPS.Enabled </span><span class="cov0" title="0">{
+                errServer = server.ListenAndServeTLS(serverConfig.HTTPS.SSLPemPath, serverConfig.HTTPS.SSLKeyPath)
+        }</span> else<span class="cov0" title="0"> {
+                errServer = server.ListenAndServe()
         }</span>
-        // Если храним всё в памяти - сохраним всё в файл
-        <span class="cov0" title="0">if serverConfig.StorageType == config.StorageTypeMemory </span><span class="cov0" title="0">{
-                err := repoRW.(*localstorage.LocalStorageRepository).SaveToFile("/tmp/save.txt")
-                if err != nil </span><span class="cov0" title="0">{
-                        logger.Error(err.Error())
-                }</span>
-        }
-
-        <span class="cov0" title="0">logger.Info("Server exited")</span>
+        <span class="cov0" title="0">if errServer != nil </span><span class="cov0" title="0">{
+                logger.Fatal(errServer.Error())
+        }</span>
 }
 
 func initRouter() (*gin.Engine, *zap.Logger, *config.Config, service.RepositoryWriter) <span class="cov8" title="1">{
@@ -268,26 +268,31 @@ func initRouter() (*gin.Engine, *zap.Logger, *config.Config, service.RepositoryW
         }
 
         <span class="cov8" title="1">jwtValidate := middleware.NewJWTValidator(serverConfig.AddressStart)
+        trustedSubnet := middleware.NewTrustedSubnetMiddleware(serverConfig.TrustedSubnetFinal)
 
         shortURLService := service.NewShortURLService(repositoryRead, repositoryWrite)
 
         pingService := service.NewPingService(repositoryRead)
 
+        statService := service.NewStatService(repositoryRead)
+
         handlerFind := find.NewFindHandler(shortURLService)
         handlerSave := save.NewSaveHandler(shortURLService, serverConfig.BaseShort)
-        handlerSave2 := shorten.NewShortenHandler(shortURLService, serverConfig.BaseShort)
+        handlerShortener := shorten.NewShortenHandler(shortURLService, serverConfig.BaseShort)
         handlerPing := ping.NewPingHandler(pingService)
         handlerButch := batch.NewButchHandler(shortURLService, serverConfig.BaseShort)
         handlerFindByUser := user.NewURLFindByUserHandler(shortURLService, serverConfig.BaseShort)
         handlerDelete := deleteUrl.NewDeleteHandler(shortURLService)
+        handlerUsersUrlsCount := stats.NewUrlsAndUsersStatHandler(statService)
 
         router.GET(Ping, handlerPing.Handle)
         router.POST(SaveFullURL, jwtValidate.Handle, handlerSave.Handle)
         router.GET(GetFullURL, handlerFind.Handle)
-        router.POST(SaveFullURL2, jwtValidate.Handle, handlerSave2.Handle)
+        router.POST(SaveFullURL2, jwtValidate.Handle, handlerShortener.Handle)
         router.POST(SaveBatch, handlerButch.Handle)
         router.GET(URLByUser, jwtValidate.Handle, handlerFindByUser.Handle)
         router.DELETE(DeleteByUrls, jwtValidate.Handle, handlerDelete.Handle)
+        router.GET(UserUrlsCountStat, trustedSubnet.Handle, handlerUsersUrlsCount.Handle)
 
         pprof.Register(router, "dev/pprof")
 
@@ -823,7 +828,41 @@ func NewShortenRequest(context *gin.Context) (*ShortenRequest, error) <span clas
 }
 </pre>
 		
-		<pre class="file" id="file10" style="display: none">package user
+		<pre class="file" id="file10" style="display: none">package stats
+
+import (
+        "github.com/gin-gonic/gin"
+        "net/http"
+)
+
+type UrlsAndUsersStatHandler struct {
+        service UrlsAndUsersStatService
+}
+
+type UrlsAndUsersStatService interface {
+        GetUrlsAndUsersStat() (int32, int32)
+}
+
+func NewUrlsAndUsersStatHandler(service UrlsAndUsersStatService) *UrlsAndUsersStatHandler <span class="cov8" title="1">{
+        return &amp;UrlsAndUsersStatHandler{service: service}
+}</span>
+
+func (h *UrlsAndUsersStatHandler) Handle(ctx *gin.Context) <span class="cov8" title="1">{
+        urlsCount, usersCount := h.service.GetUrlsAndUsersStat()
+
+        type response struct {
+                Urls  int32 `json:"urls"`
+                Users int32 `json:"users"`
+        }
+
+        ctx.JSON(http.StatusOK, response{
+                Urls:  urlsCount,
+                Users: usersCount,
+        })
+}</span>
+</pre>
+		
+		<pre class="file" id="file11" style="display: none">package user
 
 import (
         "net/http"
@@ -875,7 +914,7 @@ func (handler *URLFindByUserHandler) Handle(ctx *gin.Context) <span class="cov8"
 }
 </pre>
 		
-		<pre class="file" id="file11" style="display: none">package user
+		<pre class="file" id="file12" style="display: none">package user
 
 import "fmt"
 
@@ -891,7 +930,7 @@ func NewURLResponse(baseURL, shortURL, originURL string) URLListItemResponse <sp
 }</span>
 </pre>
 		
-		<pre class="file" id="file12" style="display: none">package middleware
+		<pre class="file" id="file13" style="display: none">package middleware
 
 import (
         "fmt"
@@ -1010,7 +1049,45 @@ func (JWTValidator *JWTValidator) getNewUserID() string <span class="cov8" title
 }</span>
 </pre>
 		
-		<pre class="file" id="file13" style="display: none">package filestorage
+		<pre class="file" id="file14" style="display: none">package middleware
+
+import (
+        "github.com/gin-gonic/gin"
+        "net"
+        "net/http"
+)
+
+type TrustedSubnetMiddleware struct {
+        subnets []*net.IPNet
+}
+
+// NewTrustedSubnetMiddleware
+func NewTrustedSubnetMiddleware(subnets []*net.IPNet) *TrustedSubnetMiddleware <span class="cov0" title="0">{
+        return &amp;TrustedSubnetMiddleware{subnets: subnets}
+}</span>
+
+// Handle
+func (h *TrustedSubnetMiddleware) Handle(c *gin.Context) <span class="cov8" title="1">{
+        ip := c.ClientIP()
+        if !isIPInSubnet(ip, h.subnets) </span><span class="cov8" title="1">{
+                c.AbortWithStatus(http.StatusForbidden)
+        }</span>
+        <span class="cov8" title="1">c.Next()</span>
+}
+
+// IsIPInSubnet
+func isIPInSubnet(ip string, subnets []*net.IPNet) bool <span class="cov8" title="1">{
+        ipNet := net.ParseIP(ip)
+        for _, subnet := range subnets </span><span class="cov8" title="1">{
+                if subnet.Contains(ipNet) </span><span class="cov8" title="1">{
+                        return true
+                }</span>
+        }
+        <span class="cov8" title="1">return false</span>
+}
+</pre>
+		
+		<pre class="file" id="file15" style="display: none">package filestorage
 
 import (
         "bufio"
@@ -1142,9 +1219,22 @@ func (repo *FileStorageWriteRepository) Save(shortURL, URL, addedUserID string) 
 func (repo *FileStorageWriteRepository) Delete(shortURLs []string, addedUserID string) error <span class="cov0" title="0">{
         return nil
 }</span>
+
+// SaveToFile при падении ничего не далем
+func (repo *FileStorageWriteRepository) SaveToFile(fileName string) error <span class="cov0" title="0">{
+        return nil
+}</span>
+
+func (repo *FileStorageReadRepository) GetUrlsCount() int32 <span class="cov0" title="0">{
+        return 0
+}</span>
+
+func (repo *FileStorageReadRepository) GetUsersCount() int32 <span class="cov0" title="0">{
+        return 0
+}</span>
 </pre>
 		
-		<pre class="file" id="file14" style="display: none">package localstorage
+		<pre class="file" id="file16" style="display: none">package localstorage
 
 import (
         "bufio"
@@ -1228,6 +1318,7 @@ func (repo *LocalStorageRepository) Delete(shortURLs []string, addedUserID strin
         return nil
 }</span>
 
+// SaveToFile сохраняем текущее состояние в файл при падении
 func (repo *LocalStorageRepository) SaveToFile(fileName string) error <span class="cov8" title="1">{
         file, err := os.OpenFile(fileName, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0666)
         if err != nil </span><span class="cov0" title="0">{
@@ -1249,9 +1340,16 @@ func (repo *LocalStorageRepository) SaveToFile(fileName string) error <span clas
 
         <span class="cov8" title="1">return nil</span>
 }
+
+func (repo *LocalStorageRepository) GetUrlsCount() int32 <span class="cov0" title="0">{
+        return 0
+}</span>
+func (repo *LocalStorageRepository) GetUsersCount() int32 <span class="cov0" title="0">{
+        return 0
+}</span>
 </pre>
 		
-		<pre class="file" id="file15" style="display: none">package postgres
+		<pre class="file" id="file17" style="display: none">package postgres
 
 import (
         "context"
@@ -1382,7 +1480,7 @@ func (repo *PostgresRepository) Batch(request []batch.ButchRequest) ([]entity.Sh
 }
 
 // GetUrlsByUserID получение ссылок по пользователю
-func (repo *PostgresRepository) GetUrlsByUserID(userID string) ([]entity.ShortURLEntity, error) <span class="cov0" title="0">{
+func (repo *PostgresRepository) GetUrlsByUserID(userID string) ([]entity.ShortURLEntity, error) <span class="cov8" title="1">{
         ent := []entity.ShortURLEntity{}
 
         err := repo.DB.Select(&amp;ent,
@@ -1393,32 +1491,63 @@ func (repo *PostgresRepository) GetUrlsByUserID(userID string) ([]entity.ShortUR
                 return nil, err
         }</span>
 
-        <span class="cov0" title="0">return ent, nil</span>
+        <span class="cov8" title="1">return ent, nil</span>
 }
 
 // Delete удаление
-func (repo *PostgresRepository) Delete(shortURLs []string, addedUserID string) error <span class="cov0" title="0">{
+func (repo *PostgresRepository) Delete(shortURLs []string, addedUserID string) error <span class="cov8" title="1">{
         var inArray []string
         var params []interface{}
 
         params = append(params, addedUserID)
         i := 2
-        for _, shortURL := range shortURLs </span><span class="cov0" title="0">{
+        for _, shortURL := range shortURLs </span><span class="cov8" title="1">{
                 inArray = append(inArray, "$"+fmt.Sprintf("%d", i))
                 params = append(params, shortURL)
                 i++
         }</span>
-        <span class="cov0" title="0">_, err := repo.DB.Exec(fmt.Sprintf(`update %s SET is_deleted = true WHERE added_user_id = $1 AND url_short IN (%s)`, TableName, strings.Join(inArray, ",")), params...)
+        <span class="cov8" title="1">_, err := repo.DB.Exec(fmt.Sprintf(`update %s SET is_deleted = true WHERE added_user_id = $1 AND url_short IN (%s)`, TableName, strings.Join(inArray, ",")), params...)
 
         if err != nil </span><span class="cov0" title="0">{
                 return err
         }</span>
 
-        <span class="cov0" title="0">return nil</span>
+        <span class="cov8" title="1">return nil</span>
+}
+
+// SaveToFile при падении ничего не далем
+func (repo *PostgresRepository) SaveToFile(fileName string) error <span class="cov0" title="0">{
+        return nil
+}</span>
+
+// getUrlsCount
+func (repo *PostgresRepository) GetUrlsCount() int32 <span class="cov0" title="0">{
+        var count int32
+
+        err := repo.DB.QueryRow(fmt.Sprintf("select COUNT(*) from %s", TableName)).Scan(&amp;count)
+
+        if err != nil </span><span class="cov0" title="0">{
+                return 0
+        }</span>
+
+        <span class="cov0" title="0">return count</span>
+}
+
+// getUsersCount
+func (repo *PostgresRepository) GetUsersCount() int32 <span class="cov0" title="0">{
+        var count int32
+
+        err := repo.DB.QueryRow(fmt.Sprintf("select COUNT(DISTINCT added_user_id) from %s", TableName)).Scan(&amp;count)
+
+        if err != nil </span><span class="cov0" title="0">{
+                return 0
+        }</span>
+
+        <span class="cov0" title="0">return count</span>
 }
 </pre>
 		
-		<pre class="file" id="file16" style="display: none">package service
+		<pre class="file" id="file18" style="display: none">package service
 
 import "context"
 
@@ -1438,7 +1567,7 @@ func (s *PingService) Ping(ctx context.Context) error <span class="cov0" title="
 }</span>
 </pre>
 		
-		<pre class="file" id="file17" style="display: none">package service
+		<pre class="file" id="file19" style="display: none">package service
 
 import (
         "errors"
@@ -1616,7 +1745,30 @@ func (service *ShortURLService) notification(URLs []string) {<span class="cov8" 
 }</span>
 </pre>
 		
-		<pre class="file" id="file18" style="display: none">package utils
+		<pre class="file" id="file20" style="display: none">package service
+
+type StatService struct {
+        repository getStatsRepository
+}
+
+type getStatsRepository interface {
+        GetUrlsCount() int32
+        GetUsersCount() int32
+}
+
+func NewStatService(repository getStatsRepository) *StatService <span class="cov8" title="1">{
+        return &amp;StatService{repository: repository}
+}</span>
+
+func (s *StatService) GetUrlsAndUsersStat() (int32, int32) <span class="cov8" title="1">{
+        urlsCount := s.repository.GetUrlsCount()
+        usersCount := s.repository.GetUsersCount()
+
+        return urlsCount, usersCount
+}</span>
+</pre>
+		
+		<pre class="file" id="file21" style="display: none">package utils
 
 import (
         "crypto/sha1"
@@ -1632,7 +1784,7 @@ func GenerateShortURL(url string) string <span class="cov8" title="1">{
 }</span>
 </pre>
 		
-		<pre class="file" id="file19" style="display: none">package config
+		<pre class="file" id="file22" style="display: none">package config
 
 //  -a=http://localhost:8081/api/shorten -b=http://localhost:8081/api/shorten
 import (
@@ -1650,6 +1802,7 @@ import (
         "net"
         "os"
         "strconv"
+        "strings"
         "time"
 )
 
@@ -1666,6 +1819,8 @@ type Config struct {
                 SSLKeyPath string
                 SSLPemPath string
         }
+        TrustedSubnet      string `json:"trusted_subnet"`
+        TrustedSubnetFinal []*net.IPNet
 }
 
 // StorageTypeMemory место зранения
@@ -1691,6 +1846,7 @@ func NewConfig() *Config <span class="cov8" title="1">{
         flag.BoolVar(&amp;cfg.HTTPS.Enabled, "s", false, "ssl enabled")
         flag.StringVar(&amp;cfg.HTTPS.SSLKeyPath, "sslk", "./auto_server.key", "Path to ssl key file")
         flag.StringVar(&amp;cfg.HTTPS.SSLPemPath, "sslp", "./auto_server.pem", "Path to ssl pem file")
+        flag.StringVar(&amp;cfg.TrustedSubnet, "t", "", "Path to ssl pem file")
         flag.Parse()
 
         preConfig := &amp;Config{}
@@ -1705,40 +1861,43 @@ func NewConfig() *Config <span class="cov8" title="1">{
                 }</span>
         }
 
-        <span class="cov8" title="1">cfg.AddressStart = cmp.Or(cfg.AddressStart, os.Getenv("SERVER_ADDRESS"), preConfig.AddressStart, "127.0.0.1:8086")
-        cfg.BaseShort = cmp.Or(cfg.BaseShort, os.Getenv("BASE_URL"), preConfig.BaseShort, "127.0.0.1:8080")
+        <span class="cov8" title="1">cfg.AddressStart = cmp.Or(cfg.AddressStart, os.Getenv("SERVER_ADDRESS"), preConfig.AddressStart, "localhost:8080")
+        cfg.BaseShort = cmp.Or(cfg.BaseShort, os.Getenv("BASE_URL"), preConfig.BaseShort, "http://localhost:8080")
         cfg.FileStorage = cmp.Or(cfg.FileStorage, os.Getenv("FILE_STORAGE_PATH"), preConfig.FileStorage)
         cfg.DatabaseURL = cmp.Or(cfg.DatabaseURL, os.Getenv("DATABASE_DSN"), preConfig.DatabaseURL)
+        cfg.TrustedSubnet = cmp.Or(cfg.TrustedSubnet, os.Getenv("TRUSTED_SUBNET"), preConfig.TrustedSubnet)
 
         var storageType = StorageTypeMemory
 
-        if cfg.FileStorage != "" || os.Getenv("FILE_STORAGE_PATH") != "" </span><span class="cov0" title="0">{
+        if cfg.FileStorage != "" || os.Getenv("FILE_STORAGE_PATH") != "" </span><span class="cov8" title="1">{
                 storageType = StorageTypeFile
         }</span>
 
-        <span class="cov8" title="1">if cfg.DatabaseURL != "" || os.Getenv("DATABASE_DSN") != "" </span><span class="cov0" title="0">{
+        <span class="cov8" title="1">if cfg.DatabaseURL != "" || os.Getenv("DATABASE_DSN") != "" </span><span class="cov8" title="1">{
                 storageType = StorageTypeDB
         }</span>
 
         <span class="cov8" title="1">cfg.StorageType = storageType
         cfg.FullLog = true
 
-        if envHTTPSStr := os.Getenv("ENABLE_HTTPS"); envHTTPSStr != "" </span><span class="cov0" title="0">{
+        if envHTTPSStr := os.Getenv("ENABLE_HTTPS"); envHTTPSStr != "" </span><span class="cov8" title="1">{
                 envHTTPS, err := strconv.ParseBool(envHTTPSStr)
-                if err == nil </span><span class="cov0" title="0">{
+                if err == nil </span><span class="cov8" title="1">{
                         cfg.HTTPS.Enabled = envHTTPS
                 }</span>
         }
 
-        <span class="cov8" title="1">if cfg.HTTPS.Enabled &amp;&amp; cfg.HTTPS.SSLKeyPath == "./auto_server.key" </span><span class="cov0" title="0">{
+        <span class="cov8" title="1">if cfg.HTTPS.Enabled &amp;&amp; cfg.HTTPS.SSLKeyPath == "./auto_server.key" </span><span class="cov8" title="1">{
                 CreateTLSCert("./auto_server.pem", "./auto_server.key")
         }</span>
 
-        <span class="cov8" title="1">return cfg</span>
+        <span class="cov8" title="1">cfg.TrustedSubnetFinal = prepareTrustedSubnets(cfg.TrustedSubnet)
+
+        return cfg</span>
 }
 
 // CreateTLSCert - generate TLS certificate and key for run server HTTPS
-func CreateTLSCert(certPath string, keyPath string) error <span class="cov0" title="0">{
+func CreateTLSCert(certPath string, keyPath string) error <span class="cov8" title="1">{
         cert := x509.Certificate{
                 SerialNumber: big.NewInt(1),
                 Subject: pkix.Name{
@@ -1763,15 +1922,15 @@ func CreateTLSCert(certPath string, keyPath string) error <span class="cov0" tit
                 return err
         }</span>
 
-        <span class="cov0" title="0">err = saveToFile(keyPath, "RSA PRIVATE KEY", x509.MarshalPKCS1PrivateKey(privateKey))
+        <span class="cov8" title="1">err = saveToFile(keyPath, "RSA PRIVATE KEY", x509.MarshalPKCS1PrivateKey(privateKey))
         if err != nil </span><span class="cov0" title="0">{
                 return err
         }</span>
 
-        <span class="cov0" title="0">return nil</span>
+        <span class="cov8" title="1">return nil</span>
 }
 
-func saveToFile(filePath string, cypherType string, cypher []byte) error <span class="cov0" title="0">{
+func saveToFile(filePath string, cypherType string, cypher []byte) error <span class="cov8" title="1">{
         var (
                 buf  bytes.Buffer
                 file *os.File
@@ -1782,19 +1941,32 @@ func saveToFile(filePath string, cypherType string, cypher []byte) error <span c
                 Bytes: cypher,
         })
 
-        file, err := os.Create(filePath)
+        file, _ = os.Create(filePath)
         defer file.Close()
 
-        _, err = buf.WriteTo(file)
+        _, err := buf.WriteTo(file)
         if err != nil </span><span class="cov0" title="0">{
                 return err
         }</span>
 
-        <span class="cov0" title="0">return nil</span>
+        <span class="cov8" title="1">return nil</span>
+}
+
+func prepareTrustedSubnets(data string) []*net.IPNet <span class="cov8" title="1">{
+        var subnets []*net.IPNet
+        if data != "" </span><span class="cov8" title="1">{
+                subStr := strings.Split(data, ",")
+                for _, subnetStr := range subStr </span><span class="cov8" title="1">{
+                        _, subnetIPNet, _ := net.ParseCIDR(subnetStr)
+                        subnets = append(subnets, subnetIPNet)
+                }</span>
+        }
+
+        <span class="cov8" title="1">return subnets</span>
 }
 </pre>
 		
-		<pre class="file" id="file20" style="display: none">package exitmain
+		<pre class="file" id="file23" style="display: none">package exitmain
 
 import (
         "go/ast"
