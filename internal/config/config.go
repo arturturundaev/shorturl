@@ -35,6 +35,7 @@ type Config struct {
 	}
 	TrustedSubnet      string `json:"trusted_subnet"`
 	TrustedSubnetFinal []*net.IPNet
+	GRPCAddr           string `json:"grpc_address"`
 }
 
 // StorageTypeMemory место зранения
@@ -61,6 +62,7 @@ func NewConfig() *Config {
 	flag.StringVar(&cfg.HTTPS.SSLKeyPath, "sslk", "./auto_server.key", "Path to ssl key file")
 	flag.StringVar(&cfg.HTTPS.SSLPemPath, "sslp", "./auto_server.pem", "Path to ssl pem file")
 	flag.StringVar(&cfg.TrustedSubnet, "t", "", "Path to ssl pem file")
+	flag.StringVar(&cfg.GRPCAddr, "g", "", "grpc server")
 	flag.Parse()
 
 	preConfig := &Config{}
@@ -80,6 +82,7 @@ func NewConfig() *Config {
 	cfg.FileStorage = cmp.Or(cfg.FileStorage, os.Getenv("FILE_STORAGE_PATH"), preConfig.FileStorage)
 	cfg.DatabaseURL = cmp.Or(cfg.DatabaseURL, os.Getenv("DATABASE_DSN"), preConfig.DatabaseURL)
 	cfg.TrustedSubnet = cmp.Or(cfg.TrustedSubnet, os.Getenv("TRUSTED_SUBNET"), preConfig.TrustedSubnet)
+	cfg.GRPCAddr = cmp.Or(cfg.GRPCAddr, os.Getenv("GRPC_ADDR"), preConfig.GRPCAddr)
 
 	var storageType = StorageTypeMemory
 

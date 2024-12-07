@@ -55,7 +55,7 @@
 			<div id="nav">
 				<select id="files">
 				
-				<option value="file0">github.com/arturturundaev/shorturl/cmd/shortener/main.go (54.1%)</option>
+				<option value="file0">github.com/arturturundaev/shorturl/cmd/shortener/main.go (14.2%)</option>
 				
 				<option value="file1">github.com/arturturundaev/shorturl/cmd/staticlint/linter.go (75.0%)</option>
 				
@@ -85,31 +85,46 @@
 				
 				<option value="file14">github.com/arturturundaev/shorturl/internal/app/middleware/trusted_subnet.go (90.0%)</option>
 				
-				<option value="file15">github.com/arturturundaev/shorturl/internal/app/repository/filestorage/file_storage_repository.go (75.6%)</option>
+				<option value="file15">github.com/arturturundaev/shorturl/internal/app/proto/proto.pb.go (9.8%)</option>
 				
-				<option value="file16">github.com/arturturundaev/shorturl/internal/app/repository/localstorage/local_storage_repository.go (85.3%)</option>
+				<option value="file16">github.com/arturturundaev/shorturl/internal/app/proto/proto_grpc.pb.go (0.0%)</option>
 				
-				<option value="file17">github.com/arturturundaev/shorturl/internal/app/repository/postgres/postgres.go (61.3%)</option>
+				<option value="file17">github.com/arturturundaev/shorturl/internal/app/proto/server.go (0.0%)</option>
 				
-				<option value="file18">github.com/arturturundaev/shorturl/internal/app/service/ping_service.go (50.0%)</option>
+				<option value="file18">github.com/arturturundaev/shorturl/internal/app/repository/filestorage/file_storage_repository.go (75.6%)</option>
 				
-				<option value="file19">github.com/arturturundaev/shorturl/internal/app/service/short_url_service.go (71.2%)</option>
+				<option value="file19">github.com/arturturundaev/shorturl/internal/app/repository/localstorage/local_storage_repository.go (85.3%)</option>
 				
-				<option value="file20">github.com/arturturundaev/shorturl/internal/app/service/stats_service.go (100.0%)</option>
+				<option value="file20">github.com/arturturundaev/shorturl/internal/app/repository/postgres/postgres.go (61.3%)</option>
 				
-				<option value="file21">github.com/arturturundaev/shorturl/internal/app/utils/short_url_generator.go (100.0%)</option>
+				<option value="file21">github.com/arturturundaev/shorturl/internal/app/service/ping_service.go (50.0%)</option>
 				
-				<option value="file22">github.com/arturturundaev/shorturl/internal/config/config.go (87.5%)</option>
+				<option value="file22">github.com/arturturundaev/shorturl/internal/app/service/short_url_service.go (89.4%)</option>
 				
-				<option value="file23">github.com/arturturundaev/shorturl/internal/pkg/analyser/exitmain/exitmain.go (91.3%)</option>
+				<option value="file23">github.com/arturturundaev/shorturl/internal/app/service/stats_service.go (100.0%)</option>
+				
+				<option value="file24">github.com/arturturundaev/shorturl/internal/app/utils/short_url_generator.go (100.0%)</option>
+				
+				<option value="file25">github.com/arturturundaev/shorturl/internal/config/config.go (87.9%)</option>
+				
+				<option value="file26">github.com/arturturundaev/shorturl/internal/pkg/analyser/exitmain/exitmain.go (91.3%)</option>
 				
 				</select>
 			</div>
 			<div id="legend">
 				<span>not tracked</span>
 			
-				<span class="cov0">not covered</span>
-				<span class="cov8">covered</span>
+				<span class="cov0">no coverage</span>
+				<span class="cov1">low coverage</span>
+				<span class="cov2">*</span>
+				<span class="cov3">*</span>
+				<span class="cov4">*</span>
+				<span class="cov5">*</span>
+				<span class="cov6">*</span>
+				<span class="cov7">*</span>
+				<span class="cov8">*</span>
+				<span class="cov9">*</span>
+				<span class="cov10">high coverage</span>
 			
 			</div>
 		</div>
@@ -129,6 +144,7 @@ import (
         "github.com/arturturundaev/shorturl/internal/app/handler/stats"
         "github.com/arturturundaev/shorturl/internal/app/handler/user"
         "github.com/arturturundaev/shorturl/internal/app/middleware"
+        "github.com/arturturundaev/shorturl/internal/app/proto"
         "github.com/arturturundaev/shorturl/internal/app/repository/filestorage"
         "github.com/arturturundaev/shorturl/internal/app/repository/localstorage"
         pg "github.com/arturturundaev/shorturl/internal/app/repository/postgres"
@@ -145,8 +161,10 @@ import (
         "github.com/jmoiron/sqlx"
         "go.uber.org/zap"
         "go.uber.org/zap/zapcore"
+        "google.golang.org/grpc"
         "io"
         "log"
+        "net"
         "net/http"
         "os"
         "os/signal"
@@ -194,87 +212,72 @@ func main() <span class="cov0" title="0">{
         startServe()
 }</span>
 
-func startServe() <span class="cov8" title="1">{
-        defer func() </span><span class="cov8" title="1">{
-                if err := recover(); err != nil </span><span class="cov8" title="1">{
-                        log.Println("panic occurred:", err)
-                }</span>
-        }()
+func startServe() <span class="cov0" title="0">{
 
-        <span class="cov8" title="1">router, logger, serverConfig, repoRW := initRouter()
+        serverConfig, logger, jwtValidate, trustedSubnet, shortURLService, pingService, statService, repoRW := getResources()
+
+        router := initRouter(shortURLService, serverConfig, pingService, statService, jwtValidate, trustedSubnet)
 
         logger.Info(fmt.Sprintf("Build version: %s\n", BuildVersion))
         logger.Info(fmt.Sprintf("Build date: %s\n", BuildDate))
         logger.Info(fmt.Sprintf("Build commit: %s\n", BuildCommit))
 
-        logger.Info("server start on port: " + serverConfig.AddressStart)
+        if serverConfig.GRPCAddr != "" </span><span class="cov0" title="0">{
 
-        server := &amp;http.Server{
-                Addr:    serverConfig.AddressStart,
-                Handler: router,
+                // определяем порт для сервера
+                listen, err := net.Listen("tcp", serverConfig.GRPCAddr)
+                if err != nil </span><span class="cov0" title="0">{
+                        log.Fatal(err)
+                }</span>
+
+                // создаём gRPC-сервер без зарегистрированной службы
+                <span class="cov0" title="0">s := grpc.NewServer()
+                // регистрируем сервис
+                proto.RegisterServiceServer(s, proto.NewGPRCServer(pingService, statService))
+
+                fmt.Println("Сервер gRPC начал работу " + serverConfig.GRPCAddr)
+                // получаем запрос gRPC
+                if err := s.Serve(listen); err != nil </span><span class="cov0" title="0">{
+                        log.Fatal(err)
+                }</span>
+                <span class="cov0" title="0">defer func() </span><span class="cov0" title="0">{
+                        if err := recover(); err != nil </span><span class="cov0" title="0">{
+                                log.Println("panic occurred:", err)
+                        }</span>
+                }()
+        } else<span class="cov0" title="0"> {
+
+                logger.Info("server start on port: " + serverConfig.AddressStart)
+                server := &amp;http.Server{
+                        Addr:    serverConfig.AddressStart,
+                        Handler: router,
+                }
+
+                go func() </span><span class="cov0" title="0">{
+                        signalChan := make(chan os.Signal, 1)
+                        signal.Notify(signalChan, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
+                        &lt;-signalChan
+                        repoRW.SaveToFile("/tmp/save.txt")
+                        os.Exit(0)
+                }</span>()
+
+                <span class="cov0" title="0">var errServer error
+                if serverConfig.HTTPS.Enabled </span><span class="cov0" title="0">{
+                        errServer = server.ListenAndServeTLS(serverConfig.HTTPS.SSLPemPath, serverConfig.HTTPS.SSLKeyPath)
+                }</span> else<span class="cov0" title="0"> {
+                        errServer = server.ListenAndServe()
+                }</span>
+                <span class="cov0" title="0">if errServer != nil </span><span class="cov0" title="0">{
+                        logger.Fatal(errServer.Error())
+                }</span>
         }
-
-        go func() </span><span class="cov0" title="0">{
-                signalChan := make(chan os.Signal, 1)
-                signal.Notify(signalChan, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
-                &lt;-signalChan
-                repoRW.SaveToFile("/tmp/save.txt")
-                os.Exit(0)
-        }</span>()
-
-        <span class="cov0" title="0">var errServer error
-        if serverConfig.HTTPS.Enabled </span><span class="cov0" title="0">{
-                errServer = server.ListenAndServeTLS(serverConfig.HTTPS.SSLPemPath, serverConfig.HTTPS.SSLKeyPath)
-        }</span> else<span class="cov0" title="0"> {
-                errServer = server.ListenAndServe()
-        }</span>
-        <span class="cov0" title="0">if errServer != nil </span><span class="cov0" title="0">{
-                logger.Fatal(errServer.Error())
-        }</span>
 }
 
-func initRouter() (*gin.Engine, *zap.Logger, *config.Config, service.RepositoryWriter) <span class="cov8" title="1">{
+func initRouter(shortURLService *service.ShortURLService, serverConfig *config.Config, pingService *service.PingService, statService *service.StatService, jwtValidate *middleware.JWTValidator, trustedSubnet *middleware.TrustedSubnetMiddleware) *gin.Engine <span class="cov0" title="0">{
 
         router := gin.Default()
 
         router.Use(gzip.Gzip(gzip.DefaultCompression, gzip.WithDecompressFn(gzip.DefaultDecompressHandle)))
-
-        serverConfig := config.NewConfig()
-
-        logger, err := addLogger(router, serverConfig.FullLog)
-
-        if err != nil </span><span class="cov0" title="0">{
-                fmt.Print(err.Error())
-                os.Exit(5)
-        }</span>
-
-        <span class="cov8" title="1">repositoryRead, repositoryWrite := getRepository(serverConfig, logger)
-
-        if repositoryRead == nil </span><span class="cov0" title="0">{
-                logger.Error("ошибка инициализации репозитория на чтение. Тип репозитория: " + config.StorageTypeDB)
-        }</span>
-
-        <span class="cov8" title="1">if repositoryWrite == nil </span><span class="cov0" title="0">{
-                logger.Error("ошибка инициализации репозитория на запись. Тип репозитория: " + config.StorageTypeDB)
-        }</span>
-
-        <span class="cov8" title="1">if serverConfig.StorageType == config.StorageTypeDB </span><span class="cov0" title="0">{
-                absPath, errPathMigration := filepath.Abs(".")
-                if errPathMigration != nil </span><span class="cov0" title="0">{
-                        logger.Error("ошибка определения директории для миграций!")
-                }</span> else<span class="cov0" title="0"> {
-                        initMigrations("file:////"+absPath+"/internal/app/repository/postgres/migration", repositoryRead.GetDB())
-                }</span>
-        }
-
-        <span class="cov8" title="1">jwtValidate := middleware.NewJWTValidator(serverConfig.AddressStart)
-        trustedSubnet := middleware.NewTrustedSubnetMiddleware(serverConfig.TrustedSubnetFinal)
-
-        shortURLService := service.NewShortURLService(repositoryRead, repositoryWrite)
-
-        pingService := service.NewPingService(repositoryRead)
-
-        statService := service.NewStatService(repositoryRead)
 
         handlerFind := find.NewFindHandler(shortURLService)
         handlerSave := save.NewSaveHandler(shortURLService, serverConfig.BaseShort)
@@ -296,18 +299,59 @@ func initRouter() (*gin.Engine, *zap.Logger, *config.Config, service.RepositoryW
 
         pprof.Register(router, "dev/pprof")
 
-        return router, logger, serverConfig, repositoryWrite</span>
+        return router
+}</span>
 
+func getResources() (*config.Config, *zap.Logger, *middleware.JWTValidator, *middleware.TrustedSubnetMiddleware, *service.ShortURLService, *service.PingService, *service.StatService, service.RepositoryWriter) <span class="cov0" title="0">{
+
+        serverConfig := config.NewConfig()
+
+        logger, err := addLogger(nil, serverConfig.FullLog)
+
+        if err != nil </span><span class="cov0" title="0">{
+                fmt.Print(err.Error())
+                os.Exit(5)
+        }</span>
+
+        <span class="cov0" title="0">repositoryRead, repositoryWrite := getRepository(serverConfig, logger)
+
+        if repositoryRead == nil </span><span class="cov0" title="0">{
+                logger.Error("ошибка инициализации репозитория на чтение. Тип репозитория: " + config.StorageTypeDB)
+        }</span>
+
+        <span class="cov0" title="0">if repositoryWrite == nil </span><span class="cov0" title="0">{
+                logger.Error("ошибка инициализации репозитория на запись. Тип репозитория: " + config.StorageTypeDB)
+        }</span>
+
+        <span class="cov0" title="0">if serverConfig.StorageType == config.StorageTypeDB </span><span class="cov0" title="0">{
+                absPath, errPathMigration := filepath.Abs(".")
+                if errPathMigration != nil </span><span class="cov0" title="0">{
+                        logger.Error("ошибка определения директории для миграций!")
+                }</span> else<span class="cov0" title="0"> {
+                        initMigrations("file:////"+absPath+"/internal/app/repository/postgres/migration", repositoryRead.GetDB())
+                }</span>
+        }
+
+        <span class="cov0" title="0">jwtValidate := middleware.NewJWTValidator(serverConfig.AddressStart)
+        trustedSubnet := middleware.NewTrustedSubnetMiddleware(serverConfig.TrustedSubnetFinal)
+
+        shortURLService := service.NewShortURLService(repositoryRead, repositoryWrite)
+
+        pingService := service.NewPingService(repositoryRead)
+
+        statService := service.NewStatService(repositoryRead)
+
+        return serverConfig, logger, jwtValidate, trustedSubnet, shortURLService, pingService, statService, repositoryWrite</span>
 }
 
-func addLogger(r *gin.Engine, fullLogger bool) (*zap.Logger, error) <span class="cov8" title="1">{
+func addLogger(r *gin.Engine, fullLogger bool) (*zap.Logger, error) <span class="cov10" title="2">{
         logger, err := zap.NewProduction()
 
         if err != nil </span><span class="cov0" title="0">{
                 return nil, err
         }</span>
 
-        <span class="cov8" title="1">if fullLogger </span><span class="cov8" title="1">{
+        <span class="cov10" title="2">if fullLogger &amp;&amp; r != nil </span><span class="cov1" title="1">{
                 r.Use(ginzap.Ginzap(logger, time.RFC3339, true))
                 r.Use(ginzap.RecoveryWithZap(logger, true))
                 r.Use(ginzap.GinzapWithConfig(logger, &amp;ginzap.Config{
@@ -333,7 +377,7 @@ func addLogger(r *gin.Engine, fullLogger bool) (*zap.Logger, error) <span class=
                 }))
         }
 
-        <span class="cov8" title="1">return logger, nil</span>
+        <span class="cov10" title="2">return logger, nil</span>
 }
 
 func initMigrations(migrationPath string, DB *sqlx.DB) <span class="cov0" title="0">{
@@ -355,7 +399,7 @@ func initMigrations(migrationPath string, DB *sqlx.DB) <span class="cov0" title=
         }
 }
 
-func getRepository(serverConfig *config.Config, logger *zap.Logger) (service.RepositoryReader, service.RepositoryWriter) <span class="cov8" title="1">{
+func getRepository(serverConfig *config.Config, logger *zap.Logger) (service.RepositoryReader, service.RepositoryWriter) <span class="cov10" title="2">{
 
         if serverConfig.StorageType == config.StorageTypeDB </span><span class="cov0" title="0">{
                 database, err := sqlx.Open("postgres", serverConfig.DatabaseURL)
@@ -370,21 +414,21 @@ func getRepository(serverConfig *config.Config, logger *zap.Logger) (service.Rep
                 <span class="cov0" title="0">return repository, repository</span>
         }
 
-        <span class="cov8" title="1">if serverConfig.StorageType == config.StorageTypeFile </span><span class="cov8" title="1">{
+        <span class="cov10" title="2">if serverConfig.StorageType == config.StorageTypeFile </span><span class="cov1" title="1">{
                 repositoryWrite, errStorageWrite := filestorage.NewFileStorageRepositoryWrite(serverConfig.FileStorage)
                 if errStorageWrite != nil </span><span class="cov0" title="0">{
                         logger.Error(errStorageWrite.Error())
                 }</span>
 
-                <span class="cov8" title="1">repositoryRead, errStorageRead := filestorage.NewFileStorageRepositoryRead(serverConfig.FileStorage)
+                <span class="cov1" title="1">repositoryRead, errStorageRead := filestorage.NewFileStorageRepositoryRead(serverConfig.FileStorage)
                 if errStorageRead != nil </span><span class="cov0" title="0">{
                         logger.Error(errStorageRead.Error())
                 }</span>
 
-                <span class="cov8" title="1">return repositoryRead, repositoryWrite</span>
+                <span class="cov1" title="1">return repositoryRead, repositoryWrite</span>
         }
 
-        <span class="cov8" title="1">if serverConfig.StorageType == config.StorageTypeMemory </span><span class="cov8" title="1">{
+        <span class="cov1" title="1">if serverConfig.StorageType == config.StorageTypeMemory </span><span class="cov1" title="1">{
                 repositoryWrite := localstorage.NewLocalStorageRepository()
 
                 return repositoryWrite, repositoryWrite
@@ -426,7 +470,7 @@ func main() <span class="cov0" title="0">{
         )
 }</span>
 
-func getChecks() []*analysis.Analyzer <span class="cov8" title="1">{
+func getChecks() []*analysis.Analyzer <span class="cov1" title="1">{
         checks := []*analysis.Analyzer{
                 // check consistency of Printf format strings and arguments
                 printf.Analyzer,
@@ -459,15 +503,15 @@ func getChecks() []*analysis.Analyzer <span class="cov8" title="1">{
                 exitmain.Analyzer,
         }
 
-        for _, v := range staticcheck.Analyzers </span><span class="cov8" title="1">{
+        for _, v := range staticcheck.Analyzers </span><span class="cov10" title="95">{
                 checks = append(checks, v.Analyzer)
         }</span>
 
-        <span class="cov8" title="1">for _, v := range simple.Analyzers </span><span class="cov8" title="1">{
+        <span class="cov1" title="1">for _, v := range simple.Analyzers </span><span class="cov8" title="35">{
                 checks = append(checks, v.Analyzer)
         }</span>
 
-        <span class="cov8" title="1">return checks</span>
+        <span class="cov1" title="1">return checks</span>
 }
 </pre>
 		
@@ -497,32 +541,32 @@ func NewButchHandler(service serviceURLButcher, baseURL string) *ButchHandler <s
 }</span>
 
 // Handle массовоt создание
-func (h *ButchHandler) Handle(ctx *gin.Context) <span class="cov8" title="1">{
+func (h *ButchHandler) Handle(ctx *gin.Context) <span class="cov10" title="3">{
         var response []ButchResponse
         request, err := NewButchRequest(ctx)
-        if err != nil </span><span class="cov8" title="1">{
+        if err != nil </span><span class="cov1" title="1">{
                 ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
                 return
         }</span>
 
-        <span class="cov8" title="1">models, err := h.service.Batch(request)
-        if err != nil </span><span class="cov8" title="1">{
+        <span class="cov6" title="2">models, err := h.service.Batch(request)
+        if err != nil </span><span class="cov1" title="1">{
                 ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
                 return
         }</span>
 
-        <span class="cov8" title="1">for _, model := range models </span><span class="cov8" title="1">{
+        <span class="cov1" title="1">for _, model := range models </span><span class="cov1" title="1">{
                 response = append(response, ButchResponse{CorrelationID: model.CorrelationID, ShortURL: fmt.Sprintf("%s/%s", h.baseURL, model.ShortURL)})
         }</span>
 
-        <span class="cov8" title="1">bt, errMarshal := json.Marshal(response)
+        <span class="cov1" title="1">bt, errMarshal := json.Marshal(response)
 
         if errMarshal != nil </span><span class="cov0" title="0">{
                 ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": errMarshal.Error()})
                 return
         }</span>
 
-        <span class="cov8" title="1">ctx.Writer.Header().Set("Accept-Encoding", "gzip")
+        <span class="cov1" title="1">ctx.Writer.Header().Set("Accept-Encoding", "gzip")
         ctx.Writer.Header().Set("Content-Encoding", "gzip")
         ctx.Writer.Header().Set("Content-Type", "application/json")
         ctx.Data(http.StatusCreated, "gzip", bt)</span>
@@ -544,18 +588,18 @@ type ButchRequest struct {
 }
 
 // NewButchRequest конструктор
-func NewButchRequest(context *gin.Context) ([]ButchRequest, error) <span class="cov8" title="1">{
+func NewButchRequest(context *gin.Context) ([]ButchRequest, error) <span class="cov10" title="3">{
         var dto []ButchRequest
 
-        if err := context.BindJSON(&amp;dto); err != nil </span><span class="cov8" title="1">{
+        if err := context.BindJSON(&amp;dto); err != nil </span><span class="cov1" title="1">{
                 return dto, err
         }</span>
 
-        <span class="cov8" title="1">if len(dto) == 0 </span><span class="cov0" title="0">{
+        <span class="cov6" title="2">if len(dto) == 0 </span><span class="cov0" title="0">{
                 return nil, fmt.Errorf("пустой входной массив")
         }</span>
 
-        <span class="cov8" title="1">return dto, nil</span>
+        <span class="cov6" title="2">return dto, nil</span>
 }
 </pre>
 		
@@ -580,12 +624,12 @@ type DeleteHandler struct {
 }
 
 // NewDeleteHandler конструктор
-func NewDeleteHandler(service deleter) *DeleteHandler <span class="cov8" title="1">{
+func NewDeleteHandler(service deleter) *DeleteHandler <span class="cov1" title="1">{
         return &amp;DeleteHandler{service: service}
 }</span>
 
 // Handle обработчик удаления
-func (h *DeleteHandler) Handle(ctx *gin.Context) <span class="cov8" title="1">{
+func (h *DeleteHandler) Handle(ctx *gin.Context) <span class="cov10" title="3">{
         var data []string
         body, err := io.ReadAll(ctx.Request.Body)
         if err != nil </span><span class="cov0" title="0">{
@@ -593,20 +637,20 @@ func (h *DeleteHandler) Handle(ctx *gin.Context) <span class="cov8" title="1">{
                 return
         }</span>
 
-        <span class="cov8" title="1">err = json.Unmarshal(body, &amp;data)
-        if err != nil </span><span class="cov8" title="1">{
+        <span class="cov10" title="3">err = json.Unmarshal(body, &amp;data)
+        if err != nil </span><span class="cov1" title="1">{
                 ctx.AbortWithStatusJSON(http.StatusBadRequest, err)
                 return
         }</span>
 
-        <span class="cov8" title="1">addedUserID, exists := ctx.Get(middleware.UserIDProperty)
+        <span class="cov6" title="2">addedUserID, exists := ctx.Get(middleware.UserIDProperty)
 
-        if !exists </span><span class="cov8" title="1">{
+        if !exists </span><span class="cov1" title="1">{
                 ctx.Status(http.StatusUnauthorized)
                 return
         }</span>
 
-        <span class="cov8" title="1">go h.service.Delete(data, addedUserID.(string))
+        <span class="cov1" title="1">go h.service.Delete(data, addedUserID.(string))
 
         ctx.Status(http.StatusAccepted)</span>
 }
@@ -628,32 +672,32 @@ type FindHandler struct {
 }
 
 // NewFindHandler конструктор
-func NewFindHandler(service *service.ShortURLService) *FindHandler <span class="cov8" title="1">{
+func NewFindHandler(service *service.ShortURLService) *FindHandler <span class="cov1" title="1">{
         return &amp;FindHandler{service: service}
 }</span>
 
 // Handle обработчик поиска
-func (hndlr *FindHandler) Handle(ctx *gin.Context) <span class="cov8" title="1">{
+func (hndlr *FindHandler) Handle(ctx *gin.Context) <span class="cov10" title="3">{
 
         data, err := hndlr.service.FindByShortURL(ctx.Param("short"))
 
-        if err != nil || data == nil </span><span class="cov8" title="1">{
+        if err != nil || data == nil </span><span class="cov1" title="1">{
                 er := err
-                if data == nil </span><span class="cov8" title="1">{
+                if data == nil </span><span class="cov1" title="1">{
                         er = fmt.Errorf("not find")
                 }</span>
-                <span class="cov8" title="1">ctx.String(http.StatusBadRequest, "%s", er.Error())
+                <span class="cov1" title="1">ctx.String(http.StatusBadRequest, "%s", er.Error())
                 ctx.Abort()
                 return</span>
         }
 
-        <span class="cov8" title="1">if data.IsDeleted </span><span class="cov8" title="1">{
+        <span class="cov6" title="2">if data.IsDeleted </span><span class="cov1" title="1">{
                 ctx.Status(http.StatusGone)
                 ctx.Abort()
                 return
         }</span>
 
-        <span class="cov8" title="1">ctx.Redirect(http.StatusTemporaryRedirect, data.URL)</span>
+        <span class="cov1" title="1">ctx.Redirect(http.StatusTemporaryRedirect, data.URL)</span>
 }
 </pre>
 		
@@ -682,7 +726,7 @@ func NewPingHandler(service pignger) *PingHandler <span class="cov0" title="0">{
 }</span>
 
 // Handle обработчик поиска
-func (h *PingHandler) Handle(ctx *gin.Context) <span class="cov8" title="1">{
+func (h *PingHandler) Handle(ctx *gin.Context) <span class="cov10" title="2">{
 
         contxt, cancel := context.WithCancel(ctx)
         defer cancel()
@@ -690,12 +734,12 @@ func (h *PingHandler) Handle(ctx *gin.Context) <span class="cov8" title="1">{
 
         err := h.service.Ping(contxt)
 
-        if err != nil </span><span class="cov8" title="1">{
+        if err != nil </span><span class="cov1" title="1">{
                 ctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
                 return
         }</span>
 
-        <span class="cov8" title="1">ctx.AbortWithStatusJSON(http.StatusOK, "")</span>
+        <span class="cov1" title="1">ctx.AbortWithStatusJSON(http.StatusOK, "")</span>
 }
 </pre>
 		
@@ -717,12 +761,12 @@ type SaveHandler struct {
 }
 
 // NewSaveHandler конструктор
-func NewSaveHandler(service *service.ShortURLService, baseURL string) *SaveHandler <span class="cov8" title="1">{
+func NewSaveHandler(service *service.ShortURLService, baseURL string) *SaveHandler <span class="cov1" title="1">{
         return &amp;SaveHandler{service: service, baseURL: baseURL}
 }</span>
 
 // Handle обработчик сохранения
-func (hndlr *SaveHandler) Handle(ctx *gin.Context) <span class="cov8" title="1">{
+func (hndlr *SaveHandler) Handle(ctx *gin.Context) <span class="cov10" title="3">{
         b, err := io.ReadAll(ctx.Request.Body)
         if err != nil </span><span class="cov0" title="0">{
                 ctx.String(http.StatusBadRequest, "%s", err.Error())
@@ -730,21 +774,21 @@ func (hndlr *SaveHandler) Handle(ctx *gin.Context) <span class="cov8" title="1">
                 return
         }</span>
 
-        <span class="cov8" title="1">data, err := hndlr.service.Save(ctx, string(b))
+        <span class="cov10" title="3">data, err := hndlr.service.Save(ctx, string(b))
 
-        if errors.Is(err, service.ErrEntityExists) </span><span class="cov8" title="1">{
+        if errors.Is(err, service.ErrEntityExists) </span><span class="cov1" title="1">{
                 ctx.Header("Content-type", "text/plain")
                 ctx.String(http.StatusConflict, "%s/%s", hndlr.baseURL, data.ShortURL)
                 return
         }</span>
 
-        <span class="cov8" title="1">if err != nil </span><span class="cov8" title="1">{
+        <span class="cov6" title="2">if err != nil </span><span class="cov1" title="1">{
                 ctx.String(http.StatusBadRequest, "%s", err.Error())
                 ctx.Abort()
                 return
         }</span>
 
-        <span class="cov8" title="1">ctx.Header("Content-type", "text/plain")
+        <span class="cov1" title="1">ctx.Header("Content-type", "text/plain")
         ctx.String(http.StatusCreated, "%s/%s", hndlr.baseURL, data.ShortURL)</span>
 }
 </pre>
@@ -773,35 +817,35 @@ type ShortenHandler struct {
 }
 
 // Handle конструктор
-func NewShortenHandler(service URLSaver, baseURL string) *ShortenHandler <span class="cov8" title="1">{
+func NewShortenHandler(service URLSaver, baseURL string) *ShortenHandler <span class="cov1" title="1">{
         return &amp;ShortenHandler{service: service, baseURL: baseURL}
 }</span>
 
 // Handle обаботчик
-func (h *ShortenHandler) Handle(ctx *gin.Context) <span class="cov8" title="1">{
+func (h *ShortenHandler) Handle(ctx *gin.Context) <span class="cov10" title="7">{
         dto, errGenerateShortURL := NewShortenRequest(ctx)
 
-        if errGenerateShortURL != nil </span><span class="cov8" title="1">{
+        if errGenerateShortURL != nil </span><span class="cov7" title="4">{
                 ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": errGenerateShortURL.Error()})
                 return
         }</span>
 
-        <span class="cov8" title="1">data, errRepository := h.service.Save(ctx, dto.URL)
+        <span class="cov6" title="3">data, errRepository := h.service.Save(ctx, dto.URL)
 
-        if errRepository != nil &amp;&amp; !errors.Is(errRepository, service.ErrEntityExists) </span><span class="cov8" title="1">{
+        if errRepository != nil &amp;&amp; !errors.Is(errRepository, service.ErrEntityExists) </span><span class="cov1" title="1">{
                 ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": errRepository.Error()})
                 return
         }</span>
 
-        <span class="cov8" title="1">response := ShortenResponse{URL: fmt.Sprintf("%s/%s", h.baseURL, data.ShortURL)}
+        <span class="cov4" title="2">response := ShortenResponse{URL: fmt.Sprintf("%s/%s", h.baseURL, data.ShortURL)}
 
         status := http.StatusCreated
 
-        if errors.Is(errRepository, service.ErrEntityExists) </span><span class="cov8" title="1">{
+        if errors.Is(errRepository, service.ErrEntityExists) </span><span class="cov1" title="1">{
                 status = http.StatusConflict
         }</span>
 
-        <span class="cov8" title="1">ctx.JSON(status, response)</span>
+        <span class="cov4" title="2">ctx.JSON(status, response)</span>
 }
 </pre>
 		
@@ -817,14 +861,14 @@ type ShortenRequest struct {
 }
 
 // NewShortenRequest конструктор
-func NewShortenRequest(context *gin.Context) (*ShortenRequest, error) <span class="cov8" title="1">{
+func NewShortenRequest(context *gin.Context) (*ShortenRequest, error) <span class="cov10" title="9">{
         dto := &amp;ShortenRequest{}
 
-        if err := context.BindJSON(dto); err != nil </span><span class="cov8" title="1">{
+        if err := context.BindJSON(dto); err != nil </span><span class="cov7" title="5">{
                 return dto, err
         }</span>
 
-        <span class="cov8" title="1">return dto, nil</span>
+        <span class="cov6" title="4">return dto, nil</span>
 }
 </pre>
 		
@@ -889,28 +933,28 @@ func NewURLFindByUserHandler(service URLServiceFinder, baseURL string) *URLFindB
 }</span>
 
 // Handle обработчик
-func (handler *URLFindByUserHandler) Handle(ctx *gin.Context) <span class="cov8" title="1">{
+func (handler *URLFindByUserHandler) Handle(ctx *gin.Context) <span class="cov10" title="3">{
         addedUserID, _ := ctx.Get(middleware.UserIDProperty)
 
         data, err := handler.service.GetUrlsByUserID(addedUserID.(string))
 
-        if err != nil </span><span class="cov8" title="1">{
+        if err != nil </span><span class="cov1" title="1">{
                 ctx.String(http.StatusBadRequest, "%s", err.Error())
                 ctx.Abort()
                 return
         }</span>
 
-        <span class="cov8" title="1">if len(data) == 0 </span><span class="cov8" title="1">{
+        <span class="cov6" title="2">if len(data) == 0 </span><span class="cov1" title="1">{
                 ctx.Status(http.StatusUnauthorized)
                 return
         }</span>
 
-        <span class="cov8" title="1">var response []URLListItemResponse
+        <span class="cov1" title="1">var response []URLListItemResponse
 
-        for _, url := range data </span><span class="cov8" title="1">{
+        for _, url := range data </span><span class="cov1" title="1">{
                 response = append(response, NewURLResponse(handler.baseURL, url.ShortURL, url.URL))
         }</span>
-        <span class="cov8" title="1">ctx.JSON(http.StatusOK, response)</span>
+        <span class="cov1" title="1">ctx.JSON(http.StatusOK, response)</span>
 }
 </pre>
 		
@@ -964,23 +1008,23 @@ const SecretKey = "0N#6Ke|+OR:(`G;"
 const UserIDProperty = "UserId"
 
 // NewJWTValidator конструктор
-func NewJWTValidator(domain string) *JWTValidator <span class="cov8" title="1">{
+func NewJWTValidator(domain string) *JWTValidator <span class="cov6" title="3">{
         return &amp;JWTValidator{domain: domain}
 }</span>
 
 // Handle обработка проверки токена
-func (JWTValidator *JWTValidator) Handle(ctx *gin.Context) <span class="cov8" title="1">{
+func (JWTValidator *JWTValidator) Handle(ctx *gin.Context) <span class="cov10" title="6">{
         var err error
         token, _ := ctx.Cookie("Authorization")
 
-        if token == "" </span><span class="cov8" title="1">{
+        if token == "" </span><span class="cov7" title="4">{
                 token, err = JWTValidator.BuildJWTString(ctx)
                 if err != nil </span><span class="cov0" title="0">{
                         ctx.AbortWithStatusJSON(http.StatusForbidden, err)
                 }</span>
-        } else<span class="cov8" title="1"> {
+        } else<span class="cov4" title="2"> {
                 errorValidateToken := JWTValidator.ValidateJWT(ctx, token)
-                if errorValidateToken != nil </span><span class="cov8" title="1">{
+                if errorValidateToken != nil </span><span class="cov1" title="1">{
                         token, err = JWTValidator.BuildJWTString(ctx)
                         if err != nil </span><span class="cov0" title="0">{
                                 ctx.AbortWithStatusJSON(http.StatusForbidden, err)
@@ -988,13 +1032,13 @@ func (JWTValidator *JWTValidator) Handle(ctx *gin.Context) <span class="cov8" ti
                 }
         }
 
-        <span class="cov8" title="1">claims := &amp;Claims{}
+        <span class="cov10" title="6">claims := &amp;Claims{}
         // парсим из строки токена tokenString в структуру claims
-        jwt.ParseWithClaims(token, claims, func(t *jwt.Token) (interface{}, error) </span><span class="cov8" title="1">{
+        jwt.ParseWithClaims(token, claims, func(t *jwt.Token) (interface{}, error) </span><span class="cov10" title="6">{
                 return []byte(SecretKey), nil
         }</span>)
 
-        <span class="cov8" title="1">ctx.Set(UserIDProperty, claims.UserID)
+        <span class="cov10" title="6">ctx.Set(UserIDProperty, claims.UserID)
         ctx.Header("Authorization", token)
 
         ctx.SetCookie("Authorization", token, 100000, "*", JWTValidator.domain, false, true)</span>
@@ -1002,30 +1046,30 @@ func (JWTValidator *JWTValidator) Handle(ctx *gin.Context) <span class="cov8" ti
 }
 
 // ValidateJWT проверка токена
-func (JWTValidator *JWTValidator) ValidateJWT(ctx *gin.Context, tokenString string) error <span class="cov8" title="1">{
+func (JWTValidator *JWTValidator) ValidateJWT(ctx *gin.Context, tokenString string) error <span class="cov4" title="2">{
         claims := &amp;Claims{}
         token, err := jwt.ParseWithClaims(tokenString, claims,
-                func(t *jwt.Token) (interface{}, error) </span><span class="cov8" title="1">{
+                func(t *jwt.Token) (interface{}, error) </span><span class="cov1" title="1">{
                         if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok </span><span class="cov0" title="0">{
                                 return nil, fmt.Errorf("unexpected signing method: %v", t.Header["alg"])
                         }</span>
-                        <span class="cov8" title="1">return []byte(SecretKey), nil</span>
+                        <span class="cov1" title="1">return []byte(SecretKey), nil</span>
                 })
-        <span class="cov8" title="1">if err != nil </span><span class="cov8" title="1">{
+        <span class="cov4" title="2">if err != nil </span><span class="cov1" title="1">{
                 return err
         }</span>
 
-        <span class="cov8" title="1">if !token.Valid </span><span class="cov0" title="0">{
+        <span class="cov1" title="1">if !token.Valid </span><span class="cov0" title="0">{
                 return fmt.Errorf("token is not valid")
         }</span>
 
-        <span class="cov8" title="1">ctx.Set(UserIDProperty, claims.UserID)
+        <span class="cov1" title="1">ctx.Set(UserIDProperty, claims.UserID)
 
         return nil</span>
 }
 
 // BuildJWTString формирование токена
-func (JWTValidator *JWTValidator) BuildJWTString(ctx *gin.Context) (string, error) <span class="cov8" title="1">{
+func (JWTValidator *JWTValidator) BuildJWTString(ctx *gin.Context) (string, error) <span class="cov10" title="6">{
         userID := JWTValidator.getNewUserID()
         token := jwt.NewWithClaims(jwt.SigningMethodHS256, Claims{
                 RegisteredClaims: jwt.RegisteredClaims{
@@ -1039,12 +1083,12 @@ func (JWTValidator *JWTValidator) BuildJWTString(ctx *gin.Context) (string, erro
                 return "", err
         }</span>
 
-        <span class="cov8" title="1">ctx.Set(UserIDProperty, userID)
+        <span class="cov10" title="6">ctx.Set(UserIDProperty, userID)
 
         return tokenString, nil</span>
 }
 
-func (JWTValidator *JWTValidator) getNewUserID() string <span class="cov8" title="1">{
+func (JWTValidator *JWTValidator) getNewUserID() string <span class="cov10" title="6">{
         return uuid.New().String()
 }</span>
 </pre>
@@ -1067,27 +1111,546 @@ func NewTrustedSubnetMiddleware(subnets []*net.IPNet) *TrustedSubnetMiddleware <
 }</span>
 
 // Handle
-func (h *TrustedSubnetMiddleware) Handle(c *gin.Context) <span class="cov8" title="1">{
+func (h *TrustedSubnetMiddleware) Handle(c *gin.Context) <span class="cov5" title="2">{
         ip := c.ClientIP()
-        if !isIPInSubnet(ip, h.subnets) </span><span class="cov8" title="1">{
+        if !isIPInSubnet(ip, h.subnets) </span><span class="cov1" title="1">{
                 c.AbortWithStatus(http.StatusForbidden)
         }</span>
-        <span class="cov8" title="1">c.Next()</span>
+        <span class="cov5" title="2">c.Next()</span>
 }
 
 // IsIPInSubnet
-func isIPInSubnet(ip string, subnets []*net.IPNet) bool <span class="cov8" title="1">{
+func isIPInSubnet(ip string, subnets []*net.IPNet) bool <span class="cov10" title="4">{
         ipNet := net.ParseIP(ip)
-        for _, subnet := range subnets </span><span class="cov8" title="1">{
-                if subnet.Contains(ipNet) </span><span class="cov8" title="1">{
+        for _, subnet := range subnets </span><span class="cov10" title="4">{
+                if subnet.Contains(ipNet) </span><span class="cov5" title="2">{
                         return true
                 }</span>
         }
-        <span class="cov8" title="1">return false</span>
+        <span class="cov5" title="2">return false</span>
 }
 </pre>
 		
-		<pre class="file" id="file15" style="display: none">package filestorage
+		<pre class="file" id="file15" style="display: none">// Code generated by protoc-gen-go. DO NOT EDIT.
+// versions:
+//         protoc-gen-go v1.35.2
+//         protoc        v3.12.4
+// source: internal/app/proto/proto.proto
+
+package proto
+
+import (
+        protoreflect "google.golang.org/protobuf/reflect/protoreflect"
+        protoimpl "google.golang.org/protobuf/runtime/protoimpl"
+        reflect "reflect"
+        sync "sync"
+)
+
+const (
+        // Verify that this generated code is sufficiently up-to-date.
+        _ = protoimpl.EnforceVersion(20 - protoimpl.MinVersion)
+        // Verify that runtime/protoimpl is sufficiently up-to-date.
+        _ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
+)
+
+type PingRequest struct {
+        state         protoimpl.MessageState
+        sizeCache     protoimpl.SizeCache
+        unknownFields protoimpl.UnknownFields
+}
+
+func (x *PingRequest) Reset() <span class="cov0" title="0">{
+        *x = PingRequest{}
+        mi := &amp;file_internal_app_proto_proto_proto_msgTypes[0]
+        ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+        ms.StoreMessageInfo(mi)
+}</span>
+
+func (x *PingRequest) String() string <span class="cov0" title="0">{
+        return protoimpl.X.MessageStringOf(x)
+}</span>
+
+func (*PingRequest) ProtoMessage() {<span class="cov0" title="0">}</span>
+
+func (x *PingRequest) ProtoReflect() protoreflect.Message <span class="cov0" title="0">{
+        mi := &amp;file_internal_app_proto_proto_proto_msgTypes[0]
+        if x != nil </span><span class="cov0" title="0">{
+                ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+                if ms.LoadMessageInfo() == nil </span><span class="cov0" title="0">{
+                        ms.StoreMessageInfo(mi)
+                }</span>
+                <span class="cov0" title="0">return ms</span>
+        }
+        <span class="cov0" title="0">return mi.MessageOf(x)</span>
+}
+
+// Deprecated: Use PingRequest.ProtoReflect.Descriptor instead.
+func (*PingRequest) Descriptor() ([]byte, []int) <span class="cov0" title="0">{
+        return file_internal_app_proto_proto_proto_rawDescGZIP(), []int{0}
+}</span>
+
+type PingResponse struct {
+        state         protoimpl.MessageState
+        sizeCache     protoimpl.SizeCache
+        unknownFields protoimpl.UnknownFields
+
+        Code  int32  `protobuf:"varint,1,opt,name=code,proto3" json:"code,omitempty"`
+        Error string `protobuf:"bytes,2,opt,name=error,proto3" json:"error,omitempty"`
+}
+
+func (x *PingResponse) Reset() <span class="cov0" title="0">{
+        *x = PingResponse{}
+        mi := &amp;file_internal_app_proto_proto_proto_msgTypes[1]
+        ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+        ms.StoreMessageInfo(mi)
+}</span>
+
+func (x *PingResponse) String() string <span class="cov0" title="0">{
+        return protoimpl.X.MessageStringOf(x)
+}</span>
+
+func (*PingResponse) ProtoMessage() {<span class="cov0" title="0">}</span>
+
+func (x *PingResponse) ProtoReflect() protoreflect.Message <span class="cov0" title="0">{
+        mi := &amp;file_internal_app_proto_proto_proto_msgTypes[1]
+        if x != nil </span><span class="cov0" title="0">{
+                ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+                if ms.LoadMessageInfo() == nil </span><span class="cov0" title="0">{
+                        ms.StoreMessageInfo(mi)
+                }</span>
+                <span class="cov0" title="0">return ms</span>
+        }
+        <span class="cov0" title="0">return mi.MessageOf(x)</span>
+}
+
+// Deprecated: Use PingResponse.ProtoReflect.Descriptor instead.
+func (*PingResponse) Descriptor() ([]byte, []int) <span class="cov0" title="0">{
+        return file_internal_app_proto_proto_proto_rawDescGZIP(), []int{1}
+}</span>
+
+func (x *PingResponse) GetCode() int32 <span class="cov0" title="0">{
+        if x != nil </span><span class="cov0" title="0">{
+                return x.Code
+        }</span>
+        <span class="cov0" title="0">return 0</span>
+}
+
+func (x *PingResponse) GetError() string <span class="cov0" title="0">{
+        if x != nil </span><span class="cov0" title="0">{
+                return x.Error
+        }</span>
+        <span class="cov0" title="0">return ""</span>
+}
+
+type StatRequest struct {
+        state         protoimpl.MessageState
+        sizeCache     protoimpl.SizeCache
+        unknownFields protoimpl.UnknownFields
+
+        Query string `protobuf:"bytes,1,opt,name=query,proto3" json:"query,omitempty"`
+}
+
+func (x *StatRequest) Reset() <span class="cov0" title="0">{
+        *x = StatRequest{}
+        mi := &amp;file_internal_app_proto_proto_proto_msgTypes[2]
+        ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+        ms.StoreMessageInfo(mi)
+}</span>
+
+func (x *StatRequest) String() string <span class="cov0" title="0">{
+        return protoimpl.X.MessageStringOf(x)
+}</span>
+
+func (*StatRequest) ProtoMessage() {<span class="cov0" title="0">}</span>
+
+func (x *StatRequest) ProtoReflect() protoreflect.Message <span class="cov0" title="0">{
+        mi := &amp;file_internal_app_proto_proto_proto_msgTypes[2]
+        if x != nil </span><span class="cov0" title="0">{
+                ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+                if ms.LoadMessageInfo() == nil </span><span class="cov0" title="0">{
+                        ms.StoreMessageInfo(mi)
+                }</span>
+                <span class="cov0" title="0">return ms</span>
+        }
+        <span class="cov0" title="0">return mi.MessageOf(x)</span>
+}
+
+// Deprecated: Use StatRequest.ProtoReflect.Descriptor instead.
+func (*StatRequest) Descriptor() ([]byte, []int) <span class="cov0" title="0">{
+        return file_internal_app_proto_proto_proto_rawDescGZIP(), []int{2}
+}</span>
+
+func (x *StatRequest) GetQuery() string <span class="cov0" title="0">{
+        if x != nil </span><span class="cov0" title="0">{
+                return x.Query
+        }</span>
+        <span class="cov0" title="0">return ""</span>
+}
+
+type StatsResponse struct {
+        state         protoimpl.MessageState
+        sizeCache     protoimpl.SizeCache
+        unknownFields protoimpl.UnknownFields
+
+        Code  int32 `protobuf:"varint,1,opt,name=code,proto3" json:"code,omitempty"`
+        Urls  int32 `protobuf:"varint,2,opt,name=urls,proto3" json:"urls,omitempty"`
+        Users int32 `protobuf:"varint,3,opt,name=users,proto3" json:"users,omitempty"`
+}
+
+func (x *StatsResponse) Reset() <span class="cov0" title="0">{
+        *x = StatsResponse{}
+        mi := &amp;file_internal_app_proto_proto_proto_msgTypes[3]
+        ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+        ms.StoreMessageInfo(mi)
+}</span>
+
+func (x *StatsResponse) String() string <span class="cov0" title="0">{
+        return protoimpl.X.MessageStringOf(x)
+}</span>
+
+func (*StatsResponse) ProtoMessage() {<span class="cov0" title="0">}</span>
+
+func (x *StatsResponse) ProtoReflect() protoreflect.Message <span class="cov0" title="0">{
+        mi := &amp;file_internal_app_proto_proto_proto_msgTypes[3]
+        if x != nil </span><span class="cov0" title="0">{
+                ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+                if ms.LoadMessageInfo() == nil </span><span class="cov0" title="0">{
+                        ms.StoreMessageInfo(mi)
+                }</span>
+                <span class="cov0" title="0">return ms</span>
+        }
+        <span class="cov0" title="0">return mi.MessageOf(x)</span>
+}
+
+// Deprecated: Use StatsResponse.ProtoReflect.Descriptor instead.
+func (*StatsResponse) Descriptor() ([]byte, []int) <span class="cov0" title="0">{
+        return file_internal_app_proto_proto_proto_rawDescGZIP(), []int{3}
+}</span>
+
+func (x *StatsResponse) GetCode() int32 <span class="cov0" title="0">{
+        if x != nil </span><span class="cov0" title="0">{
+                return x.Code
+        }</span>
+        <span class="cov0" title="0">return 0</span>
+}
+
+func (x *StatsResponse) GetUrls() int32 <span class="cov0" title="0">{
+        if x != nil </span><span class="cov0" title="0">{
+                return x.Urls
+        }</span>
+        <span class="cov0" title="0">return 0</span>
+}
+
+func (x *StatsResponse) GetUsers() int32 <span class="cov0" title="0">{
+        if x != nil </span><span class="cov0" title="0">{
+                return x.Users
+        }</span>
+        <span class="cov0" title="0">return 0</span>
+}
+
+var File_internal_app_proto_proto_proto protoreflect.FileDescriptor
+
+var file_internal_app_proto_proto_proto_rawDesc = []byte{
+        0x0a, 0x1e, 0x69, 0x6e, 0x74, 0x65, 0x72, 0x6e, 0x61, 0x6c, 0x2f, 0x61, 0x70, 0x70, 0x2f, 0x70,
+        0x72, 0x6f, 0x74, 0x6f, 0x2f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f,
+        0x12, 0x17, 0x69, 0x6e, 0x74, 0x65, 0x72, 0x6e, 0x61, 0x6c, 0x2e, 0x61, 0x70, 0x70, 0x2e, 0x70,
+        0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x73, 0x74, 0x61, 0x74, 0x22, 0x0d, 0x0a, 0x0b, 0x50, 0x69, 0x6e,
+        0x67, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x22, 0x38, 0x0a, 0x0c, 0x50, 0x69, 0x6e, 0x67,
+        0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x12, 0x0a, 0x04, 0x63, 0x6f, 0x64, 0x65,
+        0x18, 0x01, 0x20, 0x01, 0x28, 0x05, 0x52, 0x04, 0x63, 0x6f, 0x64, 0x65, 0x12, 0x14, 0x0a, 0x05,
+        0x65, 0x72, 0x72, 0x6f, 0x72, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x05, 0x65, 0x72, 0x72,
+        0x6f, 0x72, 0x22, 0x23, 0x0a, 0x0b, 0x53, 0x74, 0x61, 0x74, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73,
+        0x74, 0x12, 0x14, 0x0a, 0x05, 0x71, 0x75, 0x65, 0x72, 0x79, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09,
+        0x52, 0x05, 0x71, 0x75, 0x65, 0x72, 0x79, 0x22, 0x4d, 0x0a, 0x0d, 0x53, 0x74, 0x61, 0x74, 0x73,
+        0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x12, 0x0a, 0x04, 0x63, 0x6f, 0x64, 0x65,
+        0x18, 0x01, 0x20, 0x01, 0x28, 0x05, 0x52, 0x04, 0x63, 0x6f, 0x64, 0x65, 0x12, 0x12, 0x0a, 0x04,
+        0x75, 0x72, 0x6c, 0x73, 0x18, 0x02, 0x20, 0x01, 0x28, 0x05, 0x52, 0x04, 0x75, 0x72, 0x6c, 0x73,
+        0x12, 0x14, 0x0a, 0x05, 0x75, 0x73, 0x65, 0x72, 0x73, 0x18, 0x03, 0x20, 0x01, 0x28, 0x05, 0x52,
+        0x05, 0x75, 0x73, 0x65, 0x72, 0x73, 0x32, 0xb7, 0x01, 0x0a, 0x07, 0x53, 0x65, 0x72, 0x76, 0x69,
+        0x63, 0x65, 0x12, 0x57, 0x0a, 0x07, 0x47, 0x65, 0x74, 0x53, 0x74, 0x61, 0x74, 0x12, 0x24, 0x2e,
+        0x69, 0x6e, 0x74, 0x65, 0x72, 0x6e, 0x61, 0x6c, 0x2e, 0x61, 0x70, 0x70, 0x2e, 0x70, 0x72, 0x6f,
+        0x74, 0x6f, 0x2e, 0x73, 0x74, 0x61, 0x74, 0x2e, 0x53, 0x74, 0x61, 0x74, 0x52, 0x65, 0x71, 0x75,
+        0x65, 0x73, 0x74, 0x1a, 0x26, 0x2e, 0x69, 0x6e, 0x74, 0x65, 0x72, 0x6e, 0x61, 0x6c, 0x2e, 0x61,
+        0x70, 0x70, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x73, 0x74, 0x61, 0x74, 0x2e, 0x53, 0x74,
+        0x61, 0x74, 0x73, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x53, 0x0a, 0x04, 0x50,
+        0x69, 0x6e, 0x67, 0x12, 0x24, 0x2e, 0x69, 0x6e, 0x74, 0x65, 0x72, 0x6e, 0x61, 0x6c, 0x2e, 0x61,
+        0x70, 0x70, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x73, 0x74, 0x61, 0x74, 0x2e, 0x50, 0x69,
+        0x6e, 0x67, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x25, 0x2e, 0x69, 0x6e, 0x74, 0x65,
+        0x72, 0x6e, 0x61, 0x6c, 0x2e, 0x61, 0x70, 0x70, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x73,
+        0x74, 0x61, 0x74, 0x2e, 0x50, 0x69, 0x6e, 0x67, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65,
+        0x42, 0x04, 0x5a, 0x02, 0x2e, 0x2f, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+}
+
+var (
+        file_internal_app_proto_proto_proto_rawDescOnce sync.Once
+        file_internal_app_proto_proto_proto_rawDescData = file_internal_app_proto_proto_proto_rawDesc
+)
+
+func file_internal_app_proto_proto_proto_rawDescGZIP() []byte <span class="cov0" title="0">{
+        file_internal_app_proto_proto_proto_rawDescOnce.Do(func() </span><span class="cov0" title="0">{
+                file_internal_app_proto_proto_proto_rawDescData = protoimpl.X.CompressGZIP(file_internal_app_proto_proto_proto_rawDescData)
+        }</span>)
+        <span class="cov0" title="0">return file_internal_app_proto_proto_proto_rawDescData</span>
+}
+
+var file_internal_app_proto_proto_proto_msgTypes = make([]protoimpl.MessageInfo, 4)
+var file_internal_app_proto_proto_proto_goTypes = []any{
+        (*PingRequest)(nil),   // 0: internal.app.proto.stat.PingRequest
+        (*PingResponse)(nil),  // 1: internal.app.proto.stat.PingResponse
+        (*StatRequest)(nil),   // 2: internal.app.proto.stat.StatRequest
+        (*StatsResponse)(nil), // 3: internal.app.proto.stat.StatsResponse
+}
+var file_internal_app_proto_proto_proto_depIdxs = []int32{
+        2, // 0: internal.app.proto.stat.Service.GetStat:input_type -&gt; internal.app.proto.stat.StatRequest
+        0, // 1: internal.app.proto.stat.Service.Ping:input_type -&gt; internal.app.proto.stat.PingRequest
+        3, // 2: internal.app.proto.stat.Service.GetStat:output_type -&gt; internal.app.proto.stat.StatsResponse
+        1, // 3: internal.app.proto.stat.Service.Ping:output_type -&gt; internal.app.proto.stat.PingResponse
+        2, // [2:4] is the sub-list for method output_type
+        0, // [0:2] is the sub-list for method input_type
+        0, // [0:0] is the sub-list for extension type_name
+        0, // [0:0] is the sub-list for extension extendee
+        0, // [0:0] is the sub-list for field type_name
+}
+
+func init() <span class="cov8" title="1">{ file_internal_app_proto_proto_proto_init() }</span>
+func file_internal_app_proto_proto_proto_init() <span class="cov8" title="1">{
+        if File_internal_app_proto_proto_proto != nil </span><span class="cov0" title="0">{
+                return
+        }</span>
+        <span class="cov8" title="1">type x struct{}
+        out := protoimpl.TypeBuilder{
+                File: protoimpl.DescBuilder{
+                        GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
+                        RawDescriptor: file_internal_app_proto_proto_proto_rawDesc,
+                        NumEnums:      0,
+                        NumMessages:   4,
+                        NumExtensions: 0,
+                        NumServices:   1,
+                },
+                GoTypes:           file_internal_app_proto_proto_proto_goTypes,
+                DependencyIndexes: file_internal_app_proto_proto_proto_depIdxs,
+                MessageInfos:      file_internal_app_proto_proto_proto_msgTypes,
+        }.Build()
+        File_internal_app_proto_proto_proto = out.File
+        file_internal_app_proto_proto_proto_rawDesc = nil
+        file_internal_app_proto_proto_proto_goTypes = nil
+        file_internal_app_proto_proto_proto_depIdxs = nil</span>
+}
+</pre>
+		
+		<pre class="file" id="file16" style="display: none">// Code generated by protoc-gen-go-grpc. DO NOT EDIT.
+// versions:
+// - protoc-gen-go-grpc v1.5.1
+// - protoc             v3.12.4
+// source: internal/app/proto/proto.proto
+
+package proto
+
+import (
+        context "context"
+        grpc "google.golang.org/grpc"
+        codes "google.golang.org/grpc/codes"
+        status "google.golang.org/grpc/status"
+)
+
+// This is a compile-time assertion to ensure that this generated file
+// is compatible with the grpc package it is being compiled against.
+// Requires gRPC-Go v1.64.0 or later.
+const _ = grpc.SupportPackageIsVersion9
+
+const (
+        Service_GetStat_FullMethodName = "/internal.app.proto.stat.Service/GetStat"
+        Service_Ping_FullMethodName    = "/internal.app.proto.stat.Service/Ping"
+)
+
+// ServiceClient is the client API for Service service.
+//
+// For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
+type ServiceClient interface {
+        GetStat(ctx context.Context, in *StatRequest, opts ...grpc.CallOption) (*StatsResponse, error)
+        Ping(ctx context.Context, in *PingRequest, opts ...grpc.CallOption) (*PingResponse, error)
+}
+
+type serviceClient struct {
+        cc grpc.ClientConnInterface
+}
+
+func NewServiceClient(cc grpc.ClientConnInterface) ServiceClient <span class="cov0" title="0">{
+        return &amp;serviceClient{cc}
+}</span>
+
+func (c *serviceClient) GetStat(ctx context.Context, in *StatRequest, opts ...grpc.CallOption) (*StatsResponse, error) <span class="cov0" title="0">{
+        cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+        out := new(StatsResponse)
+        err := c.cc.Invoke(ctx, Service_GetStat_FullMethodName, in, out, cOpts...)
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, err
+        }</span>
+        <span class="cov0" title="0">return out, nil</span>
+}
+
+func (c *serviceClient) Ping(ctx context.Context, in *PingRequest, opts ...grpc.CallOption) (*PingResponse, error) <span class="cov0" title="0">{
+        cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+        out := new(PingResponse)
+        err := c.cc.Invoke(ctx, Service_Ping_FullMethodName, in, out, cOpts...)
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, err
+        }</span>
+        <span class="cov0" title="0">return out, nil</span>
+}
+
+// ServiceServer is the server API for Service service.
+// All implementations must embed UnimplementedServiceServer
+// for forward compatibility.
+type ServiceServer interface {
+        GetStat(context.Context, *StatRequest) (*StatsResponse, error)
+        Ping(context.Context, *PingRequest) (*PingResponse, error)
+        mustEmbedUnimplementedServiceServer()
+}
+
+// UnimplementedServiceServer must be embedded to have
+// forward compatible implementations.
+//
+// NOTE: this should be embedded by value instead of pointer to avoid a nil
+// pointer dereference when methods are called.
+type UnimplementedServiceServer struct{}
+
+func (UnimplementedServiceServer) GetStat(context.Context, *StatRequest) (*StatsResponse, error) <span class="cov0" title="0">{
+        return nil, status.Errorf(codes.Unimplemented, "method GetStat not implemented")
+}</span>
+func (UnimplementedServiceServer) Ping(context.Context, *PingRequest) (*PingResponse, error) <span class="cov0" title="0">{
+        return nil, status.Errorf(codes.Unimplemented, "method Ping not implemented")
+}</span>
+func (UnimplementedServiceServer) mustEmbedUnimplementedServiceServer() {<span class="cov0" title="0">}</span>
+func (UnimplementedServiceServer) testEmbeddedByValue()                 {<span class="cov0" title="0">}</span>
+
+// UnsafeServiceServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to ServiceServer will
+// result in compilation errors.
+type UnsafeServiceServer interface {
+        mustEmbedUnimplementedServiceServer()
+}
+
+func RegisterServiceServer(s grpc.ServiceRegistrar, srv ServiceServer) <span class="cov0" title="0">{
+        // If the following call pancis, it indicates UnimplementedServiceServer was
+        // embedded by pointer and is nil.  This will cause panics if an
+        // unimplemented method is ever invoked, so we test this at initialization
+        // time to prevent it from happening at runtime later due to I/O.
+        if t, ok := srv.(interface{ testEmbeddedByValue() }); ok </span><span class="cov0" title="0">{
+                t.testEmbeddedByValue()
+        }</span>
+        <span class="cov0" title="0">s.RegisterService(&amp;Service_ServiceDesc, srv)</span>
+}
+
+func _Service_GetStat_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) <span class="cov0" title="0">{
+        in := new(StatRequest)
+        if err := dec(in); err != nil </span><span class="cov0" title="0">{
+                return nil, err
+        }</span>
+        <span class="cov0" title="0">if interceptor == nil </span><span class="cov0" title="0">{
+                return srv.(ServiceServer).GetStat(ctx, in)
+        }</span>
+        <span class="cov0" title="0">info := &amp;grpc.UnaryServerInfo{
+                Server:     srv,
+                FullMethod: Service_GetStat_FullMethodName,
+        }
+        handler := func(ctx context.Context, req interface{}) (interface{}, error) </span><span class="cov0" title="0">{
+                return srv.(ServiceServer).GetStat(ctx, req.(*StatRequest))
+        }</span>
+        <span class="cov0" title="0">return interceptor(ctx, in, info, handler)</span>
+}
+
+func _Service_Ping_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) <span class="cov0" title="0">{
+        in := new(PingRequest)
+        if err := dec(in); err != nil </span><span class="cov0" title="0">{
+                return nil, err
+        }</span>
+        <span class="cov0" title="0">if interceptor == nil </span><span class="cov0" title="0">{
+                return srv.(ServiceServer).Ping(ctx, in)
+        }</span>
+        <span class="cov0" title="0">info := &amp;grpc.UnaryServerInfo{
+                Server:     srv,
+                FullMethod: Service_Ping_FullMethodName,
+        }
+        handler := func(ctx context.Context, req interface{}) (interface{}, error) </span><span class="cov0" title="0">{
+                return srv.(ServiceServer).Ping(ctx, req.(*PingRequest))
+        }</span>
+        <span class="cov0" title="0">return interceptor(ctx, in, info, handler)</span>
+}
+
+// Service_ServiceDesc is the grpc.ServiceDesc for Service service.
+// It's only intended for direct use with grpc.RegisterService,
+// and not to be introspected or modified (even as a copy)
+var Service_ServiceDesc = grpc.ServiceDesc{
+        ServiceName: "internal.app.proto.stat.Service",
+        HandlerType: (*ServiceServer)(nil),
+        Methods: []grpc.MethodDesc{
+                {
+                        MethodName: "GetStat",
+                        Handler:    _Service_GetStat_Handler,
+                },
+                {
+                        MethodName: "Ping",
+                        Handler:    _Service_Ping_Handler,
+                },
+        },
+        Streams:  []grpc.StreamDesc{},
+        Metadata: "internal/app/proto/proto.proto",
+}
+</pre>
+		
+		<pre class="file" id="file17" style="display: none">package proto
+
+import (
+        "context"
+)
+
+type PingService interface {
+        Ping(ctx context.Context) error
+}
+
+type StatService interface {
+        GetUrlsAndUsersStat() (int32, int32)
+}
+
+type Server struct {
+        UnimplementedServiceServer
+        pingService PingService
+        statService StatService
+}
+
+func NewGPRCServer(pingService PingService, statService StatService) *Server <span class="cov0" title="0">{
+        return &amp;Server{
+                pingService: pingService,
+                statService: statService,
+        }
+
+}</span>
+
+func (s *Server) GetStat(ctx context.Context, r *StatRequest) (*StatsResponse, error) <span class="cov0" title="0">{
+        var response StatsResponse
+
+        urlCount, userCount := s.statService.GetUrlsAndUsersStat()
+
+        response.Urls = urlCount
+        response.Users = userCount
+
+        return &amp;response, nil
+}</span>
+
+func (s *Server) Ping(ctx context.Context, r *PingRequest) (*PingResponse, error) <span class="cov0" title="0">{
+        var response PingResponse
+
+        err := s.pingService.Ping(ctx)
+        if err != nil </span><span class="cov0" title="0">{
+                response.Error = err.Error()
+        }</span>
+
+        <span class="cov0" title="0">return &amp;response, nil</span>
+}
+</pre>
+		
+		<pre class="file" id="file18" style="display: none">package filestorage
 
 import (
         "bufio"
@@ -1110,29 +1673,29 @@ type FileStorageReadRepository struct {
 }
 
 // Find поиск
-func (repo *FileStorageReadRepository) Find(shortURLs []string, addedUserID string) ([]entity.ShortURLEntity, error) <span class="cov8" title="1">{
+func (repo *FileStorageReadRepository) Find(shortURLs []string, addedUserID string) ([]entity.ShortURLEntity, error) <span class="cov1" title="1">{
         return make([]entity.ShortURLEntity, 0), nil
 }</span>
 
 // GetUrlsByUserID получение ссылок по пользователю
-func (repo *FileStorageReadRepository) GetUrlsByUserID(userID string) ([]entity.ShortURLEntity, error) <span class="cov8" title="1">{
+func (repo *FileStorageReadRepository) GetUrlsByUserID(userID string) ([]entity.ShortURLEntity, error) <span class="cov1" title="1">{
         var models []entity.ShortURLEntity
 
         return models, nil
 }</span>
 
 // GetDB получение коннекта к репозиторию на чтение
-func (repo *FileStorageReadRepository) GetDB() *sqlx.DB <span class="cov8" title="1">{
+func (repo *FileStorageReadRepository) GetDB() *sqlx.DB <span class="cov1" title="1">{
         return nil
 }</span>
 
 // GetDB получение коннекта к репозиторию на запись
-func (repo *FileStorageWriteRepository) GetDB() *sqlx.DB <span class="cov8" title="1">{
+func (repo *FileStorageWriteRepository) GetDB() *sqlx.DB <span class="cov1" title="1">{
         return nil
 }</span>
 
 // Ping  пинг
-func (repo *FileStorageReadRepository) Ping(ctx context.Context) error <span class="cov8" title="1">{
+func (repo *FileStorageReadRepository) Ping(ctx context.Context) error <span class="cov1" title="1">{
         return nil
 }</span>
 
@@ -1142,77 +1705,77 @@ type FileStorageWriteRepository struct {
 }
 
 // Batch Массовое сохранение
-func (repo *FileStorageWriteRepository) Batch(ents []batch.ButchRequest) ([]entity.ShortURLEntity, error) <span class="cov8" title="1">{
+func (repo *FileStorageWriteRepository) Batch(ents []batch.ButchRequest) ([]entity.ShortURLEntity, error) <span class="cov1" title="1">{
         var models []entity.ShortURLEntity
         var shortURL string
-        for _, ent := range ents </span><span class="cov8" title="1">{
+        for _, ent := range ents </span><span class="cov2" title="2">{
                 shortURL = utils.GenerateShortURL(ent.OriginalURL)
                 _, err := repo.file.WriteString(fmt.Sprintf(`{"short_url":"%s","original_url":"%s", "correlation_id":"%s"}`+"\n", shortURL, ent.OriginalURL, ent.CorrelationID))
                 if err != nil </span><span class="cov0" title="0">{
                         return nil, err
                 }</span>
-                <span class="cov8" title="1">models = append(models, entity.ShortURLEntity{ShortURL: shortURL, URL: ent.OriginalURL, CorrelationID: ent.CorrelationID})</span>
+                <span class="cov2" title="2">models = append(models, entity.ShortURLEntity{ShortURL: shortURL, URL: ent.OriginalURL, CorrelationID: ent.CorrelationID})</span>
         }
 
-        <span class="cov8" title="1">return models, nil</span>
+        <span class="cov1" title="1">return models, nil</span>
 }
 
 // NewFileStorageRepositoryWrite контсруктор на запись
-func NewFileStorageRepositoryWrite(path string) (*FileStorageWriteRepository, error) <span class="cov8" title="1">{
+func NewFileStorageRepositoryWrite(path string) (*FileStorageWriteRepository, error) <span class="cov4" title="6">{
         file, err := os.OpenFile(path, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0666)
         if err != nil </span><span class="cov0" title="0">{
                 return nil, err
         }</span>
 
-        <span class="cov8" title="1">return &amp;FileStorageWriteRepository{file: file}, nil</span>
+        <span class="cov4" title="6">return &amp;FileStorageWriteRepository{file: file}, nil</span>
 }
 
 // NewFileStorageRepositoryRead контсруктор на чтение
-func NewFileStorageRepositoryRead(path string) (*FileStorageReadRepository, error) <span class="cov8" title="1">{
+func NewFileStorageRepositoryRead(path string) (*FileStorageReadRepository, error) <span class="cov4" title="7">{
         file, err := os.OpenFile(path, os.O_RDONLY|os.O_CREATE, 0666)
         if err != nil </span><span class="cov0" title="0">{
                 return nil, err
         }</span>
 
-        <span class="cov8" title="1">return &amp;FileStorageReadRepository{file: file}, nil</span>
+        <span class="cov4" title="7">return &amp;FileStorageReadRepository{file: file}, nil</span>
 }
 
 // FindByShortURL поиск по короткой ссылке
-func (repo *FileStorageReadRepository) FindByShortURL(shortURL string) (*entity.ShortURLEntity, error) <span class="cov8" title="1">{
+func (repo *FileStorageReadRepository) FindByShortURL(shortURL string) (*entity.ShortURLEntity, error) <span class="cov2" title="2">{
         var dto entity.ShortURLEntity
 
         _, err := repo.file.Seek(0, io.SeekStart)
         if err != nil </span><span class="cov0" title="0">{
                 return nil, err
         }</span>
-        <span class="cov8" title="1">scanner := bufio.NewScanner(repo.file)
-        for scanner.Scan() </span><span class="cov8" title="1">{
-                if strings.Contains(scanner.Text(), shortURL) </span><span class="cov8" title="1">{
+        <span class="cov2" title="2">scanner := bufio.NewScanner(repo.file)
+        for scanner.Scan() </span><span class="cov10" title="190">{
+                if strings.Contains(scanner.Text(), shortURL) </span><span class="cov1" title="1">{
                         err := json.Unmarshal(scanner.Bytes(), &amp;dto)
                         if err != nil </span><span class="cov0" title="0">{
                                 return nil, err
                         }</span>
 
-                        <span class="cov8" title="1">return &amp;dto, nil</span>
+                        <span class="cov1" title="1">return &amp;dto, nil</span>
                 }
         }
 
-        <span class="cov8" title="1">if err := scanner.Err(); err != nil </span><span class="cov0" title="0">{
+        <span class="cov1" title="1">if err := scanner.Err(); err != nil </span><span class="cov0" title="0">{
                 return nil, err
         }</span>
 
-        <span class="cov8" title="1">return nil, nil</span>
+        <span class="cov1" title="1">return nil, nil</span>
 }
 
 // Save сохранение
-func (repo *FileStorageWriteRepository) Save(shortURL, URL, addedUserID string) error <span class="cov8" title="1">{
+func (repo *FileStorageWriteRepository) Save(shortURL, URL, addedUserID string) error <span class="cov2" title="2">{
         _, err := repo.file.WriteString(fmt.Sprintf(`{"short_url":"%s","original_url":"%s", "added_user_id":"%s"}`+"\n", shortURL, URL, addedUserID))
 
         if err != nil </span><span class="cov0" title="0">{
                 return err
         }</span>
 
-        <span class="cov8" title="1">return nil</span>
+        <span class="cov2" title="2">return nil</span>
 }
 
 // Delete удаление
@@ -1234,7 +1797,7 @@ func (repo *FileStorageReadRepository) GetUsersCount() int32 <span class="cov0" 
 }</span>
 </pre>
 		
-		<pre class="file" id="file16" style="display: none">package localstorage
+		<pre class="file" id="file19" style="display: none">package localstorage
 
 import (
         "bufio"
@@ -1253,7 +1816,7 @@ type LocalStorageRepository struct {
 }
 
 // GetUrlsByUserID получение ссылок по пользователю
-func (repo *LocalStorageRepository) GetUrlsByUserID(userID string) ([]entity.ShortURLEntity, error) <span class="cov8" title="1">{
+func (repo *LocalStorageRepository) GetUrlsByUserID(userID string) ([]entity.ShortURLEntity, error) <span class="cov1" title="1">{
         var models []entity.ShortURLEntity
         return models, nil
 }</span>
@@ -1267,78 +1830,78 @@ type LocalStorageRow struct {
 }
 
 // Batch Массовое сохранение
-func (repo *LocalStorageRepository) Batch(ents []batch.ButchRequest) ([]entity.ShortURLEntity, error) <span class="cov8" title="1">{
+func (repo *LocalStorageRepository) Batch(ents []batch.ButchRequest) ([]entity.ShortURLEntity, error) <span class="cov1" title="1">{
         var shortURL string
         var models []entity.ShortURLEntity
-        for _, ent := range ents </span><span class="cov8" title="1">{
+        for _, ent := range ents </span><span class="cov3" title="2">{
                 shortURL = utils.GenerateShortURL(ent.OriginalURL)
                 repo.Rows[shortURL] = LocalStorageRow{ShortURL: shortURL, URL: ent.OriginalURL, CorrelationID: ent.CorrelationID}
                 models = append(models, entity.ShortURLEntity{ShortURL: shortURL, URL: ent.OriginalURL, CorrelationID: ent.CorrelationID})
         }</span>
 
-        <span class="cov8" title="1">return models, nil</span>
+        <span class="cov1" title="1">return models, nil</span>
 }
 
 // NewLocalStorageRepository конструктор
-func NewLocalStorageRepository() *LocalStorageRepository <span class="cov8" title="1">{
+func NewLocalStorageRepository() *LocalStorageRepository <span class="cov10" title="9">{
         return &amp;LocalStorageRepository{
                 Rows: make(map[string]LocalStorageRow),
         }
 }</span>
 
 // FindByShortURL поиск по короткой ссылке
-func (repo *LocalStorageRepository) FindByShortURL(shortURL string) (*entity.ShortURLEntity, error) <span class="cov8" title="1">{
-        if row, exists := repo.Rows[shortURL]; exists </span><span class="cov8" title="1">{
+func (repo *LocalStorageRepository) FindByShortURL(shortURL string) (*entity.ShortURLEntity, error) <span class="cov3" title="2">{
+        if row, exists := repo.Rows[shortURL]; exists </span><span class="cov1" title="1">{
                 return &amp;(entity.ShortURLEntity{ShortURL: row.ShortURL, URL: row.URL, CorrelationID: row.CorrelationID}), nil
         }</span>
 
-        <span class="cov8" title="1">return nil, nil</span>
+        <span class="cov1" title="1">return nil, nil</span>
 }
 
 // Save сохранение
-func (repo *LocalStorageRepository) Save(shortURL, URL, addedUserID string) error <span class="cov8" title="1">{
+func (repo *LocalStorageRepository) Save(shortURL, URL, addedUserID string) error <span class="cov5" title="3">{
         repo.Rows[shortURL] = LocalStorageRow{ShortURL: shortURL, URL: URL, AddedUserID: addedUserID}
 
         return nil
 }</span>
 
 // Ping  пинг
-func (repo *LocalStorageRepository) Ping(ctx context.Context) error <span class="cov8" title="1">{
+func (repo *LocalStorageRepository) Ping(ctx context.Context) error <span class="cov1" title="1">{
 
         return nil
 }</span>
 
 // GetDB получение коннекта к репозиторию
-func (repo *LocalStorageRepository) GetDB() *sqlx.DB <span class="cov8" title="1">{
+func (repo *LocalStorageRepository) GetDB() *sqlx.DB <span class="cov1" title="1">{
         return nil
 }</span>
 
 // Delete удаление
-func (repo *LocalStorageRepository) Delete(shortURLs []string, addedUserID string) error <span class="cov8" title="1">{
+func (repo *LocalStorageRepository) Delete(shortURLs []string, addedUserID string) error <span class="cov1" title="1">{
         return nil
 }</span>
 
 // SaveToFile сохраняем текущее состояние в файл при падении
-func (repo *LocalStorageRepository) SaveToFile(fileName string) error <span class="cov8" title="1">{
+func (repo *LocalStorageRepository) SaveToFile(fileName string) error <span class="cov1" title="1">{
         file, err := os.OpenFile(fileName, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0666)
         if err != nil </span><span class="cov0" title="0">{
                 return err
         }</span>
-        <span class="cov8" title="1">defer file.Close()
+        <span class="cov1" title="1">defer file.Close()
         writer := bufio.NewWriter(file)
         encoder := json.NewEncoder(writer)
-        for _, v := range repo.Rows </span><span class="cov8" title="1">{
+        for _, v := range repo.Rows </span><span class="cov1" title="1">{
                 err = encoder.Encode(v)
                 if err != nil </span><span class="cov0" title="0">{
                         return err
                 }</span>
         }
-        <span class="cov8" title="1">err = writer.Flush()
+        <span class="cov1" title="1">err = writer.Flush()
         if err != nil </span><span class="cov0" title="0">{
                 return err
         }</span>
 
-        <span class="cov8" title="1">return nil</span>
+        <span class="cov1" title="1">return nil</span>
 }
 
 func (repo *LocalStorageRepository) GetUrlsCount() int32 <span class="cov0" title="0">{
@@ -1349,7 +1912,7 @@ func (repo *LocalStorageRepository) GetUsersCount() int32 <span class="cov0" tit
 }</span>
 </pre>
 		
-		<pre class="file" id="file17" style="display: none">package postgres
+		<pre class="file" id="file20" style="display: none">package postgres
 
 import (
         "context"
@@ -1380,17 +1943,17 @@ func NewPostgresRepository(DB *sqlx.DB) (*PostgresRepository, error) <span class
 }</span>
 
 // Ping  пинг
-func (repo *PostgresRepository) Ping(ctx context.Context) error <span class="cov8" title="1">{
+func (repo *PostgresRepository) Ping(ctx context.Context) error <span class="cov1" title="1">{
         select </span>{
         case &lt;-ctx.Done():<span class="cov0" title="0">
                 return fmt.Errorf("прервали работу")</span>
-        default:<span class="cov8" title="1">
+        default:<span class="cov1" title="1">
                 return repo.DB.Ping()</span>
         }
 }
 
 // FindByShortURL поиск по короткой ссылке
-func (repo *PostgresRepository) FindByShortURL(shortURL string) (*entity.ShortURLEntity, error) <span class="cov8" title="1">{
+func (repo *PostgresRepository) FindByShortURL(shortURL string) (*entity.ShortURLEntity, error) <span class="cov1" title="1">{
 
         ent := []entity.ShortURLEntity{}
         err := repo.DB.Select(&amp;ent,
@@ -1401,11 +1964,11 @@ func (repo *PostgresRepository) FindByShortURL(shortURL string) (*entity.ShortUR
                 return nil, err
         }</span>
 
-        <span class="cov8" title="1">if len(ent) == 0 </span><span class="cov0" title="0">{
+        <span class="cov1" title="1">if len(ent) == 0 </span><span class="cov0" title="0">{
                 return nil, nil
         }</span>
 
-        <span class="cov8" title="1">return &amp;ent[0], nil</span>
+        <span class="cov1" title="1">return &amp;ent[0], nil</span>
 }
 
 // Save сохранение
@@ -1427,7 +1990,7 @@ func (repo *PostgresRepository) GetDB() *sqlx.DB <span class="cov0" title="0">{
 }</span>
 
 // Batch Массовое сохранение
-func (repo *PostgresRepository) Batch(request []batch.ButchRequest) ([]entity.ShortURLEntity, error) <span class="cov8" title="1">{
+func (repo *PostgresRepository) Batch(request []batch.ButchRequest) ([]entity.ShortURLEntity, error) <span class="cov1" title="1">{
         var models []entity.ShortURLEntity
         var allModels []entity.ShortURLEntity
 
@@ -1437,17 +2000,17 @@ func (repo *PostgresRepository) Batch(request []batch.ButchRequest) ([]entity.Sh
                 return nil, err
         }</span>
 
-        <span class="cov8" title="1">k := 0
+        <span class="cov1" title="1">k := 0
         var values []string
         var params []interface{}
 
-        for i, item := range request </span><span class="cov8" title="1">{
+        for i, item := range request </span><span class="cov10" title="2">{
                 models = append(models, entity.ShortURLEntity{URL: item.OriginalURL, CorrelationID: item.CorrelationID, ShortURL: utils.GenerateShortURL(item.OriginalURL)})
 
-                if len(models) == ButchSize || len(request) == i+1 </span><span class="cov8" title="1">{
+                if len(models) == ButchSize || len(request) == i+1 </span><span class="cov1" title="1">{
                         values = nil
                         params = nil
-                        for _, enty := range models </span><span class="cov8" title="1">{
+                        for _, enty := range models </span><span class="cov10" title="2">{
                                 values = append(values, "("+
                                         "$"+fmt.Sprintf("%d,", k+1)+
                                         "$"+fmt.Sprintf("%d,", k+2)+
@@ -1457,7 +2020,7 @@ func (repo *PostgresRepository) Batch(request []batch.ButchRequest) ([]entity.Sh
                                 k += 4
                         }</span>
 
-                        <span class="cov8" title="1">valuesStr := strings.Join(values, ",")
+                        <span class="cov1" title="1">valuesStr := strings.Join(values, ",")
                         _, err = repo.DB.Exec(fmt.Sprintf(`INSERT into %s values %s`, TableName, valuesStr), params...)
                         if err != nil </span><span class="cov0" title="0">{
                                 err2 := tx.Rollback()
@@ -1466,21 +2029,21 @@ func (repo *PostgresRepository) Batch(request []batch.ButchRequest) ([]entity.Sh
                                 }</span>
                                 <span class="cov0" title="0">return nil, err</span>
                         }
-                        <span class="cov8" title="1">allModels = append(allModels, models...)
+                        <span class="cov1" title="1">allModels = append(allModels, models...)
                         models = nil</span>
                 }
         }
 
-        <span class="cov8" title="1">err = tx.Commit()
+        <span class="cov1" title="1">err = tx.Commit()
         if err != nil </span><span class="cov0" title="0">{
                 return nil, err
         }</span>
 
-        <span class="cov8" title="1">return allModels, nil</span>
+        <span class="cov1" title="1">return allModels, nil</span>
 }
 
 // GetUrlsByUserID получение ссылок по пользователю
-func (repo *PostgresRepository) GetUrlsByUserID(userID string) ([]entity.ShortURLEntity, error) <span class="cov8" title="1">{
+func (repo *PostgresRepository) GetUrlsByUserID(userID string) ([]entity.ShortURLEntity, error) <span class="cov1" title="1">{
         ent := []entity.ShortURLEntity{}
 
         err := repo.DB.Select(&amp;ent,
@@ -1491,28 +2054,28 @@ func (repo *PostgresRepository) GetUrlsByUserID(userID string) ([]entity.ShortUR
                 return nil, err
         }</span>
 
-        <span class="cov8" title="1">return ent, nil</span>
+        <span class="cov1" title="1">return ent, nil</span>
 }
 
 // Delete удаление
-func (repo *PostgresRepository) Delete(shortURLs []string, addedUserID string) error <span class="cov8" title="1">{
+func (repo *PostgresRepository) Delete(shortURLs []string, addedUserID string) error <span class="cov1" title="1">{
         var inArray []string
         var params []interface{}
 
         params = append(params, addedUserID)
         i := 2
-        for _, shortURL := range shortURLs </span><span class="cov8" title="1">{
+        for _, shortURL := range shortURLs </span><span class="cov10" title="2">{
                 inArray = append(inArray, "$"+fmt.Sprintf("%d", i))
                 params = append(params, shortURL)
                 i++
         }</span>
-        <span class="cov8" title="1">_, err := repo.DB.Exec(fmt.Sprintf(`update %s SET is_deleted = true WHERE added_user_id = $1 AND url_short IN (%s)`, TableName, strings.Join(inArray, ",")), params...)
+        <span class="cov1" title="1">_, err := repo.DB.Exec(fmt.Sprintf(`update %s SET is_deleted = true WHERE added_user_id = $1 AND url_short IN (%s)`, TableName, strings.Join(inArray, ",")), params...)
 
         if err != nil </span><span class="cov0" title="0">{
                 return err
         }</span>
 
-        <span class="cov8" title="1">return nil</span>
+        <span class="cov1" title="1">return nil</span>
 }
 
 // SaveToFile при падении ничего не далем
@@ -1547,7 +2110,7 @@ func (repo *PostgresRepository) GetUsersCount() int32 <span class="cov0" title="
 }
 </pre>
 		
-		<pre class="file" id="file18" style="display: none">package service
+		<pre class="file" id="file21" style="display: none">package service
 
 import "context"
 
@@ -1567,7 +2130,7 @@ func (s *PingService) Ping(ctx context.Context) error <span class="cov0" title="
 }</span>
 </pre>
 		
-		<pre class="file" id="file19" style="display: none">package service
+		<pre class="file" id="file22" style="display: none">package service
 
 import (
         "errors"
@@ -1594,24 +2157,24 @@ type ShortURLService struct {
 var ErrEntityExists = errors.New("entity exists")
 
 // NewShortURLService конструктор
-func NewShortURLService(repositoryRead RepositoryReader, repositoryWrite RepositoryWriter) *ShortURLService <span class="cov0" title="0">{
+func NewShortURLService(repositoryRead RepositoryReader, repositoryWrite RepositoryWriter) *ShortURLService <span class="cov3" title="2">{
         return &amp;ShortURLService{repositoryRead: repositoryRead, repositoryWrite: repositoryWrite}
 }</span>
 
 // FindByShortURL поиск по короткой ссылке
-func (service *ShortURLService) FindByShortURL(shortURL string) (*entity.ShortURLEntity, error) <span class="cov0" title="0">{
+func (service *ShortURLService) FindByShortURL(shortURL string) (*entity.ShortURLEntity, error) <span class="cov4" title="3">{
         return service.repositoryRead.FindByShortURL(shortURL)
 }</span>
 
 // Save сохранение
-func (service *ShortURLService) Save(ctx *gin.Context, url string) (*entity.ShortURLEntity, error) <span class="cov0" title="0">{
+func (service *ShortURLService) Save(ctx *gin.Context, url string) (*entity.ShortURLEntity, error) <span class="cov4" title="3">{
         addedUserID, exists := ctx.Get(middleware.UserIDProperty)
 
         if !exists </span><span class="cov0" title="0">{
                 return nil, fmt.Errorf("user id is required")
         }</span>
 
-        <span class="cov0" title="0">shortURL := utils.GenerateShortURL(url)
+        <span class="cov4" title="3">shortURL := utils.GenerateShortURL(url)
 
         model, errRepository := service.repositoryRead.FindByShortURL(shortURL)
 
@@ -1619,17 +2182,17 @@ func (service *ShortURLService) Save(ctx *gin.Context, url string) (*entity.Shor
                 return nil, errRepository
         }</span>
 
-        <span class="cov0" title="0">if model != nil </span><span class="cov0" title="0">{
+        <span class="cov4" title="3">if model != nil </span><span class="cov0" title="0">{
                 return model, ErrEntityExists
         }</span>
 
-        <span class="cov0" title="0">err := service.repositoryWrite.Save(shortURL, url, addedUserID.(string))
+        <span class="cov4" title="3">err := service.repositoryWrite.Save(shortURL, url, addedUserID.(string))
 
-        if err != nil </span><span class="cov0" title="0">{
+        if err != nil </span><span class="cov3" title="2">{
                 return &amp;entity.ShortURLEntity{ShortURL: shortURL, URL: url}, err
         }</span>
 
-        <span class="cov0" title="0">return &amp;entity.ShortURLEntity{ShortURL: shortURL, URL: url}, nil</span>
+        <span class="cov1" title="1">return &amp;entity.ShortURLEntity{ShortURL: shortURL, URL: url}, nil</span>
 }
 
 // Batch Массовое сохранение
@@ -1643,16 +2206,16 @@ func (service *ShortURLService) GetUrlsByUserID(userID string) ([]entity.ShortUR
 }</span>
 
 // Delete удаление
-func (service *ShortURLService) Delete(URLList []string, addedUserID string) <span class="cov8" title="1">{
+func (service *ShortURLService) Delete(URLList []string, addedUserID string) <span class="cov1" title="1">{
         var chunk []string
         var chunks [][]string
         i := 0
-        for _, URL := range URLList </span><span class="cov8" title="1">{
+        for _, URL := range URLList </span><span class="cov10" title="12">{
                 chunk = append(chunk, URL)
 
-                if i &lt; 10 </span><span class="cov8" title="1">{
+                if i &lt; 10 </span><span class="cov9" title="11">{
                         i++
-                }</span> else<span class="cov8" title="1"> {
+                }</span> else<span class="cov1" title="1"> {
                         chunks = append(chunks, chunk)
                         chunk = nil
                         i = 0
@@ -1660,92 +2223,92 @@ func (service *ShortURLService) Delete(URLList []string, addedUserID string) <sp
 
         }
 
-        <span class="cov8" title="1">var deletedURLs []string
-        if len(chunk) &gt; 0 </span><span class="cov8" title="1">{
+        <span class="cov1" title="1">var deletedURLs []string
+        if len(chunk) &gt; 0 </span><span class="cov1" title="1">{
                 chunks = append(chunks, chunk)
                 chunk = nil
         }</span>
 
-        <span class="cov8" title="1">inCh := service.sendToPrepare(chunks)
+        <span class="cov1" title="1">inCh := service.sendToPrepare(chunks)
         ch1 := service.prepareGoodURL(inCh, addedUserID)
         ch2 := service.prepareGoodURL(inCh, addedUserID)
-        for n := range service.fanIn(ch1, ch2) </span><span class="cov8" title="1">{
+        for n := range service.fanIn(ch1, ch2) </span><span class="cov3" title="2">{
                 deletedURLs = append(deletedURLs, n...)
         }</span>
 
-        <span class="cov8" title="1">service.notification(deletedURLs)</span>
+        <span class="cov1" title="1">service.notification(deletedURLs)</span>
 }
 
 // sendToPrepare отправляем в поток на обработку
-func (service *ShortURLService) sendToPrepare(chunks [][]string) chan []string <span class="cov8" title="1">{
+func (service *ShortURLService) sendToPrepare(chunks [][]string) chan []string <span class="cov1" title="1">{
         outCh := make(chan []string)
-        go func() </span><span class="cov8" title="1">{
+        go func() </span><span class="cov1" title="1">{
                 defer close(outCh)
-                for _, chunk := range chunks </span><span class="cov8" title="1">{
+                for _, chunk := range chunks </span><span class="cov3" title="2">{
                         outCh &lt;- chunk
                 }</span>
         }()
 
-        <span class="cov8" title="1">return outCh</span>
+        <span class="cov1" title="1">return outCh</span>
 }
 
 // Возвращаем только те URL, которые действо можно удалить
-func (service *ShortURLService) prepareGoodURL(inCh chan []string, addedUserID string) chan []string <span class="cov8" title="1">{
+func (service *ShortURLService) prepareGoodURL(inCh chan []string, addedUserID string) chan []string <span class="cov3" title="2">{
         outCh := make(chan []string)
 
-        go func() </span><span class="cov8" title="1">{
+        go func() </span><span class="cov3" title="2">{
                 defer close(outCh)
-                for shortURLs := range inCh </span><span class="cov8" title="1">{
+                for shortURLs := range inCh </span><span class="cov3" title="2">{
                         err := service.repositoryWrite.Delete(shortURLs, addedUserID)
                         if err != nil </span><span class="cov0" title="0">{
                                 service.logger.Error("ошибка получения записей", zap.String("urls", strings.Join(shortURLs, ",")), zap.String("addedUserID", addedUserID), zap.Error(err))
                                 return
                         }</span>
 
-                        <span class="cov8" title="1">outCh &lt;- shortURLs</span>
+                        <span class="cov3" title="2">outCh &lt;- shortURLs</span>
                 }
         }()
 
-        <span class="cov8" title="1">return outCh</span>
+        <span class="cov3" title="2">return outCh</span>
 }
 
 // fanIn обработка потока
-func (service *ShortURLService) fanIn(chs ...chan []string) chan []string <span class="cov8" title="1">{
+func (service *ShortURLService) fanIn(chs ...chan []string) chan []string <span class="cov1" title="1">{
         var wg sync.WaitGroup
         outCh := make(chan []string)
 
         // определяем функцию output для каждого канала в chs
         // функция output копирует значения из канала с в канал outCh, пока с не будет закрыт
-        output := func(c chan []string) </span><span class="cov8" title="1">{
-                for n := range c </span><span class="cov8" title="1">{
+        output := func(c chan []string) </span><span class="cov3" title="2">{
+                for n := range c </span><span class="cov3" title="2">{
                         outCh &lt;- n
                 }</span>
-                <span class="cov8" title="1">wg.Done()</span>
+                <span class="cov3" title="2">wg.Done()</span>
         }
 
         // добавляем в группу столько горутин, сколько каналов пришло в fanIn
-        <span class="cov8" title="1">wg.Add(len(chs))
+        <span class="cov1" title="1">wg.Add(len(chs))
         // перебираем все каналы, которые пришли и отправляем каждый в отдельную горутину
-        for _, c := range chs </span><span class="cov8" title="1">{
+        for _, c := range chs </span><span class="cov3" title="2">{
                 go output(c)
         }</span>
 
         // запускаем горутину для закрытия outCh после того, как все горутины отработают
-        <span class="cov8" title="1">go func() </span><span class="cov8" title="1">{
+        <span class="cov1" title="1">go func() </span><span class="cov1" title="1">{
                 wg.Wait()
                 close(outCh)
         }</span>()
 
         // возвращаем общий канал
-        <span class="cov8" title="1">return outCh</span>
+        <span class="cov1" title="1">return outCh</span>
 }
 
 // notification уведомление о обработанных письмах
-func (service *ShortURLService) notification(URLs []string) {<span class="cov8" title="1">
+func (service *ShortURLService) notification(URLs []string) {<span class="cov1" title="1">
 }</span>
 </pre>
 		
-		<pre class="file" id="file20" style="display: none">package service
+		<pre class="file" id="file23" style="display: none">package service
 
 type StatService struct {
         repository getStatsRepository
@@ -1768,7 +2331,7 @@ func (s *StatService) GetUrlsAndUsersStat() (int32, int32) <span class="cov8" ti
 }</span>
 </pre>
 		
-		<pre class="file" id="file21" style="display: none">package utils
+		<pre class="file" id="file24" style="display: none">package utils
 
 import (
         "crypto/sha1"
@@ -1776,7 +2339,7 @@ import (
 )
 
 // GenerateShortURL формированиерое краткого url
-func GenerateShortURL(url string) string <span class="cov8" title="1">{
+func GenerateShortURL(url string) string <span class="cov10" title="14">{
         hash := sha1.New()
         hash.Write([]byte(url))
         return base64.URLEncoding.EncodeToString(hash.Sum(nil))[:8]
@@ -1784,7 +2347,7 @@ func GenerateShortURL(url string) string <span class="cov8" title="1">{
 }</span>
 </pre>
 		
-		<pre class="file" id="file22" style="display: none">package config
+		<pre class="file" id="file25" style="display: none">package config
 
 //  -a=http://localhost:8081/api/shorten -b=http://localhost:8081/api/shorten
 import (
@@ -1821,6 +2384,7 @@ type Config struct {
         }
         TrustedSubnet      string `json:"trusted_subnet"`
         TrustedSubnetFinal []*net.IPNet
+        GRPCAddr           string `json:"grpc_address"`
 }
 
 // StorageTypeMemory место зранения
@@ -1833,7 +2397,7 @@ const StorageTypeFile = "File"
 const StorageTypeDB = "DB"
 
 // NewConfig получение конфигов
-func NewConfig() *Config <span class="cov8" title="1">{
+func NewConfig() *Config <span class="cov1" title="1">{
         var configPath string
         flag.StringVar(&amp;configPath, "c", "", "Path to config file")
 
@@ -1847,6 +2411,7 @@ func NewConfig() *Config <span class="cov8" title="1">{
         flag.StringVar(&amp;cfg.HTTPS.SSLKeyPath, "sslk", "./auto_server.key", "Path to ssl key file")
         flag.StringVar(&amp;cfg.HTTPS.SSLPemPath, "sslp", "./auto_server.pem", "Path to ssl pem file")
         flag.StringVar(&amp;cfg.TrustedSubnet, "t", "", "Path to ssl pem file")
+        flag.StringVar(&amp;cfg.GRPCAddr, "g", "", "grpc server")
         flag.Parse()
 
         preConfig := &amp;Config{}
@@ -1861,43 +2426,44 @@ func NewConfig() *Config <span class="cov8" title="1">{
                 }</span>
         }
 
-        <span class="cov8" title="1">cfg.AddressStart = cmp.Or(cfg.AddressStart, os.Getenv("SERVER_ADDRESS"), preConfig.AddressStart, "localhost:8080")
+        <span class="cov1" title="1">cfg.AddressStart = cmp.Or(cfg.AddressStart, os.Getenv("SERVER_ADDRESS"), preConfig.AddressStart, "localhost:8080")
         cfg.BaseShort = cmp.Or(cfg.BaseShort, os.Getenv("BASE_URL"), preConfig.BaseShort, "http://localhost:8080")
         cfg.FileStorage = cmp.Or(cfg.FileStorage, os.Getenv("FILE_STORAGE_PATH"), preConfig.FileStorage)
         cfg.DatabaseURL = cmp.Or(cfg.DatabaseURL, os.Getenv("DATABASE_DSN"), preConfig.DatabaseURL)
         cfg.TrustedSubnet = cmp.Or(cfg.TrustedSubnet, os.Getenv("TRUSTED_SUBNET"), preConfig.TrustedSubnet)
+        cfg.GRPCAddr = cmp.Or(cfg.GRPCAddr, os.Getenv("GRPC_ADDR"), preConfig.GRPCAddr)
 
         var storageType = StorageTypeMemory
 
-        if cfg.FileStorage != "" || os.Getenv("FILE_STORAGE_PATH") != "" </span><span class="cov8" title="1">{
+        if cfg.FileStorage != "" || os.Getenv("FILE_STORAGE_PATH") != "" </span><span class="cov1" title="1">{
                 storageType = StorageTypeFile
         }</span>
 
-        <span class="cov8" title="1">if cfg.DatabaseURL != "" || os.Getenv("DATABASE_DSN") != "" </span><span class="cov8" title="1">{
+        <span class="cov1" title="1">if cfg.DatabaseURL != "" || os.Getenv("DATABASE_DSN") != "" </span><span class="cov1" title="1">{
                 storageType = StorageTypeDB
         }</span>
 
-        <span class="cov8" title="1">cfg.StorageType = storageType
+        <span class="cov1" title="1">cfg.StorageType = storageType
         cfg.FullLog = true
 
-        if envHTTPSStr := os.Getenv("ENABLE_HTTPS"); envHTTPSStr != "" </span><span class="cov8" title="1">{
+        if envHTTPSStr := os.Getenv("ENABLE_HTTPS"); envHTTPSStr != "" </span><span class="cov1" title="1">{
                 envHTTPS, err := strconv.ParseBool(envHTTPSStr)
-                if err == nil </span><span class="cov8" title="1">{
+                if err == nil </span><span class="cov1" title="1">{
                         cfg.HTTPS.Enabled = envHTTPS
                 }</span>
         }
 
-        <span class="cov8" title="1">if cfg.HTTPS.Enabled &amp;&amp; cfg.HTTPS.SSLKeyPath == "./auto_server.key" </span><span class="cov8" title="1">{
+        <span class="cov1" title="1">if cfg.HTTPS.Enabled &amp;&amp; cfg.HTTPS.SSLKeyPath == "./auto_server.key" </span><span class="cov1" title="1">{
                 CreateTLSCert("./auto_server.pem", "./auto_server.key")
         }</span>
 
-        <span class="cov8" title="1">cfg.TrustedSubnetFinal = prepareTrustedSubnets(cfg.TrustedSubnet)
+        <span class="cov1" title="1">cfg.TrustedSubnetFinal = prepareTrustedSubnets(cfg.TrustedSubnet)
 
         return cfg</span>
 }
 
 // CreateTLSCert - generate TLS certificate and key for run server HTTPS
-func CreateTLSCert(certPath string, keyPath string) error <span class="cov8" title="1">{
+func CreateTLSCert(certPath string, keyPath string) error <span class="cov1" title="1">{
         cert := x509.Certificate{
                 SerialNumber: big.NewInt(1),
                 Subject: pkix.Name{
@@ -1922,15 +2488,15 @@ func CreateTLSCert(certPath string, keyPath string) error <span class="cov8" tit
                 return err
         }</span>
 
-        <span class="cov8" title="1">err = saveToFile(keyPath, "RSA PRIVATE KEY", x509.MarshalPKCS1PrivateKey(privateKey))
+        <span class="cov1" title="1">err = saveToFile(keyPath, "RSA PRIVATE KEY", x509.MarshalPKCS1PrivateKey(privateKey))
         if err != nil </span><span class="cov0" title="0">{
                 return err
         }</span>
 
-        <span class="cov8" title="1">return nil</span>
+        <span class="cov1" title="1">return nil</span>
 }
 
-func saveToFile(filePath string, cypherType string, cypher []byte) error <span class="cov8" title="1">{
+func saveToFile(filePath string, cypherType string, cypher []byte) error <span class="cov10" title="2">{
         var (
                 buf  bytes.Buffer
                 file *os.File
@@ -1949,24 +2515,24 @@ func saveToFile(filePath string, cypherType string, cypher []byte) error <span c
                 return err
         }</span>
 
-        <span class="cov8" title="1">return nil</span>
+        <span class="cov10" title="2">return nil</span>
 }
 
-func prepareTrustedSubnets(data string) []*net.IPNet <span class="cov8" title="1">{
+func prepareTrustedSubnets(data string) []*net.IPNet <span class="cov1" title="1">{
         var subnets []*net.IPNet
-        if data != "" </span><span class="cov8" title="1">{
+        if data != "" </span><span class="cov1" title="1">{
                 subStr := strings.Split(data, ",")
-                for _, subnetStr := range subStr </span><span class="cov8" title="1">{
+                for _, subnetStr := range subStr </span><span class="cov1" title="1">{
                         _, subnetIPNet, _ := net.ParseCIDR(subnetStr)
                         subnets = append(subnets, subnetIPNet)
                 }</span>
         }
 
-        <span class="cov8" title="1">return subnets</span>
+        <span class="cov1" title="1">return subnets</span>
 }
 </pre>
 		
-		<pre class="file" id="file23" style="display: none">package exitmain
+		<pre class="file" id="file26" style="display: none">package exitmain
 
 import (
         "go/ast"
@@ -1984,50 +2550,50 @@ var Analyzer = &amp;analysis.Analyzer{
         Requires: []*analysis.Analyzer{inspect.Analyzer},
 }
 
-func run(pass *analysis.Pass) (interface{}, error) <span class="cov8" title="1">{
-        if pass.Pkg.Name() != "main" </span><span class="cov8" title="1">{
+func run(pass *analysis.Pass) (interface{}, error) <span class="cov3" title="2">{
+        if pass.Pkg.Name() != "main" </span><span class="cov1" title="1">{
                 return nil, nil
         }</span>
 
-        <span class="cov8" title="1">fn := func(node ast.Node) </span><span class="cov8" title="1">{
+        <span class="cov1" title="1">fn := func(node ast.Node) </span><span class="cov3" title="2">{
                 switch v := node.(type) </span>{
-                case *ast.FuncDecl:<span class="cov8" title="1">
+                case *ast.FuncDecl:<span class="cov3" title="2">
                         if v.Body == nil </span><span class="cov0" title="0">{
                                 return
                         }</span>
 
-                        <span class="cov8" title="1">if v.Name.Name != "main" </span><span class="cov8" title="1">{
+                        <span class="cov3" title="2">if v.Name.Name != "main" </span><span class="cov1" title="1">{
                                 return
                         }</span>
 
-                        <span class="cov8" title="1">if strings.HasSuffix(pass.Pkg.Path(), ".example") ||
+                        <span class="cov1" title="1">if strings.HasSuffix(pass.Pkg.Path(), ".example") ||
                                 strings.HasSuffix(pass.Pkg.Path(), ".test") ||
                                 strings.HasSuffix(pass.Pkg.Path(), "benchmark") ||
                                 strings.HasSuffix(pass.Pkg.Path(), "fuzz") </span><span class="cov0" title="0">{
                                 return
                         }</span>
 
-                        <span class="cov8" title="1">ast.Inspect(v, func(n ast.Node) bool </span><span class="cov8" title="1">{
+                        <span class="cov1" title="1">ast.Inspect(v, func(n ast.Node) bool </span><span class="cov10" title="22">{
                                 ce, okCe := n.(*ast.CallExpr)
-                                if !okCe </span><span class="cov8" title="1">{
+                                if !okCe </span><span class="cov9" title="19">{
                                         return true
                                 }</span>
 
-                                <span class="cov8" title="1">se, okSe := ce.Fun.(*ast.SelectorExpr)
-                                if !okSe </span><span class="cov8" title="1">{
+                                <span class="cov4" title="3">se, okSe := ce.Fun.(*ast.SelectorExpr)
+                                if !okSe </span><span class="cov1" title="1">{
                                         return true
                                 }</span>
 
-                                <span class="cov8" title="1">if ident, ok := se.X.(*ast.Ident); ok &amp;&amp; ident.Name == "os" &amp;&amp; se.Sel.Name == "Exit" </span><span class="cov8" title="1">{
+                                <span class="cov3" title="2">if ident, ok := se.X.(*ast.Ident); ok &amp;&amp; ident.Name == "os" &amp;&amp; se.Sel.Name == "Exit" </span><span class="cov1" title="1">{
                                         pass.Reportf(se.Pos(), "avoid using os.Exit directly in main function")
                                 }</span>
 
-                                <span class="cov8" title="1">return false</span>
+                                <span class="cov3" title="2">return false</span>
                         })
                 }
         }
         //
-        <span class="cov8" title="1">needle := []ast.Node{
+        <span class="cov1" title="1">needle := []ast.Node{
                 (*ast.FuncDecl)(nil),
         }
 

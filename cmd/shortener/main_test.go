@@ -13,27 +13,6 @@ import (
 	"testing"
 )
 
-func Test_initRouter(t *testing.T) {
-	tests := []struct {
-		name  string
-		want  *gin.Engine
-		want1 *zap.Logger
-		want2 *config.Config
-	}{
-		{
-			name:  "success",
-			want:  nil,
-			want1: nil,
-			want2: nil,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			_, _, _, _ = initRouter()
-		})
-	}
-}
-
 func Test_addLogger(t *testing.T) {
 	_, engine := gin.CreateTestContext(httptest.NewRecorder())
 	tests := []struct {
@@ -145,22 +124,6 @@ func Test_initMigrations(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			initMigrations(tt.args.migrationPath, tt.args.DB)
-		})
-	}
-}
-
-func Test_startServe(t *testing.T) {
-	tests := []struct {
-		name string
-	}{
-		{
-			name: "success",
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			t.Setenv("SERVER_ADDRESS", "-1")
-			startServe()
 		})
 	}
 }

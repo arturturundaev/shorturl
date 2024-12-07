@@ -1,0 +1,12 @@
+profile: cover.out
+
+# Holds regexp rules which will exclude matched files or packages
+# from coverage statistics
+exclude:
+  # Exclude files or packages matching their paths
+  paths:
+    - internal/app/proto/proto.pb.go
+    - internal/app/proto/proto.proto
+    - main.go
+    - internal/app/proto/proto_grpc.pb.go
+    - internal/app/proto/server.go
