@@ -1,0 +1,29 @@
+syntax = "proto3";
+
+option go_package = "./";
+
+package internal.app.proto.stat;
+
+message PingRequest {
+}
+
+message PingResponse {
+  int32 code = 1;
+  string error = 2;
+}
+
+
+message StatRequest {
+  string query = 1;
+}
+
+message StatsResponse {
+  int32 code = 1;
+  int32 urls = 2;
+  int32 users = 3;
+}
+
+service Service {
+  rpc GetStat(StatRequest) returns (StatsResponse);
+  rpc Ping(PingRequest) returns (PingResponse);
+}

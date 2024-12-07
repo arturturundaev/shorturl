@@ -14,6 +14,8 @@ type RepositoryReader interface {
 	Ping(ctx context.Context) error
 	GetUrlsByUserID(userID string) ([]entity.ShortURLEntity, error)
 	GetDB() *sqlx.DB
+	GetUrlsCount() int32
+	GetUsersCount() int32
 }
 
 // Интрефейс на чтение
